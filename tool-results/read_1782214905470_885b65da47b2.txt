@@ -1,0 +1,1070 @@
+     1→'use client';
+     2→
+     3→import { useEffect, useState, useCallback } from 'react';
+     4→import { toast } from 'sonner';
+     5→import {
+     6→  Building2,
+     7→  Users,
+     8→  FileText,
+     9→  Plus,
+    10→  Pencil,
+    11→  Trash2,
+    12→  Loader2,
+    13→} from 'lucide-react';
+    14→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+    15→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    16→import { Button } from '@/components/ui/button';
+    17→import { Input } from '@/components/ui/input';
+    18→import { Label } from '@/components/ui/label';
+    19→import { Badge } from '@/components/ui/badge';
+    20→import { Switch } from '@/components/ui/switch';
+    21→import { Skeleton } from '@/components/ui/skeleton';
+    22→import { ScrollArea } from '@/components/ui/scroll-area';
+    23→import {
+    24→  Table,
+    25→  TableBody,
+    26→  TableCell,
+    27→  TableHead,
+    28→  TableHeader,
+    29→  TableRow,
+    30→} from '@/components/ui/table';
+    31→import {
+    32→  Select,
+    33→  SelectContent,
+    34→  SelectItem,
+    35→  SelectTrigger,
+    36→  SelectValue,
+    37→} from '@/components/ui/select';
+    38→import {
+    39→  Dialog,
+    40→  DialogContent,
+    41→  DialogFooter,
+    42→  DialogHeader,
+    43→  DialogTitle,
+    44→} from '@/components/ui/dialog';
+    45→import {
+    46→  AlertDialog,
+    47→  AlertDialogAction,
+    48→  AlertDialogCancel,
+    49→  AlertDialogContent,
+    50→  AlertDialogDescription,
+    51→  AlertDialogFooter,
+    52→  AlertDialogHeader,
+    53→  AlertDialogTitle,
+    54→} from '@/components/ui/alert-dialog';
+    55→
+    56→// ─── Types ───────────────────────────────────────────────────────────────────
+    57→
+    58→interface LineLeader {
+    59→  id: string;
+    60→  name: string;
+    61→  headLeader?: { name: string };
+    62→  _count?: { factories: number };
+    63→}
+    64→
+    65→interface FactoryItem {
+    66→  id: string;
+    67→  factoryId: string;
+    68→  name: string;
+    69→  supervisorName: string;
+    70→  supervisorBkash: string | null;
+    71→  location: string;
+    72→  fuelBdt: number;
+    73→  transportBdt: number;
+    74→  lineLeaderId: string;
+    75→  lineLeader: { id: string; name: string; headLeader?: { name: string } };
+    76→  groupHead: string;
+    77→  isActive: boolean;
+    78→  workers: { id: string }[];
+    79→  _count?: { dailyRecords: number };
+    80→}
+    81→
+    82→interface WorkerItem {
+    83→  id: string;
+    84→  workerId: string;
+    85→  name: string;
+    86→  bKash: string | null;
+    87→  factoryId: string;
+    88→  isActive: boolean;
+    89→}
+    90→
+    91→interface WorkerEntry {
+    92→  id: string;
+    93→  worker: { workerId: string; name: string };
+    94→  inputGivenKg: number;
+    95→  aWeightKg: number;
+    96→  bWeightKg: number;
+    97→  cWeightKg: number;
+    98→  wastageKg: number;
+    99→  balanceStatus: string;
+   100→  daysPresent: number;
+   101→  baseWage: number;
+   102→  attendanceBonus: number;
+   103→  totalPayable: number;
+   104→  status: string;
+   105→}
+   106→
+   107→interface DailyRecord {
+   108→  id: string;
+   109→  recordDate: string;
+   110→  factory: { factoryId: string; name: string; supervisorName: string; location: string };
+   111→  lot: { lotNo: string };
+   112→  totalInputKg: number;
+   113→  totalAGradeKg: number;
+   114→  totalBGradeKg: number;
+   115→  totalCGradeKg: number;
+   116→  totalWastageKg: number;
+   117→  hostingAllowance: number;
+   118→  perfBonus: number;
+   119→  totalSupPay: number;
+   120→  grandTotalBdt: number;
+   121→  wipStatus: string;
+   122→  entries: WorkerEntry[];
+   123→}
+   124→
+   125→interface PayrollSummary {
+   126→  factoryId: string;
+   127→  supervisorName: string;
+   128→  location: string;
+   129→  lineLeader: string;
+   130→  groupHead: string;
+   131→  workerCount: number;
+   132→  hostingAllowance: number;
+   133→  perfBonus: number;
+   134→  totalSupPay: number;
+   135→  aGradePct: number;
+   136→}
+   137→
+   138→interface LotItem {
+   139→  id: string;
+   140→  lotNo: string;
+   141→  colour: string;
+   142→  rawWeightKg: number;
+   143→  status: string;
+   144→}
+   145→
+   146→// ─── Constants ───────────────────────────────────────────────────────────────
+   147→
+   148→const NAVY = '#1F3864';
+   149→const GOLD = '#C9A227';
+   150→
+   151→const emptyFactoryForm = {
+   152→  factoryId: '',
+   153→  name: '',
+   154→  supervisorName: '',
+   155→  supervisorBkash: '',
+   156→  location: '',
+   157→  lineLeaderId: '',
+   158→  groupHead: '',
+   159→  fuelBdt: 200,
+   160→  transportBdt: 150,
+   161→  isActive: true,
+   162→};
+   163→
+   164→const emptyWorkerForm = {
+   165→  workerId: '',
+   166→  name: '',
+   167→  bKash: '',
+   168→  isActive: true,
+   169→};
+   170→
+   171→interface WorkerEntryInput {
+   172→  workerId: string;
+   173→  workerName: string;
+   174→  inputGivenKg: string;
+   175→  aWeightKg: string;
+   176→  bWeightKg: string;
+   177→  cWeightKg: string;
+   178→  wastageKg: string;
+   179→  daysPresent: string;
+   180→}
+   181→
+   182→// ─── Component ───────────────────────────────────────────────────────────────
+   183→
+   184→export default function FactorySection() {
+   185→  // ── Tab ──
+   186→  const [activeTab, setActiveTab] = useState('factories');
+   187→
+   188→  // ── Shared lookup data ──
+   189→  const [lineLeaders, setLineLeaders] = useState<LineLeader[]>([]);
+   190→  const [lots, setLots] = useState<LotItem[]>([]);
+   191→  const [payrollSummaries, setPayrollSummaries] = useState<PayrollSummary[]>([]);
+   192→
+   193→  // ── Tab 1: Factories ──
+   194→  const [factories, setFactories] = useState<FactoryItem[]>([]);
+   195→  const [factoriesLoading, setFactoriesLoading] = useState(true);
+   196→  const [factoryDialogOpen, setFactoryDialogOpen] = useState(false);
+   197→  const [factoryEditId, setFactoryEditId] = useState<string | null>(null);
+   198→  const [factoryForm, setFactoryForm] = useState(emptyFactoryForm);
+   199→  const [factorySaving, setFactorySaving] = useState(false);
+   200→  const [deleteFactoryId, setDeleteFactoryId] = useState<string | null>(null);
+   201→  const [deletingFactory, setDeletingFactory] = useState(false);
+   202→
+   203→  // ── Tab 2: Workers ──
+   204→  const [workerFactoryId, setWorkerFactoryId] = useState('');
+   205→  const [workers, setWorkers] = useState<WorkerItem[]>([]);
+   206→  const [workersLoading, setWorkersLoading] = useState(false);
+   207→  const [workerDialogOpen, setWorkerDialogOpen] = useState(false);
+   208→  const [workerEditId, setWorkerEditId] = useState<string | null>(null);
+   209→  const [workerForm, setWorkerForm] = useState(emptyWorkerForm);
+   210→  const [workerSaving, setWorkerSaving] = useState(false);
+   211→  const [deleteWorkerId, setDeleteWorkerId] = useState<string | null>(null);
+   212→  const [deletingWorker, setDeletingWorker] = useState(false);
+   213→
+   214→  // ── Tab 3: Daily Records ──
+   215→  const [dailyFactoryCode, setDailyFactoryCode] = useState('');
+   216→  const [dailyLotId, setDailyLotId] = useState('');
+   217→  const [dailyRecords, setDailyRecords] = useState<DailyRecord[]>([]);
+   218→  const [dailyLoading, setDailyLoading] = useState(false);
+   219→  const [dailyDialogOpen, setDailyDialogOpen] = useState(false);
+   220→  const [dailySaving, setDailySaving] = useState(false);
+   221→  const [dailyRecordDate, setDailyRecordDate] = useState('');
+   222→  const [dailyLotSelected, setDailyLotSelected] = useState('');
+   223→  const [workerEntries, setWorkerEntries] = useState<WorkerEntryInput[]>([]);
+   224→
+   225→  // ─── Fetch shared data ─────────────────────────────────────────────────────
+   226→
+   227→  const fetchLineLeaders = useCallback(async () => {
+   228→    try {
+   229→      const res = await fetch('/api/line-leaders');
+   230→      const json = await res.json();
+   231→      setLineLeaders(json.data || []);
+   232→    } catch {
+   233→      toast.error('Failed to load line leaders');
+   234→    }
+   235→  }, []);
+   236→
+   237→  const fetchLots = useCallback(async () => {
+   238→    try {
+   239→      const res = await fetch('/api/lots?limit=200');
+   240→      const json = await res.json();
+   241→      setLots((json.data || []).filter((l: LotItem) => l.status === 'Active'));
+   242→    } catch {
+   243→      toast.error('Failed to load lots');
+   244→    }
+   245→  }, []);
+   246→
+   247→  const fetchPayroll = useCallback(async () => {
+   248→    try {
+   249→      const res = await fetch('/api/payroll');
+   250→      const json = await res.json();
+   251→      setPayrollSummaries(json.factories || []);
+   252→    } catch {
+   253→      /* silent */
+   254→    }
+   255→  }, []);
+   256→
+   257→  // ─── Tab 1: Factory CRUD ──────────────────────────────────────────────────
+   258→
+   259→  const fetchFactories = useCallback(async () => {
+   260→    setFactoriesLoading(true);
+   261→    try {
+   262→      const res = await fetch('/api/factories?limit=200');
+   263→      const json = await res.json();
+   264→      setFactories(json.data || []);
+   265→    } catch {
+   266→      toast.error('Failed to load factories');
+   267→    } finally {
+   268→      setFactoriesLoading(false);
+   269→    }
+   270→  }, []);
+   271→
+   272→  const openFactoryDialog = (factory?: FactoryItem) => {
+   273→    if (factory) {
+   274→      setFactoryEditId(factory.id);
+   275→      setFactoryForm({
+   276→        factoryId: factory.factoryId,
+   277→        name: factory.name,
+   278→        supervisorName: factory.supervisorName,
+   279→        supervisorBkash: factory.supervisorBkash || '',
+   280→        location: factory.location,
+   281→        lineLeaderId: factory.lineLeaderId,
+   282→        groupHead: factory.groupHead,
+   283→        fuelBdt: factory.fuelBdt,
+   284→        transportBdt: factory.transportBdt,
+   285→        isActive: factory.isActive,
+   286→      });
+   287→    } else {
+   288→      setFactoryEditId(null);
+   289→      setFactoryForm(emptyFactoryForm);
+   290→    }
+   291→    setFactoryDialogOpen(true);
+   292→  };
+   293→
+   294→  const saveFactory = async () => {
+   295→    if (!factoryForm.factoryId || !factoryForm.name || !factoryForm.supervisorName || !factoryForm.lineLeaderId) {
+   296→      toast.error('Factory ID, Name, Supervisor, and Line Leader are required');
+   297→      return;
+   298→    }
+   299→    setFactorySaving(true);
+   300→    try {
+   301→      const url = factoryEditId ? `/api/factories/${factoryEditId}` : '/api/factories';
+   302→      const method = factoryEditId ? 'PUT' : 'POST';
+   303→      const res = await fetch(url, {
+   304→        method,
+   305→        headers: { 'Content-Type': 'application/json' },
+   306→        body: JSON.stringify(factoryForm),
+   307→      });
+   308→      if (!res.ok) {
+   309→        const err = await res.json();
+   310→        throw new Error(err.error || 'Save failed');
+   311→      }
+   312→      toast.success(factoryEditId ? 'Factory updated' : 'Factory created');
+   313→      setFactoryDialogOpen(false);
+   314→      fetchFactories();
+   315→      fetchPayroll();
+   316→    } catch (e: unknown) {
+   317→      toast.error(e instanceof Error ? e.message : 'Failed to save factory');
+   318→    } finally {
+   319→      setFactorySaving(false);
+   320→    }
+   321→  };
+   322→
+   323→  const deleteFactory = async () => {
+   324→    if (!deleteFactoryId) return;
+   325→    setDeletingFactory(true);
+   326→    try {
+   327→      const res = await fetch(`/api/factories/${deleteFactoryId}`, { method: 'DELETE' });
+   328→      if (!res.ok) {
+   329→        const err = await res.json();
+   330→        throw new Error(err.error || 'Delete failed');
+   331→      }
+   332→      toast.success('Factory deleted');
+   333→      setDeleteFactoryId(null);
+   334→      fetchFactories();
+   335→      fetchPayroll();
+   336→    } catch (e: unknown) {
+   337→      toast.error(e instanceof Error ? e.message : 'Failed to delete factory');
+   338→    } finally {
+   339→      setDeletingFactory(false);
+   340→    }
+   341→  };
+   342→
+   343→  // ─── Tab 2: Worker CRUD ───────────────────────────────────────────────────
+   344→
+   345→  const fetchWorkers = useCallback(async (factoryId: string) => {
+   346→    setWorkersLoading(true);
+   347→    try {
+   348→      const res = await fetch(`/api/workers?factoryId=${factoryId}&limit=200`);
+   349→      const json = await res.json();
+   350→      setWorkers(json.data || []);
+   351→    } catch {
+   352→      toast.error('Failed to load workers');
+   353→      setWorkers([]);
+   354→    } finally {
+   355→      setWorkersLoading(false);
+   356→    }
+   357→  }, []);
+   358→
+   359→  useEffect(() => {
+   360→    if (workerFactoryId) fetchWorkers(workerFactoryId);
+   361→    else setWorkers([]);
+   362→  }, [workerFactoryId, fetchWorkers]);
+   363→
+   364→  const openWorkerDialog = (worker?: WorkerItem) => {
+   365→    if (worker) {
+   366→      setWorkerEditId(worker.id);
+   367→      setWorkerForm({
+   368→        workerId: worker.workerId,
+   369→        name: worker.name,
+   370→        bKash: worker.bKash || '',
+   371→        isActive: worker.isActive,
+   372→      });
+   373→    } else {
+   374→      setWorkerEditId(null);
+   375→      setWorkerForm(emptyWorkerForm);
+   376→    }
+   377→    setWorkerDialogOpen(true);
+   378→  };
+   379→
+   380→  const saveWorker = async () => {
+   381→    if (!workerForm.workerId || !workerForm.name) {
+   382→      toast.error('Worker ID and Name are required');
+   383→      return;
+   384→    }
+   385→    if (!workerFactoryId) {
+   386→      toast.error('Select a factory first');
+   387→      return;
+   388→    }
+   389→    setWorkerSaving(true);
+   390→    try {
+   391→      const url = workerEditId ? `/api/workers/${workerEditId}` : '/api/workers';
+   392→      const method = workerEditId ? 'PUT' : 'POST';
+   393→      const res = await fetch(url, {
+   394→        method,
+   395→        headers: { 'Content-Type': 'application/json' },
+   396→        body: JSON.stringify({ ...workerForm, factoryId: workerFactoryId }),
+   397→      });
+   398→      if (!res.ok) {
+   399→        const err = await res.json();
+   400→        throw new Error(err.error || 'Save failed');
+   401→      }
+   402→      toast.success(workerEditId ? 'Worker updated' : 'Worker created');
+   403→      setWorkerDialogOpen(false);
+   404→      fetchWorkers(workerFactoryId);
+   405→    } catch (e: unknown) {
+   406→      toast.error(e instanceof Error ? e.message : 'Failed to save worker');
+   407→    } finally {
+   408→      setWorkerSaving(false);
+   409→    }
+   410→  };
+   411→
+   412→  const deleteWorker = async () => {
+   413→    if (!deleteWorkerId) return;
+   414→    setDeletingWorker(true);
+   415→    try {
+   416→      const res = await fetch(`/api/workers/${deleteWorkerId}`, { method: 'DELETE' });
+   417→      if (!res.ok) {
+   418→        const err = await res.json();
+   419→        throw new Error(err.error || 'Delete failed');
+   420→      }
+   421→      toast.success('Worker deleted');
+   422→      setDeleteWorkerId(null);
+   423→      if (workerFactoryId) fetchWorkers(workerFactoryId);
+   424→    } catch (e: unknown) {
+   425→      toast.error(e instanceof Error ? e.message : 'Failed to delete worker');
+   426→    } finally {
+   427→      setDeletingWorker(false);
+   428→    }
+   429→  };
+   430→
+   431→  // ─── Tab 3: Daily Records ─────────────────────────────────────────────────
+   432→
+   433→  const fetchDailyRecords = useCallback(async (factoryCode: string) => {
+   434→    if (!factoryCode) { setDailyRecords([]); return; }
+   435→    setDailyLoading(true);
+   436→    try {
+   437→      const res = await fetch(`/api/daily-records?factoryId=${factoryCode}&limit=100`);
+   438→      const json = await res.json();
+   439→      setDailyRecords(json.data || []);
+   440→    } catch {
+   441→      toast.error('Failed to load daily records');
+   442→      setDailyRecords([]);
+   443→    } finally {
+   444→      setDailyLoading(false);
+   445→    }
+   446→  }, []);
+   447→
+   448→  useEffect(() => {
+   449→    if (dailyFactoryCode) fetchDailyRecords(dailyFactoryCode);
+   450→    else setDailyRecords([]);
+   451→  }, [dailyFactoryCode, fetchDailyRecords]);
+   452→
+   453→  const openDailyDialog = async () => {
+   454→    if (!dailyFactoryCode) { toast.error('Select a factory first'); return; }
+   455→    const factory = factories.find(f => f.factoryId === dailyFactoryCode);
+   456→    if (!factory) { toast.error('Factory not found'); return; }
+   457→    setDailyRecordDate(new Date().toISOString().split('T')[0]);
+   458→    setDailyLotSelected('');
+   459→    // Fetch active workers for this factory
+   460→    try {
+   461→      const res = await fetch(`/api/workers?factoryId=${factory.id}&limit=200`);
+   462→      const json = await res.json();
+   463→      const wks = json.data || [];
+   464→      setWorkerEntries(wks.map((w: WorkerItem) => ({
+   465→        workerId: w.id,
+   466→        workerName: w.name,
+   467→        inputGivenKg: '',
+   468→        aWeightKg: '',
+   469→        bWeightKg: '',
+   470→        cWeightKg: '',
+   471→        wastageKg: '',
+   472→        daysPresent: '',
+   473→      })));
+   474→    } catch {
+   475→      toast.error('Failed to load workers for daily record');
+   476→      return;
+   477→    }
+   478→    setDailyDialogOpen(true);
+   479→  };
+   480→
+   481→  const updateWorkerEntry = (index: number, field: keyof WorkerEntryInput, value: string) => {
+   482→    setWorkerEntries(prev => prev.map((e, i) => i === index ? { ...e, [field]: value } : e));
+   483→  };
+   484→
+   485→  const saveDailyRecord = async () => {
+   486→    if (!dailyRecordDate) { toast.error('Select a date'); return; }
+   487→    if (!dailyLotSelected) { toast.error('Select a lot'); return; }
+   488→    const factory = factories.find(f => f.factoryId === dailyFactoryCode);
+   489→    if (!factory) { toast.error('Factory not found'); return; }
+   490→
+   491→    const validEntries = workerEntries
+   492→      .filter(e => parseFloat(e.inputGivenKg) > 0)
+   493→      .map(e => ({
+   494→        workerId: e.workerId,
+   495→        inputGivenKg: parseFloat(e.inputGivenKg) || 0,
+   496→        aWeightKg: parseFloat(e.aWeightKg) || 0,
+   497→        bWeightKg: parseFloat(e.bWeightKg) || 0,
+   498→        cWeightKg: parseFloat(e.cWeightKg) || 0,
+   499→        wastageKg: parseFloat(e.wastageKg) || 0,
+   500→        daysPresent: parseInt(e.daysPresent) || 0,
+   501→      }));
+   502→
+   503→    if (validEntries.length === 0) {
+   504→      toast.error('Enter at least one worker entry with input kg');
+   505→      return;
+   506→    }
+   507→
+   508→    setDailySaving(true);
+   509→    try {
+   510→      const res = await fetch('/api/daily-records', {
+   511→        method: 'POST',
+   512→        headers: { 'Content-Type': 'application/json' },
+   513→        body: JSON.stringify({
+   514→          recordDate: dailyRecordDate,
+   515→          factoryId: factory.id,
+   516→          lotId: dailyLotSelected,
+   517→          entries: validEntries,
+   518→        }),
+   519→      });
+   520→      if (!res.ok) {
+   521→        const err = await res.json();
+   522→        throw new Error(err.error || 'Save failed');
+   523→      }
+   524→      toast.success('Daily record created');
+   525→      setDailyDialogOpen(false);
+   526→      fetchDailyRecords(dailyFactoryCode);
+   527→      fetchPayroll();
+   528→    } catch (e: unknown) {
+   529→      toast.error(e instanceof Error ? e.message : 'Failed to save daily record');
+   530→    } finally {
+   531→      setDailySaving(false);
+   532→    }
+   533→  };
+   534→
+   535→  // ─── Init ──────────────────────────────────────────────────────────────────
+   536→
+   537→  useEffect(() => {
+   538→    fetchFactories();
+   539→    fetchLineLeaders();
+   540→    fetchLots();
+   541→    fetchPayroll();
+   542→  }, [fetchFactories, fetchLineLeaders, fetchLots, fetchPayroll]);
+   543→
+   544→  // ─── Computed ──────────────────────────────────────────────────────────────
+   545→
+   546→  const activePayroll = payrollSummaries.find(p => p.factoryId === dailyFactoryCode);
+   547→  const wipInput = dailyRecords.reduce((s, r) => s + (r.totalInputKg || 0), 0);
+   548→  const wipOutput = dailyRecords.reduce((s, r) => s + (r.totalAGradeKg || 0) + (r.totalBGradeKg || 0) + (r.totalCGradeKg || 0), 0);
+   549→  const wipRemaining = wipInput - wipOutput;
+   550→  const wipPct = wipInput > 0 ? ((wipRemaining / wipInput) * 100) : 0;
+   551→
+   552→  // ─── Render ────────────────────────────────────────────────────────────────
+   553→
+   554→  return (
+   555→    <div className="space-y-4">
+   556→      <Tabs value={activeTab} onValueChange={setActiveTab}>
+   557→        <TabsList className="grid w-full grid-cols-3" style={{ backgroundColor: NAVY }}>
+   558→          <TabsTrigger value="factories" className="data-[state=active]:bg-white data-[state=active]:text-[#1F3864] text-white/80">
+   559→            <Building2 className="mr-2 h-4 w-4" /> Factories
+   560→          </TabsTrigger>
+   561→          <TabsTrigger value="workers" className="data-[state=active]:bg-white data-[state=active]:text-[#1F3864] text-white/80">
+   562→            <Users className="mr-2 h-4 w-4" /> Workers
+   563→          </TabsTrigger>
+   564→          <TabsTrigger value="daily-records" className="data-[state=active]:bg-white data-[state=active]:text-[#1F3864] text-white/80">
+   565→            <FileText className="mr-2 h-4 w-4" /> Daily Records
+   566→          </TabsTrigger>
+   567→        </TabsList>
+   568→
+   569→        {/* ═══════════════════════════ TAB 1: FACTORIES ═══════════════════════ */}
+   570→        <TabsContent value="factories" className="space-y-4 mt-4">
+   571→          <div className="flex items-center justify-between">
+   572→            <h2 className="text-xl font-bold" style={{ color: NAVY }}>Factory Management</h2>
+   573→            <Button onClick={() => openFactoryDialog()} style={{ backgroundColor: NAVY }} className="text-white hover:opacity-90">
+   574→              <Plus className="mr-2 h-4 w-4" /> Add Factory
+   575→            </Button>
+   576→          </div>
+   577→
+   578→          <Card className="border shadow-sm">
+   579→            <CardContent className="p-0">
+   580→              {factoriesLoading ? (
+   581→                <div className="p-4 space-y-2">
+   582→                  <Skeleton className="h-10 w-full" />
+   583→                  <Skeleton className="h-10 w-full" />
+   584→                  <Skeleton className="h-10 w-full" />
+   585→                </div>
+   586→              ) : (
+   587→                <ScrollArea className="max-h-[500px]">
+   588→                  <Table>
+   589→                    <TableHeader>
+   590→                      <TableRow className="hover:bg-transparent" style={{ backgroundColor: '#F4F6FB' }}>
+   591→                        <TableHead className="text-xs font-bold" style={{ color: NAVY }}>Factory ID</TableHead>
+   592→                        <TableHead className="text-xs font-bold" style={{ color: NAVY }}>Name</TableHead>
+   593→                        <TableHead className="text-xs font-bold hidden md:table-cell" style={{ color: NAVY }}>Supervisor</TableHead>
+   594→                        <TableHead className="text-xs font-bold hidden lg:table-cell" style={{ color: NAVY }}>Location</TableHead>
+   595→                        <TableHead className="text-xs font-bold hidden lg:table-cell" style={{ color: NAVY }}>Line Leader</TableHead>
+   596→                        <TableHead className="text-xs font-bold hidden xl:table-cell" style={{ color: NAVY }}>Group Head</TableHead>
+   597→                        <TableHead className="text-xs font-bold text-center" style={{ color: NAVY }}>Workers</TableHead>
+   598→                        <TableHead className="text-xs font-bold text-center" style={{ color: NAVY }}>Active</TableHead>
+   599→                        <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>Actions</TableHead>
+   600→                      </TableRow>
+   601→                    </TableHeader>
+   602→                    <TableBody>
+   603→                      {factories.length === 0 && (
+   604→                        <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No factories found</TableCell></TableRow>
+   605→                      )}
+   606→                      {factories.map(f => (
+   607→                        <TableRow key={f.id}>
+   608→                          <TableCell className="text-xs font-medium">{f.factoryId}</TableCell>
+   609→                          <TableCell className="text-xs">{f.name}</TableCell>
+   610→                          <TableCell className="text-xs hidden md:table-cell">{f.supervisorName}</TableCell>
+   611→                          <TableCell className="text-xs hidden lg:table-cell">{f.location}</TableCell>
+   612→                          <TableCell className="text-xs hidden lg:table-cell">{f.lineLeader.name}</TableCell>
+   613→                          <TableCell className="text-xs hidden xl:table-cell">{f.groupHead}</TableCell>
+   614→                          <TableCell className="text-xs text-center">{f.workers.length}</TableCell>
+   615→                          <TableCell className="text-center">
+   616→                            <Badge variant="secondary" className={f.isActive ? 'bg-green-100 text-green-800 hover:bg-green-100' : 'bg-red-100 text-red-800 hover:bg-red-100'}>
+   617→                              {f.isActive ? 'Active' : 'Inactive'}
+   618→                            </Badge>
+   619→                          </TableCell>
+   620→                          <TableCell className="text-right">
+   621→                            <div className="flex items-center justify-end gap-1">
+   622→                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openFactoryDialog(f)}>
+   623→                                <Pencil className="h-3.5 w-3.5" style={{ color: NAVY }} />
+   624→                              </Button>
+   625→                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteFactoryId(f.id)}>
+   626→                                <Trash2 className="h-3.5 w-3.5 text-red-500" />
+   627→                              </Button>
+   628→                            </div>
+   629→                          </TableCell>
+   630→                        </TableRow>
+   631→                      ))}
+   632→                    </TableBody>
+   633→                  </Table>
+   634→                </ScrollArea>
+   635→              )}
+   636→            </CardContent>
+   637→          </Card>
+   638→        </TabsContent>
+   639→
+   640→        {/* ═══════════════════════════ TAB 2: WORKERS ═════════════════════════ */}
+   641→        <TabsContent value="workers" className="space-y-4 mt-4">
+   642→          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+   643→            <h2 className="text-xl font-bold" style={{ color: NAVY }}>Workers</h2>
+   644→            <div className="flex items-center gap-3 w-full sm:w-auto">
+   645→              <Select value={workerFactoryId} onValueChange={setWorkerFactoryId}>
+   646→                <SelectTrigger className="w-full sm:w-56">
+   647→                  <SelectValue placeholder="Select factory" />
+   648→                </SelectTrigger>
+   649→                <SelectContent>
+   650→                  {factories.map(f => (
+   651→                    <SelectItem key={f.id} value={f.id}>{f.factoryId} — {f.name}</SelectItem>
+   652→                  ))}
+   653→                </SelectContent>
+   654→              </Select>
+   655→              <Button onClick={() => openWorkerDialog()} disabled={!workerFactoryId} style={{ backgroundColor: NAVY }} className="text-white hover:opacity-90 shrink-0">
+   656→                <Plus className="mr-2 h-4 w-4" /> Add Worker
+   657→              </Button>
+   658→            </div>
+   659→          </div>
+   660→
+   661→          {!workerFactoryId && (
+   662→            <Card className="border"><CardContent className="py-12 text-center text-muted-foreground">Select a factory to view workers</CardContent></Card>
+   663→          )}
+   664→
+   665→          {workerFactoryId && (
+   666→            <Card className="border shadow-sm">
+   667→              <CardContent className="p-0">
+   668→                {workersLoading ? (
+   669→                  <div className="p-4 space-y-2"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>
+   670→                ) : (
+   671→                  <ScrollArea className="max-h-[500px]">
+   672→                    <Table>
+   673→                      <TableHeader>
+   674→                        <TableRow className="hover:bg-transparent" style={{ backgroundColor: '#F4F6FB' }}>
+   675→                          <TableHead className="text-xs font-bold" style={{ color: NAVY }}>Worker ID</TableHead>
+   676→                          <TableHead className="text-xs font-bold" style={{ color: NAVY }}>Name</TableHead>
+   677→                          <TableHead className="text-xs font-bold hidden sm:table-cell" style={{ color: NAVY }}>bKash</TableHead>
+   678→                          <TableHead className="text-xs font-bold text-center" style={{ color: NAVY }}>Active</TableHead>
+   679→                          <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>Actions</TableHead>
+   680→                        </TableRow>
+   681→                      </TableHeader>
+   682→                      <TableBody>
+   683→                        {workers.length === 0 && (
+   684→                          <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No workers found</TableCell></TableRow>
+   685→                        )}
+   686→                        {workers.map(w => (
+   687→                          <TableRow key={w.id}>
+   688→                            <TableCell className="text-xs font-medium">{w.workerId}</TableCell>
+   689→                            <TableCell className="text-xs">{w.name}</TableCell>
+   690→                            <TableCell className="text-xs hidden sm:table-cell">{w.bKash || '—'}</TableCell>
+   691→                            <TableCell className="text-center">
+   692→                              <Badge variant="secondary" className={w.isActive ? 'bg-green-100 text-green-800 hover:bg-green-100' : 'bg-red-100 text-red-800 hover:bg-red-100'}>
+   693→                                {w.isActive ? 'Active' : 'Inactive'}
+   694→                              </Badge>
+   695→                            </TableCell>
+   696→                            <TableCell className="text-right">
+   697→                              <div className="flex items-center justify-end gap-1">
+   698→                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openWorkerDialog(w)}>
+   699→                                  <Pencil className="h-3.5 w-3.5" style={{ color: NAVY }} />
+   700→                                </Button>
+   701→                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDeleteWorkerId(w.id)}>
+   702→                                  <Trash2 className="h-3.5 w-3.5 text-red-500" />
+   703→                                </Button>
+   704→                              </div>
+   705→                            </TableCell>
+   706→                          </TableRow>
+   707→                        ))}
+   708→                      </TableBody>
+   709→                    </Table>
+   710→                  </ScrollArea>
+   711→                )}
+   712→              </CardContent>
+   713→            </Card>
+   714→          )}
+   715→        </TabsContent>
+   716→
+   717→        {/* ═══════════════════════ TAB 3: DAILY RECORDS ═══════════════════════ */}
+   718→        <TabsContent value="daily-records" className="space-y-4 mt-4">
+   719→          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+   720→            <h2 className="text-xl font-bold" style={{ color: NAVY }}>Daily Production Records</h2>
+   721→            <div className="flex items-center gap-3 w-full sm:w-auto">
+   722→              <Select value={dailyFactoryCode} onValueChange={setDailyFactoryCode}>
+   723→                <SelectTrigger className="w-full sm:w-48">
+   724→                  <SelectValue placeholder="Factory" />
+   725→                </SelectTrigger>
+   726→                <SelectContent>
+   727→                  {factories.map(f => (
+   728→                    <SelectItem key={f.factoryId} value={f.factoryId}>{f.factoryId} — {f.name}</SelectItem>
+   729→                  ))}
+   730→                </SelectContent>
+   731→              </Select>
+   732→              <Button onClick={openDailyDialog} disabled={!dailyFactoryCode} style={{ backgroundColor: NAVY }} className="text-white hover:opacity-90 shrink-0">
+   733→                <Plus className="mr-2 h-4 w-4" /> Add Daily Record
+   734→              </Button>
+   735→            </div>
+   736→          </div>
+   737→
+   738→          {!dailyFactoryCode && (
+   739→            <Card className="border"><CardContent className="py-12 text-center text-muted-foreground">Select a factory to view daily records</CardContent></Card>
+   740→          )}
+   741→
+   742→          {dailyFactoryCode && (
+   743→            <>
+   744→              {/* Supervisor Info Card */}
+   745→              {activePayroll && (
+   746→                <Card className="border shadow-sm" style={{ backgroundColor: '#F4F6FB' }}>
+   747→                  <CardHeader className="pb-3">
+   748→                    <CardTitle className="text-base font-semibold" style={{ color: NAVY }}>Supervisor & Factory Info</CardTitle>
+   749→                  </CardHeader>
+   750→                  <CardContent>
+   751→                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+   752→                      <div><span className="text-muted-foreground text-xs">Supervisor</span><p className="font-medium">{activePayroll.supervisorName}</p></div>
+   753→                      <div><span className="text-muted-foreground text-xs">Location</span><p className="font-medium">{activePayroll.location}</p></div>
+   754→                      <div><span className="text-muted-foreground text-xs">Line Leader</span><p className="font-medium">{activePayroll.lineLeader}</p></div>
+   755→                      <div><span className="text-muted-foreground text-xs">Workers</span><p className="font-medium">{activePayroll.workerCount}</p></div>
+   756→                      <div><span className="text-muted-foreground text-xs">Hosting Allowance</span><p className="font-medium" style={{ color: GOLD }}>৳{activePayroll.hostingAllowance.toLocaleString()}</p></div>
+   757→                      <div><span className="text-muted-foreground text-xs">Performance Bonus</span><p className="font-medium" style={{ color: GOLD }}>৳{activePayroll.perfBonus.toLocaleString()}</p></div>
+   758→                      <div><span className="text-muted-foreground text-xs">Total Supervisor Pay</span><p className="font-bold text-base" style={{ color: GOLD }}>৳{activePayroll.totalSupPay.toLocaleString()}</p></div>
+   759→                      <div><span className="text-muted-foreground text-xs">A-Grade %</span><p className="font-medium" style={{ color: activePayroll.aGradePct >= 60 ? '#16a34a' : '#dc2626' }}>{activePayroll.aGradePct.toFixed(1)}%</p></div>
+   760→                    </div>
+   761→                  </CardContent>
+   762→                </Card>
+   763→              )}
+   764→
+   765→              {/* WIP Tracking Card */}
+   766→              <Card className="border shadow-sm">
+   767→                <CardHeader className="pb-3">
+   768→                  <CardTitle className="text-base font-semibold" style={{ color: NAVY }}>WIP Tracking</CardTitle>
+   769→                </CardHeader>
+   770→                <CardContent>
+   771→                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+   772→                    <div><span className="text-muted-foreground text-xs">Lot Received</span><p className="font-medium">{wipInput.toFixed(1)} kg</p></div>
+   773→                    <div><span className="text-muted-foreground text-xs">Work Completed</span><p className="font-medium">{wipOutput.toFixed(1)} kg</p></div>
+   774→                    <div><span className="text-muted-foreground text-xs">WIP Remaining</span><p className="font-bold" style={{ color: GOLD }}>{wipRemaining.toFixed(1)} kg</p></div>
+   775→                    <div><span className="text-muted-foreground text-xs">WIP %</span><p className="font-medium">{wipPct.toFixed(1)}%</p></div>
+   776→                    <div><span className="text-muted-foreground text-xs">Status</span>
+   777→                      <p><Badge variant="secondary" className={wipPct > 50 ? 'bg-red-100 text-red-800 hover:bg-red-100' : 'bg-green-100 text-green-800 hover:bg-green-100'}>{wipPct > 50 ? 'High WIP' : 'On Track'}</Badge></p>
+   778→                    </div>
+   779→                  </div>
+   780→                </CardContent>
+   781→              </Card>
+   782→
+   783→              {/* Daily Records Table */}
+   784→              <Card className="border shadow-sm">
+   785→                <CardHeader className="pb-3">
+   786→                  <CardTitle className="text-base font-semibold" style={{ color: NAVY }}>Worker Daily Detail</CardTitle>
+   787→                </CardHeader>
+   788→                <CardContent>
+   789→                  {dailyLoading ? (
+   790→                    <div className="space-y-2"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>
+   791→                  ) : (
+   792→                    <ScrollArea className="max-h-[400px]">
+   793→                      <Table>
+   794→                        <TableHeader>
+   795→                          <TableRow className="hover:bg-transparent">
+   796→                            <TableHead className="text-xs font-bold" style={{ color: NAVY }}>Worker ID</TableHead>
+   797→                            <TableHead className="text-xs font-bold" style={{ color: NAVY }}>Name</TableHead>
+   798→                            <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>Input (kg)</TableHead>
+   799→                            <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>A-Wt</TableHead>
+   800→                            <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>B-Wt</TableHead>
+   801→                            <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>C-Wt</TableHead>
+   802→                            <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>Wastage</TableHead>
+   803→                            <TableHead className="text-xs font-bold" style={{ color: NAVY }}>Balance</TableHead>
+   804→                            <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>Days</TableHead>
+   805→                            <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>Base Wage</TableHead>
+   806→                            <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>Att Bonus</TableHead>
+   807→                            <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>Total Pay</TableHead>
+   808→                            <TableHead className="text-xs font-bold" style={{ color: NAVY }}>Status</TableHead>
+   809→                          </TableRow>
+   810→                        </TableHeader>
+   811→                        <TableBody>
+   812→                          {dailyRecords.flatMap(r => r.entries || []).length === 0 && (
+   813→                            <TableRow><TableCell colSpan={13} className="text-center text-muted-foreground py-8">No worker entries</TableCell></TableRow>
+   814→                          )}
+   815→                          {dailyRecords.flatMap(r =>
+   816→                            (r.entries || []).map(e => ({ ...e, recordDate: r.recordDate, lotNo: r.lot?.lotNo }))
+   817→                          ).map(entry => (
+   818→                            <TableRow key={entry.id}>
+   819→                              <TableCell className="text-xs font-medium">{entry.worker?.workerId}</TableCell>
+   820→                              <TableCell className="text-xs">{entry.worker?.name}</TableCell>
+   821→                              <TableCell className="text-xs text-right">{entry.inputGivenKg.toFixed(1)}</TableCell>
+   822→                              <TableCell className="text-xs text-right">{entry.aWeightKg.toFixed(1)}</TableCell>
+   823→                              <TableCell className="text-xs text-right">{entry.bWeightKg.toFixed(1)}</TableCell>
+   824→                              <TableCell className="text-xs text-right">{entry.cWeightKg.toFixed(1)}</TableCell>
+   825→                              <TableCell className="text-xs text-right">{entry.wastageKg.toFixed(1)}</TableCell>
+   826→                              <TableCell className="text-xs">
+   827→                                <Badge variant="secondary" className={entry.balanceStatus === 'OK' ? 'bg-green-100 text-green-800 hover:bg-green-100' : 'bg-red-100 text-red-800 hover:bg-red-100'}>
+   828→                                  {entry.balanceStatus}
+   829→                                </Badge>
+   830→                              </TableCell>
+   831→                              <TableCell className="text-xs text-right">{entry.daysPresent}</TableCell>
+   832→                              <TableCell className="text-xs text-right">৳{entry.baseWage.toLocaleString()}</TableCell>
+   833→                              <TableCell className="text-xs text-right">৳{entry.attendanceBonus.toLocaleString()}</TableCell>
+   834→                              <TableCell className="text-xs text-right font-bold" style={{ color: GOLD }}>৳{entry.totalPayable.toLocaleString()}</TableCell>
+   835→                              <TableCell className="text-xs">{entry.status}</TableCell>
+   836→                            </TableRow>
+   837→                          ))}
+   838→                        </TableBody>
+   839→                      </Table>
+   840→                    </ScrollArea>
+   841→                  )}
+   842→                </CardContent>
+   843→              </Card>
+   844→            </>
+   845→          )}
+   846→        </TabsContent>
+   847→      </Tabs>
+   848→
+   849→      {/* ═══════════════════ FACTORY DIALOG ═══════════════════ */}
+   850→      <Dialog open={factoryDialogOpen} onOpenChange={setFactoryDialogOpen}>
+   851→        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+   852→          <DialogHeader>
+   853→            <DialogTitle style={{ color: NAVY }}>{factoryEditId ? 'Edit Factory' : 'Add Factory'}</DialogTitle>
+   854→          </DialogHeader>
+   855→          <div className="grid grid-cols-2 gap-4 py-4">
+   856→            <div className="space-y-2">
+   857→              <Label className="text-xs font-medium">Factory ID *</Label>
+   858→              <Input className="h-9" placeholder="e.g. F001" value={factoryForm.factoryId} onChange={e => setFactoryForm(p => ({ ...p, factoryId: e.target.value }))} disabled={!!factoryEditId} />
+   859→            </div>
+   860→            <div className="space-y-2">
+   861→              <Label className="text-xs font-medium">Name *</Label>
+   862→              <Input className="h-9" placeholder="Factory name" value={factoryForm.name} onChange={e => setFactoryForm(p => ({ ...p, name: e.target.value }))} />
+   863→            </div>
+   864→            <div className="space-y-2">
+   865→              <Label className="text-xs font-medium">Supervisor Name *</Label>
+   866→              <Input className="h-9" placeholder="Supervisor" value={factoryForm.supervisorName} onChange={e => setFactoryForm(p => ({ ...p, supervisorName: e.target.value }))} />
+   867→            </div>
+   868→            <div className="space-y-2">
+   869→              <Label className="text-xs font-medium">Supervisor bKash</Label>
+   870→              <Input className="h-9" placeholder="bKash number" value={factoryForm.supervisorBkash} onChange={e => setFactoryForm(p => ({ ...p, supervisorBkash: e.target.value }))} />
+   871→            </div>
+   872→            <div className="space-y-2">
+   873→              <Label className="text-xs font-medium">Location</Label>
+   874→              <Input className="h-9" placeholder="Location" value={factoryForm.location} onChange={e => setFactoryForm(p => ({ ...p, location: e.target.value }))} />
+   875→            </div>
+   876→            <div className="space-y-2">
+   877→              <Label className="text-xs font-medium">Line Leader *</Label>
+   878→              <Select value={factoryForm.lineLeaderId} onValueChange={v => setFactoryForm(p => ({ ...p, lineLeaderId: v }))}>
+   879→                <SelectTrigger className="h-9"><SelectValue placeholder="Select" /></SelectTrigger>
+   880→                <SelectContent>
+   881→                  {lineLeaders.map(ll => (
+   882→                    <SelectItem key={ll.id} value={ll.id}>{ll.name}{ll.headLeader ? ` (${ll.headLeader.name})` : ''}</SelectItem>
+   883→                  ))}
+   884→                </SelectContent>
+   885→              </Select>
+   886→            </div>
+   887→            <div className="space-y-2">
+   888→              <Label className="text-xs font-medium">Group Head</Label>
+   889→              <Input className="h-9" placeholder="Group head" value={factoryForm.groupHead} onChange={e => setFactoryForm(p => ({ ...p, groupHead: e.target.value }))} />
+   890→            </div>
+   891→            <div className="space-y-2">
+   892→              <Label className="text-xs font-medium">Fuel (BDT)</Label>
+   893→              <Input type="number" className="h-9" value={factoryForm.fuelBdt} onChange={e => setFactoryForm(p => ({ ...p, fuelBdt: parseFloat(e.target.value) || 0 }))} />
+   894→            </div>
+   895→            <div className="space-y-2">
+   896→              <Label className="text-xs font-medium">Transport (BDT)</Label>
+   897→              <Input type="number" className="h-9" value={factoryForm.transportBdt} onChange={e => setFactoryForm(p => ({ ...p, transportBdt: parseFloat(e.target.value) || 0 }))} />
+   898→            </div>
+   899→            <div className="flex items-center gap-2 pt-6">
+   900→              <Switch checked={factoryForm.isActive} onCheckedChange={v => setFactoryForm(p => ({ ...p, isActive: v }))} />
+   901→              <Label className="text-xs">Active</Label>
+   902→            </div>
+   903→          </div>
+   904→          <DialogFooter>
+   905→            <Button variant="outline" onClick={() => setFactoryDialogOpen(false)}>Cancel</Button>
+   906→            <Button onClick={saveFactory} disabled={factorySaving} style={{ backgroundColor: NAVY }} className="text-white hover:opacity-90">
+   907→              {factorySaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+   908→              {factoryEditId ? 'Update' : 'Create'}
+   909→            </Button>
+   910→          </DialogFooter>
+   911→        </DialogContent>
+   912→      </Dialog>
+   913→
+   914→      {/* ═══════════════════ WORKER DIALOG ═══════════════════ */}
+   915→      <Dialog open={workerDialogOpen} onOpenChange={setWorkerDialogOpen}>
+   916→        <DialogContent className="max-w-md">
+   917→          <DialogHeader>
+   918→            <DialogTitle style={{ color: NAVY }}>{workerEditId ? 'Edit Worker' : 'Add Worker'}</DialogTitle>
+   919→          </DialogHeader>
+   920→          <div className="space-y-4 py-4">
+   921→            <div className="space-y-2">
+   922→              <Label className="text-xs font-medium">Worker ID *</Label>
+   923→              <Input className="h-9" placeholder="e.g. W001" value={workerForm.workerId} onChange={e => setWorkerForm(p => ({ ...p, workerId: e.target.value }))} disabled={!!workerEditId} />
+   924→            </div>
+   925→            <div className="space-y-2">
+   926→              <Label className="text-xs font-medium">Name *</Label>
+   927→              <Input className="h-9" placeholder="Worker name" value={workerForm.name} onChange={e => setWorkerForm(p => ({ ...p, name: e.target.value }))} />
+   928→            </div>
+   929→            <div className="space-y-2">
+   930→              <Label className="text-xs font-medium">bKash</Label>
+   931→              <Input className="h-9" placeholder="bKash number" value={workerForm.bKash} onChange={e => setWorkerForm(p => ({ ...p, bKash: e.target.value }))} />
+   932→            </div>
+   933→            <div className="flex items-center gap-2">
+   934→              <Switch checked={workerForm.isActive} onCheckedChange={v => setWorkerForm(p => ({ ...p, isActive: v }))} />
+   935→              <Label className="text-xs">Active</Label>
+   936→            </div>
+   937→          </div>
+   938→          <DialogFooter>
+   939→            <Button variant="outline" onClick={() => setWorkerDialogOpen(false)}>Cancel</Button>
+   940→            <Button onClick={saveWorker} disabled={workerSaving} style={{ backgroundColor: NAVY }} className="text-white hover:opacity-90">
+   941→              {workerSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+   942→              {workerEditId ? 'Update' : 'Create'}
+   943→            </Button>
+   944→          </DialogFooter>
+   945→        </DialogContent>
+   946→      </Dialog>
+   947→
+   948→      {/* ═══════════════════ DAILY RECORD DIALOG ═══════════════════ */}
+   949→      <Dialog open={dailyDialogOpen} onOpenChange={setDailyDialogOpen}>
+   950→        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+   951→          <DialogHeader>
+   952→            <DialogTitle style={{ color: NAVY }}>Add Daily Record</DialogTitle>
+   953→          </DialogHeader>
+   954→
+   955→          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
+   956→            <div className="space-y-2">
+   957→              <Label className="text-xs font-medium">Record Date *</Label>
+   958→              <Input type="date" className="h-9" value={dailyRecordDate} onChange={e => setDailyRecordDate(e.target.value)} />
+   959→            </div>
+   960→            <div className="space-y-2">
+   961→              <Label className="text-xs font-medium">Lot *</Label>
+   962→              <Select value={dailyLotSelected} onValueChange={setDailyLotSelected}>
+   963→                <SelectTrigger className="h-9"><SelectValue placeholder="Select lot" /></SelectTrigger>
+   964→                <SelectContent>
+   965→                  {lots.map(l => (
+   966→                    <SelectItem key={l.id} value={l.id}>{l.lotNo} — {l.colour} ({l.rawWeightKg} kg)</SelectItem>
+   967→                  ))}
+   968→                </SelectContent>
+   969→              </Select>
+   970→            </div>
+   971→          </div>
+   972→
+   973→          <div className="text-xs font-semibold mt-2 mb-1" style={{ color: NAVY }}>
+   974→            Worker Entries ({workerEntries.length} workers)
+   975→          </div>
+   976→
+   977→          <ScrollArea className="flex-1 min-h-0 max-h-[400px]">
+   978→            <Table>
+   979→              <TableHeader>
+   980→                <TableRow className="hover:bg-transparent" style={{ backgroundColor: '#F4F6FB' }}>
+   981→                  <TableHead className="text-xs font-bold" style={{ color: NAVY }}>Worker</TableHead>
+   982→                  <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>Input (kg)</TableHead>
+   983→                  <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>A-Wt</TableHead>
+   984→                  <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>B-Wt</TableHead>
+   985→                  <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>C-Wt</TableHead>
+   986→                  <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>Wastage</TableHead>
+   987→                  <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>Days</TableHead>
+   988→                </TableRow>
+   989→              </TableHeader>
+   990→              <TableBody>
+   991→                {workerEntries.length === 0 && (
+   992→                  <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-6">No active workers in this factory</TableCell></TableRow>
+   993→                )}
+   994→                {workerEntries.map((entry, idx) => (
+   995→                  <TableRow key={entry.workerId}>
+   996→                    <TableCell className="text-xs font-medium py-1.5">{entry.workerName}</TableCell>
+   997→                    <TableCell className="py-1.5">
+   998→                      <Input type="number" step="0.1" className="h-7 w-20 text-xs text-right ml-auto" placeholder="0" value={entry.inputGivenKg} onChange={e => updateWorkerEntry(idx, 'inputGivenKg', e.target.value)} />
+   999→                    </TableCell>
+  1000→                    <TableCell className="py-1.5">
+  1001→                      <Input type="number" step="0.1" className="h-7 w-20 text-xs text-right ml-auto" placeholder="0" value={entry.aWeightKg} onChange={e => updateWorkerEntry(idx, 'aWeightKg', e.target.value)} />
+  1002→                    </TableCell>
+  1003→                    <TableCell className="py-1.5">
+  1004→                      <Input type="number" step="0.1" className="h-7 w-20 text-xs text-right ml-auto" placeholder="0" value={entry.bWeightKg} onChange={e => updateWorkerEntry(idx, 'bWeightKg', e.target.value)} />
+  1005→                    </TableCell>
+  1006→                    <TableCell className="py-1.5">
+  1007→                      <Input type="number" step="0.1" className="h-7 w-20 text-xs text-right ml-auto" placeholder="0" value={entry.cWeightKg} onChange={e => updateWorkerEntry(idx, 'cWeightKg', e.target.value)} />
+  1008→                    </TableCell>
+  1009→                    <TableCell className="py-1.5">
+  1010→                      <Input type="number" step="0.1" className="h-7 w-20 text-xs text-right ml-auto" placeholder="0" value={entry.wastageKg} onChange={e => updateWorkerEntry(idx, 'wastageKg', e.target.value)} />
+  1011→                    </TableCell>
+  1012→                    <TableCell className="py-1.5">
+  1013→                      <Input type="number" className="h-7 w-16 text-xs text-right ml-auto" placeholder="0" value={entry.daysPresent} onChange={e => updateWorkerEntry(idx, 'daysPresent', e.target.value)} />
+  1014→                    </TableCell>
+  1015→                  </TableRow>
+  1016→                ))}
+  1017→              </TableBody>
+  1018→            </Table>
+  1019→          </ScrollArea>
+  1020→
+  1021→          <DialogFooter className="mt-2">
+  1022→            <Button variant="outline" onClick={() => setDailyDialogOpen(false)}>Cancel</Button>
+  1023→            <Button onClick={saveDailyRecord} disabled={dailySaving} style={{ backgroundColor: NAVY }} className="text-white hover:opacity-90">
+  1024→              {dailySaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+  1025→              Submit Record
+  1026→            </Button>
+  1027→          </DialogFooter>
+  1028→        </DialogContent>
+  1029→      </Dialog>
+  1030→
+  1031→      {/* ═══════════════════ DELETE FACTORY ALERT ═══════════════════ */}
+  1032→      <AlertDialog open={!!deleteFactoryId} onOpenChange={open => !open && setDeleteFactoryId(null)}>
+  1033→        <AlertDialogContent>
+  1034→          <AlertDialogHeader>
+  1035→            <AlertDialogTitle>Delete Factory</AlertDialogTitle>
+  1036→            <AlertDialogDescription>
+  1037→              Are you sure you want to delete this factory? This action cannot be undone. Factories with workers or daily records cannot be deleted.
+  1038→            </AlertDialogDescription>
+  1039→          </AlertDialogHeader>
+  1040→          <AlertDialogFooter>
+  1041→            <AlertDialogCancel disabled={deletingFactory}>Cancel</AlertDialogCancel>
+  1042→            <AlertDialogAction onClick={deleteFactory} disabled={deletingFactory} className="bg-red-600 hover:bg-red-700 text-white">
+  1043→              {deletingFactory && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+  1044→              Delete
+  1045→            </AlertDialogAction>
+  1046→          </AlertDialogFooter>
+  1047→        </AlertDialogContent>
+  1048→      </AlertDialog>
+  1049→
+  1050→      {/* ═══════════════════ DELETE WORKER ALERT ═══════════════════ */}
+  1051→      <AlertDialog open={!!deleteWorkerId} onOpenChange={open => !open && setDeleteWorkerId(null)}>
+  1052→        <AlertDialogContent>
+  1053→          <AlertDialogHeader>
+  1054→            <AlertDialogTitle>Delete Worker</AlertDialogTitle>
+  1055→            <AlertDialogDescription>
+  1056→              Are you sure you want to delete this worker? This action cannot be undone. Workers with existing daily entries cannot be deleted.
+  1057→            </AlertDialogDescription>
+  1058→          </AlertDialogHeader>
+  1059→          <AlertDialogFooter>
+  1060→            <AlertDialogCancel disabled={deletingWorker}>Cancel</AlertDialogCancel>
+  1061→            <AlertDialogAction onClick={deleteWorker} disabled={deletingWorker} className="bg-red-600 hover:bg-red-700 text-white">
+  1062→              {deletingWorker && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+  1063→              Delete
+  1064→            </AlertDialogAction>
+  1065→          </AlertDialogFooter>
+  1066→        </AlertDialogContent>
+  1067→      </AlertDialog>
+  1068→    </div>
+  1069→  );
+  1070→}

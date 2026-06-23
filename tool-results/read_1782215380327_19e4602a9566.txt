@@ -1,0 +1,602 @@
+   400→   400→9 Phase 2 Processing Dinajpur Factory (200 Semi-finished Product
+   401→   401→workers)
+   402→   402→10 Return to Dhaka Dinajpur to Dhaka Material for Final Processing
+   403→   403→11 Final Processing Dhaka Factory (100 Size-sorted Final Product
+   404→   404→workers)
+   405→   405→12 Export Preparation Dhaka Export-ready Products
+   406→   406→13 Sales & Export International Revenue
+   407→   407→This document provides a comprehensive overview of all business processes at Barindra
+   408→   408→International. Each process area represents a critical function that must be carefully managed to
+   409→   409→16 / 18
+   410→   410→--- Page 17 ---
+   411→   411→Barindra International | Business Process Document
+   412→   412→ensure operational efficiency, quality control, and profitability. The proposed ERP system will
+   413→   413→automate and integrate these processes to improve tracking, reduce manual work, and provide
+   414→   414→real-time visibility into all operations.
+   415→   415→17 / 18
+   416→   416→--- Page 18 ---
+   417→   417→Barindra International | Business Process Document
+   418→   418→Barindra International
+   419→   419→Human Hair Processing & Export
+   420→   420→Head Office: Uttara, Dhaka | Factory: Dinajpur, Bangladesh
+   421→   421→Document prepared for Nascenia Limited - ERP Implementation
+   422→   422→© 2026 Barindra International. All Rights Reserved.
+   423→   423→18 / 18
+   424→   424→
+   425→   425→===== upload/BarendraInternational_BusinessProcessDocument_2026-06-21_research_Based.pdf =====
+   426→   426→--- Page 1 ---
+   427→   427→Business Process Document
+   428→   428→Barendra International
+   429→   429→Human Hair Wig Manufacturing - End-to-End Process Architecture
+   430→   430→Document Type Business Process Document (In-Depth Research)
+   431→   431→Industry Human Hair Processing & Wig Manufacturing
+   432→   432→Head Office Uttara, Sector 6, Dhaka, Bangladesh
+   433→   433→Main Factory Dinajpur, North Bengal, Bangladesh
+   434→   434→Document Style Business Professional
+   435→   435→Version 1.0
+   436→   436→Issue Date 21 June 2026
+   437→   437→Prepared For Management - Strategic ERP Implementation
+   438→   438→Classification Internal - Confidential
+   439→   439→This document presents the complete business process architecture of Barendra International, a
+   440→   440→Bangladesh-based human hair wig manufacturer. It maps procurement, processing, distribution, quality
+   441→   441→control, payroll, and export operations, and serves as the foundational reference for the company's ERP
+   442→   442→implementation programme.
+   443→   443→--- Page 2 ---
+   444→   444→Business Process Document Barendra International
+   445→   445→Table of Contents
+   446→   446→Executive Summary 4
+   447→   447→1. Company Background and Industry Context 5
+   448→   448→1.1 Company Profile . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+   449→   449→1.2 Product and Material Characteristics . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+   450→   450→1.3 Industry Context and Market Position . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+   451→   451→1.4 Current Systems and Automation Gap . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 6
+   452→   452→2. Organizational Structure and Roles 6
+   453→   453→2.1 Role Definitions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+   454→   454→2.2 Span-of-Control and Scaling Mathematics . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+   455→   455→2.3 Governance and Approval Authority . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+   456→   456→3. End-to-End Business Process Architecture 8
+   457→   457→3.1 Process Inventory Summary . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+   458→   458→3.2 Two-Phase Production Model . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+   459→   459→4. Process 1 - Raw Material Procurement 10
+   460→   460→4.1 Sourcing Strategy and Supplier Network . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+   461→   461→4.2 Import Process and Documentation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+   462→   462→4.3 Receipt and Initial Storage . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+   463→   463→5. Process 2 - Initial Sorting and Lot Creation 11
+   464→   464→5.1 Colour Separation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+   465→   465→5.2 Lot and Batch Number Assignment . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+   466→   466→5.3 Voucher-to-Lot Relationship . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+   467→   467→5.4 Lot Lifecycle and Traceability . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+   468→   468→6. Process 3 - Washing and Preparation 12
+   469→   469→6.1 Wash, Dry, and Restock Cycle . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+   470→   470→6.2 Handoff to Production Manager . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+   471→   471→7. Process 4 - Phase 1 Distribution and Field Manufacturing 13
+   472→   472→7.1 Tier-by-Tier Distribution Mechanics . . . . . . . . . . . . . . . . . . . . . . . . . .
+   473→   473→--- Page 3 ---
+   474→   474→Business Process Document Barendra International
+   475→   475→9.1 Compensation Components . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18
+   476→   476→9.2 Quality Over Quantity Principle . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+   477→   477→9.3 Salary Sheet Approval Workflow . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+   478→   478→9.4 bKash Disbursement and Skimming Risk . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+   479→   479→9.5 Costing Per Worker, Per Factory, Per Kilogram . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+   480→   480→10. Process 7 - Half-Finish Return and Requisition 20
+   481→   481→10.1 Buti versus Kanchi Material States . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20
+   482→   482→10.2 Requisition and Booking Workflow . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20
+   483→   483→11. Process 8 - Phase 2 Final Production 20
+   484→   484→11.1 Sizing - The Critical Value Driver . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21
+   485→   485→11.2 Re-Wash, Colour Treatment, and Assembly . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22
+   486→   486→11.3 Final QC, Packing, and Storage . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22
+   487→   487→11.4 Specialised Material: Adhesive Glue . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22
+   488→   488→12. Process 9 - Sales, Export and Order Management 23
+   489→   489→12.1 Market and Buyer Segments . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+   490→   490→12.2 Sales Contract and Export Process . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+   491→   491→12.3 Pricing Strategy . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+   492→   492→13. Inventory and Lot Traceability Framework 23
+   493→   493→13.1 The Eight Inventory Buckets . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+   494→   494→13.2 Lot Operations and State Machine . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+   495→   495→13.3 Real-Time Valuation Requirement . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+   496→   496→14. Key Business Rules and Policies 27
+   497→   497→15. Pain Points and Operational Risks 28
+   498→   498→15.1 Manual-System Overhead . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28
+   499→   499→15.2 Tracking and Theft Exposure . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28
+   500→   500→15.3 Quality and Worker Management . . . . . . . . . . . . . 
+   501→   501→--- Page 4 ---
+   502→   502→Business Process Document Barendra International
+   503→   503→Executive Summary
+   504→   504→Barendra International is a Dhaka-headquartered human hair processing and wig manufacturing enterprise that
+   505→   505→has emerged as one of Bangladesh's first formal exporters of finished human-hair products. Operating from a
+   506→   506→head office in Uttara, Sector 6, Dhaka, and a primary processing factory in Dinajpur (North Bengal), the
+   507→   507→company orchestrates a multi-stage production model that combines centralised industrial processing with a
+   508→   508→vast network of approximately 4,000-5,000 home-based female workers. The business imports raw human hair
+   509→   509→from India, Pakistan, Uzbekistan, Tajikistan, and Myanmar, supplements supply through local district-level
+   510→   510→vendors, and exports finished wigs and hair products to buyers in the United States, Europe, China, and Africa.
+   511→   511→The company's operations currently run on a combination of Microsoft Excel workbooks, hard-copy vouchers,
+   512→   512→and a small HR-tracking module, with files centralised on Google Drive. As the workforce has scaled beyond
+   513→   513→5,000 people and lot-level traceability has become essential for buyer compliance and inventory valuation, the
+   514→   514→owner has initiated a programme to implement a comprehensive Enterprise Resource Planning (ERP) system.
+   515→   515→This document is the foundational business process reference that will guide that ERP implementation across
+   516→   516→five sequenced phases - beginning with accounting and stock management and culminating in export-import
+   517→   517→and letter-of-credit (LC) automation.
+   518→   518→The business follows a distinctive two-phase production model. Phase 1 distributes washed, lot-coded raw
+   519→   519→material through a five-tier hierarchy (Production Manager -> Head Leader -> Line Leader -> Home-based
+   520→   520→Supervisor -> Worker) where female workers perform hand-tool sorting and classification in their homes. Phase
+   521→   521→2 receives the half-processed material back at the Dhaka factory, where 100 in-house workers perform
+   522→   522→machine-assisted final production - sizing by length, re-washing, colour treatment, assembly, and packing -
+   523→   523→against size-wise pricing that ranges from approximately Tk 500/kg for 5-inch hair to Tk 90,000/kg for 30-inch
+   524→   524→hair.
+   525→   525→Three structural characteristics define the company's risk profile and automation priorities. First, the same lot
+   526→   526→number travels with the goods from raw material receipt to finished-goods storage, making lot traceability the
+   527→   527→backbone of both quality control and inventory valuation. Second, worker compensation is a hybrid of
+   528→   528→grade-based daily rates (A = Tk 90, B = Tk 75, C = Tk 50), attendance bonuses, and performance bonuses, all
+   529→   529→of which depend on daily quality grading by four Quality Controllers. Third, the home-based manufacturing
+   530→   530→model creates inherent tracking, theft, and skimming risks that the current manual system cannot fully mitigate -
+   531→   531→a single Line Controller may handle bulk payouts of approximately Tk 1.5 lakh for 100 workers, creating
+   532→   532→skimming exposure.
+   533→   533→This document is organised into eighteen substantive sections covering company bac
+   534→   534→--- Page 5 ---
+   535→   535→Business Process Document Barendra International
+   536→   536→1. Company Background and Industry Context
+   537→   537→1.1 Company Profile
+   538→   538→Barendra International is a privately held human-hair processing and manufacturing enterprise headquartered in
+   539→   539→Uttara, Sector 6, Dhaka, with its primary industrial facility located in Dinajpur district in North Bengal. The
+   540→   540→company's founder and managing director, who hails from Naogaon district and holds a Sociology degree and
+   541→   541→an MBA from the University of Dhaka, entered the trade after four years of intensive market research across the
+   542→   542→United States, India, China, Nepal, Vietnam, and Malaysia, and received early trade mentoring from a Chinese
+   543→   543→business associate. The Dinajpur location was selected strategically, as the founder's wife originates from the
+   544→   544→region and operates a related hair-trade business there, providing established local supplier relationships and a
+   545→   545→recruitment base for the predominantly female home-based workforce.
+   546→   546→The company has been in operation for approximately five to six years and positions itself as Bangladesh's first
+   547→   547→formal exporter of finished human-hair products. It maintains a representative office in India to manage
+   548→   548→raw-material sourcing relationships and coordinates with Chinese trade counterparts for finished-goods
+   549→   549→distribution. The total workforce is estimated at 4,500-5,500 people across all sites, comprising approximately
+   550→   550→4,000-5,000 home-based female workers, 200 workers at the Dinajpur second-step factory, 100 in-house
+   551→   551→workers at the Dhaka final-production floor, and approximately 50-70 supervisory, administrative, and support
+   552→   552→staff.
+   553→   553→1.2 Product and Material Characteristics
+   554→   554→The company's sole raw material is real human hair - explicitly not synthetic fibre - which is processed into
+   555→   555→wigs, hair pieces, extensions, and gentlemen's caps for men. The distinction between real human hair and
+   556→   556→synthetic substitutes is commercially critical: real hair commands premium pricing (an identical product may
+   557→   557→sell to an African buyer for USD 5-50 but to an American buyer for USD 105, driven by quality perception and
+   558→   558→end-use), while synthetic substitutes can cause allergic skin reactions and are excluded from the company's
+   559→   559→product range. The company also imports specialised adhesive glue from the United States at USD 4,000-5,000
+   560→   560→per 100 grams, a material that cannot be substituted with counterfeits without triggering customer allergies.
+   561→   561→Two industry-specific Bengali terms describe the material states that flow through the production pipeline. Buti
+   562→   562→refers to a tightly bound, fully processed bundle that is ready for final assembly at Dhaka. Kanchi refers to a
+   563→   563→looser, longer, half-processed bundle that requires further reworking (called remik, or remake) at the Dinajpur
+   564→   564→facility before it can be promoted to the Buti state. The final wig-assembly stage is termed blended (Bengali:
+   565→   565→blended). These states - along with raw, washed, distributed, in-factory, half-finish, and finished - constitute the
+   566→   566→eight inventory buckets that
+   567→   567→--- Page 6 ---
+   568→   568→Business Process Document Barendra International
+   569→   569→Bangladesh occupies a strategically important position in this global value chain. The Indian government's
+   570→   570→Plexconcil (Ministry of Commerce) explicitly acknowledges that Myanmar and Bangladesh benefit from lower
+   571→   571→labour costs and government support, allowing them to process Indian raw hair and sell finished products
+   572→   572→competitively. Bangladesh's wig and human-hair exports reached USD 19.16 million in a single fiscal quarter
+   573→   573→according to Export Promotion Bureau data - approximately double the prior-year figure - and the Dinajpur
+   574→   574→district (particularly Chirirbandar upazila) has emerged as a recognised processing hub with 25 or more
+   575→   575→factories. The sector has grown approximately 25-fold over the past decade from a baseline of only USD 0.81
+   576→   576→million in annual exports.
+   577→   577→Barendra International's competitive position rests on three foundations: access to multi-country raw-material
+   578→   578→sourcing (reducing dependence on any single supplier), Bangladesh's low labour cost advantage (the national
+   579→   579→garment-sector minimum wage of BDT 12,500 per month, or approximately USD 113, is among the lowest in
+   580→   580→Asia), and the scalability of the home-based manufacturing model. However, the company faces growing buyer
+   581→   581→expectations around lot traceability and ethical sourcing substantiation - particularly from US and European
+   582→   582→buyers - which the current manual system cannot satisfy at scale. This pressure is a primary driver of the ERP
+   583→   583→initiative.
+   584→   584→1.4 Current Systems and Automation Gap
+   585→   585→Barendra International currently operates on Microsoft Excel workbooks and hard-copy vouchers, with files
+   586→   586→centralised on Google Drive and accessed from five to six entry-level laptops at the factory level. Two full-time
+   587→   587→data-entry operators are dedicated to transcribing the daily output of approximately 5,000 home-based workers.
+   588→   588→A small HR tracking module is used in limited fashion to monitor field supervisors' movements, but no
+   589→   589→integrated accounting, inventory, production, or payroll system exists. Internet connectivity is available at the
+   590→   590→Dhaka head office and the Dinajpur factory, with mobile hotspots used in remote field locations.
+   591→   591→The manual system creates four categories of operational pain. First, real-time stock valuation is impossible -
+   592→   592→the owner cannot instantaneously answer basic questions such as 'how much stock do I have right now, and
+   593→   593→where is it?' Second, a single transaction currently requires multiple manual entries across cash, party, and bank
+   594→   594→ledgers, creating data-reconciliation overhead and error exposure. Third, the Asset and Liability report - a basic
+   595→   595→management instrument - takes significant time to compile manually. Fourth, lot-level traceability across the
+   596→   596→40-plus-day production pipeline is extremely difficult to maintain in Excel, undermining both quality
+   597→   597→investigations and buyer compliance. These gaps collectively motivate the phased ERP implementation
+   598→   598→described in Section 16.
+   599→   599→2. Organizational Structure and Roles
+   600→   600→Barendra Interna
+   601→   601→--- Page 7 ---
+   602→   602→Business Process Document Barendra International
+   603→   603→Figure 1: Barendra International organisational hierarchy and reporting lines.
+   604→   604→2.1 Role Definitions
+   605→   605→Role Headcount Reports To Primary Responsibilities
+   606→   606→Owner / Managing Strategic decisions, final approvals, supplier relationships, key
+   607→   607→1 -
+   608→   608→Director hiring
+   609→   609→Production Manager Receives washed stock, distributes to Head Leaders, oversees
+   610→   610→1 Owner
+   611→   611→(PM) Phase 1 and Phase 2 production flow
+   612→   612→Receives 200-300 kg batches; assigns lots to Line Leaders;
+   613→   613→Head Leader / Group
+   614→   614→5 PM records distribution; reviews daily reports; grades workers
+   615→   615→Head
+   616→   616→with QC
+   617→   617→Travels by motorbike; distributes 30 kg to ~10 factories;
+   618→   618→Line Leader / Line ~50 (10 per
+   619→   619→Head Leader collects packets; returns reports to Head Leader; bulk salary
+   620→   620→Controller Head)
+   621→   621→distribution
+   622→   622→Manages 5-7 washing-plant staff at Dinajpur; oversees wash,
+   623→   623→Washing Plant Lead 1 PM
+   624→   624→dry, restock cycle
+   625→   625→Supervises Dhaka final-production floor (100 in-house
+   626→   626→Floor Manager 1 PM
+   627→   627→workers)
+   628→   628→Factory Supervisor Woman who hosts ~10 workers at her home; direct worker
+   629→   629→~500+ Line Leader
+   630→   630→(Home-based) supervision; production tracking
+   631→   631→Female; performs hand-tool sorting/classification; 100-300 g
+   632→   632→Home-based Worker ~4,000-5,000 Supervisor
+   633→   633→per day; tagged by name+ID+lot
+   634→   634→Quality Controller Daily A/B/C grading of all workers; final QC on finished
+   635→   635→4 (Dhaka) Owner
+   636→   636→(QC) goods
+   637→   637→Custody of raw, half-finish, and finished goods; voucher
+   638→   638→Store Keeper 1-2 Owner
+   639→   639→management
+   640→   640→2 (Dhaka) + 5
+   641→   641→Accountant Owner Vouchers, payments, payroll, LC, foreign-currency tracking
+   642→   642→(factory)
+   643→   643→Worker management, factory issues, performance oversight,
+   644→   644→Admin / HR 1 Owner
+   645→   645→recruitment
+   646→   646→Data Entry Operator 2 + factory-level Accountant Daily entry of ~5,000 workers' output, weight, grade
+   647→   647→Page 7
+   648→   648→--- Page 8 ---
+   649→   649→Business Process Document Barendra International
+   650→   650→Table 1: Complete role inventory with headcount, reporting line, and responsibilities.
+   651→   651→2.2 Span-of-Control and Scaling Mathematics
+   652→   652→The Phase 1 distribution hierarchy follows a deliberate 1:5:10:10:10 multiplier. One Production Manager
+   653→   653→oversees five Head Leaders, each Head Leader oversees ten Line Leaders, each Line Leader oversees
+   654→   654→approximately ten home-based factories, and each factory hosts approximately ten workers (with documented
+   655→   655→flexibility of 9, 10, or 11 workers per factory). This mathematical structure means that a single Production
+   656→   656→Manager can theoretically coordinate 5 x 10 x 10 x 10 = 5,000 workers, which closely matches the company's
+   657→   657→actual workforce. Adding capacity therefore requires adding Head Leaders (each unlocking approximately
+   658→   658→1,000 additional workers) rather than restructuring the hierarchy.
+   659→   659→Material allocation scales inversely with hierarchy depth. A 1,200 kg washed batch received by the Production
+   660→   660→Manager is divided into four to five Head Leader allocations of 200-300 kg each. Each Head Leader divides the
+   661→   661→allocation among ten Line Leaders at approximately 30 kg each. Each Line Leader divides the 30 kg across ten
+   662→   662→factories at approximately 3 kg per factory. Each factory supervisor divides the 3 kg among ten workers at
+   663→   663→100-300 grams per worker per day. This granular allocation is the basis on which shortage and reject tracking is
+   664→   664→performed at every return step, and the ERP system must capture each transfer as a discrete inventory
+   665→   665→transaction with lot number, quantity, recipient, and timestamp.
+   666→   666→2.3 Governance and Approval Authority
+   667→   667→Approval authority is concentrated at three levels. The Production Manager approves all material distributions
+   668→   668→from the washing plant to Head Leaders and from half-finish returns into the Dhaka final production queue.
+   669→   669→Head Leaders approve daily distribution to Line Leaders and authorise worker grade entries in consultation with
+   670→   670→the Quality Controller. The Owner / Managing Director retains personal approval authority over certain stages -
+   671→   671→including supplier onboarding, large purchase orders, salary sheet final sign-off, and any out-of-tolerance
+   672→   672→shortage or reject events. This concentration of authority at the owner level is a recognised operational risk (the
+   673→   673→'owner bottleneck') that the ERP dashboard is intended to mitigate by enabling delegated decision-making with
+   674→   674→real-time visibility.
+   675→   675→3. End-to-End Business Process Architecture
+   676→   676→Barendra International's operations comprise nine core business processes that together form a continuous
+   677→   677→pipeline from raw-material sourcing to finished-goods export. The pipeline runs over an extended cycle -
+   678→   678→typically 40 or more days from lot creation to finished-goods storage - because material moves through both
+   679→   679→centralised industrial stages and decentralised home-based hand-processing. Figure 2 presents the end-to-end
+   680→   680→flow, and the subsequent sections detail each process individually.
+   681→   681→Figure 2: End-to-end business proc
+   682→   682→--- Page 9 ---
+   683→   683→Business Process Document Barendra International
+   684→   684→3.1 Process Inventory Summary
+   685→   685→# Process Location Primary Output Typical Cycle
+   686→   686→Raw hair received into Dhaka
+   687→   687→1 Raw Material Procurement Dhaka + international Continuous
+   688→   688→stock
+   689→   689→Lot-coded, colour-separated
+   690→   690→2 Initial Sorting & Lot Creation Dhaka head office 1-2 days per batch
+   691→   691→stock
+   692→   692→Washed and dried restocked
+   693→   693→3 Washing & Preparation Dinajpur factory 1-2 days per batch
+   694→   694→material
+   695→   695→Phase 1 Distribution & Field Home-based factories
+   696→   696→4 Half-processed worker output 1-2 weeks per lot
+   697→   697→Manufacturing (Dinajpur region)
+   698→   698→Quality Control & Worker A/B/C grades per worker per
+   699→   699→5 Dinajpur + Dhaka Daily
+   700→   700→Grading day
+   701→   701→Salary & Payroll
+   702→   702→6 Dhaka (payment via bKash) Monthly salary disbursement Monthly cycle
+   703→   703→Management
+   704→   704→Half-Finish Return &
+   705→   705→7 Dinajpur -> Dhaka Half-finish stock at Dhaka Per lot completion
+   706→   706→Requisition
+   707→   707→8 Phase 2 Final Production Dhaka factory Finished, size-sorted goods 1-2 weeks per lot
+   708→   708→Sales, Export & Order
+   709→   709→9 Dhaka + international Export-ready shipments Per sales contract
+   710→   710→Management
+   711→   711→Table 2: Nine core business processes with location, output, and typical cycle time.
+   712→   712→3.2 Two-Phase Production Model
+   713→   713→The defining architectural feature of the business is the separation of production into two distinct phases. Phase
+   714→   714→1 encompasses all operations performed on raw or washed material through the home-based workforce -
+   715→   715→hand-tool sorting, opening, classification, and initial bundling. Phase 2 encompasses all machine-assisted and
+   716→   716→chemically intensive operations performed at the Dhaka factory - length sizing, re-washing, colour treatment,
+   717→   717→assembly, and final packing. This separation exists because the home-based environment cannot accommodate
+   718→   718→machines, chemicals, or the specialised training required for final production, while the factory environment
+   719→   719→cannot cost-effectively absorb the labour-intensive hand-sorting volume that the home-based model handles at
+   720→   720→scale.
+   721→   721→The two-phase model creates a critical intermediate inventory state - half-finished goods - that must be tracked
+   722→   722→with the same lot identity as the original raw material. Material can spend one to two weeks in Phase 1
+   723→   723→(distributed across dozens of home-based factories) before being returned to Dhaka for Phase 2. During this
+   724→   724→period, the ERP system must maintain visibility of every kilogram by lot, by Line Leader, by factory, and by
+   725→   725→individual worker, and must reconcile issued quantities against returned quantities with shortage and reject
+   726→   726→accounting at each level of the hierarchy.
+   727→   727→Page 9
+   728→   728→--- Page 10 ---
+   729→   729→Business Process Document Barendra International
+   730→   730→4. Process 1 - Raw Material Procurement
+   731→   731→4.1 Sourcing Strategy and Supplier Network
+   732→   732→Barendra International sources raw human hair from a diversified multi-country supplier network designed to
+   733→   733→reduce dependence on any single geography and to access different hair characteristics (colour, texture, length)
+   734→   734→native to each region. International sources include India (three suppliers covering the entire country), Pakistan
+   735→   735→(one supplier), Uzbekistan, Tajikistan, and Myanmar. The company also procures locally within Bangladesh
+   736→   736→through district-level vendors - deliberately not engaging at the root collection level, which would require
+   737→   737→building an extensive grassroots collection network. A representative office in India supports direct supplier
+   738→   738→relationship management and quality inspection before shipment.
+   739→   739→Raw-material pricing varies dramatically by quality tier. Standard import-grade hair is purchased at 1,000-2,000
+   740→   740→taka per kilogram, while premium grades reach 12,000-14,000 taka per kilogram. Local hair purchased from
+   741→   741→Narayanganj may be approximately 2,000 taka per kilogram cheaper than equivalent Dhaka city material. The
+   742→   742→final sized-and-processed product commands radically different prices by length: 8-inch hair sells at
+   743→   743→approximately 5,000 taka per kilogram, while 30-inch hair sells at approximately 90,000 taka per kilogram - an
+   744→   744→18-times differential that makes length retention during processing the single most important value driver in the
+   745→   745→entire pipeline.
+   746→   746→4.2 Import Process and Documentation
+   747→   747→International procurement is executed through Letters of Credit (LC) issued via the company's bank. The
+   748→   748→documentation workflow involves several bank-managed artefacts: SIT numbers (used on the export side and
+   749→   749→for dollar tracking), BTC numbers (bank tracking numbers), and LC documents prepared by the bank manager
+   750→   750→for the owner's signature. Multiple SIT numbers may be in flight simultaneously, each tracking pending dollar
+   751→   751→commitments, encashment status, and applicable export incentives. The bank can prepare invoices covering two
+   752→   752→to three parties at a time under a single SIT number, creating a many-to-many relationship between SIT
+   753→   753→numbers, suppliers, and LC instruments that the ERP system must model explicitly.
+   754→   754→Foreign-currency gain and loss must be recognised on every transaction because purchases are denominated in
+   755→   755→foreign currency (primarily US dollars) while functional currency is Bangladeshi taka. The applicable bank rate
+   756→   756→on the transaction date determines the initial recorded cost, and any subsequent exchange-rate movement
+   757→   757→between commitment and encashment creates a gain or loss that must be captured automatically. The current
+   758→   758→Excel-based system handles this manually, which is time-consuming and error-prone; the ERP accounting
+   759→   759→module (Phase 1) is specifically designed to automate this recognition.
+   760→   760→4.3 Receipt and Initial Storage
+   761→   761→Upon arrival, raw material is received at the Dhaka head office warehouse by the Sto
+   762→   762→--- Page 11 ---
+   763→   763→Business Process Document Barendra International
+   764→   764→Specialised materials follow parallel procurement paths. The US-sourced adhesive glue (USD 4,000-5,000 per
+   765→   765→100 grams) is received and stored separately with stricter custody controls because counterfeits cause customer
+   766→   766→allergies and the material cannot be substituted. Packaging materials, sizing tools, and consumables (shampoo,
+   767→   767→chemicals, dyes) are procured through standard purchase-order workflow with supplier credit terms (paona)
+   768→   768→where applicable. All procurement - whether raw material or consumable - must flow through a single unified
+   769→   769→purchasing module in the ERP to enable spend analytics and supplier performance evaluation.
+   770→   770→5. Process 2 - Initial Sorting and Lot Creation
+   771→   771→5.1 Colour Separation
+   772→   772→Upon receipt and initial storage at the Dhaka warehouse, raw material enters the colour separation process. This
+   773→   773→is a manual, visually judgement-based operation in which workers physically separate hair by natural colour
+   774→   774→into distinct groupings. The industry uses a universal 1-to-10 level system for hair colour (where 1 is black and
+   775→   775→10 is lightest blonde), but Barendra International's internal colour codes include specific identifiers such as 600
+   776→   776→and 627, which may correspond to either colour codes or supplier lot references. Colour separation is the first
+   777→   777→quality-determining step because subsequent processing (washing, chemical treatment) is calibrated to colour
+   778→   778→characteristics, and mixing colours at this stage creates defects that cannot be economically recovered later.
+   779→   779→5.2 Lot and Batch Number Assignment
+   780→   780→After colour separation, each colour-separated batch is assigned a unique lot (or batch) number. Critically, lots
+   781→   781→are created based on the goods themselves - the lot is defined by the material it contains, not by an arbitrary
+   782→   782→numbering scheme. A lot and the goods it contains can be the same thing. This goods-based lot creation
+   783→   783→principle is fundamental to the entire traceability framework because it ensures that every subsequent
+   784→   784→transaction, transformation, and movement can be traced back to a specific physical batch of raw material with
+   785→   785→known colour, supplier origin, and cost characteristics.
+   786→   786→The lot numbering system supports sub-lots: a single main lot (for example, a 120-kilogram batch) can contain
+   787→   787→multiple colour-wise sub-lots (for example, colour 600 plus colour 627) under the same main lot number. Lots
+   788→   788→can also be merged - two existing lots can be combined into a new lot - or material can be transferred from one
+   789→   789→lot to another when physical consolidation makes operational sense. These lot operations must be explicitly
+   790→   790→modelled in the ERP system as discrete transactions with audit trails, because the same physical hair may
+   791→   791→change lot identity during its lifecycle while remaining fully traceable to its original raw-material receipt.
+   792→   792→5.3 Voucher-to-Lot Relationship
+   793→   793→Material movement is documented through delivery vouchers, and the relationship between vouchers and lots is
+   794→   794→many-to-many. A single delive
+   795→   795→--- Page 12 ---
+   796→   796→Business Process Document Barendra International
+   797→   797→5.4 Lot Lifecycle and Traceability
+   798→   798→Once created, the lot number travels with the goods through the entire production pipeline - from Dhaka to
+   799→   799→Dinajpur, through washing, through distribution to Head Leaders and Line Leaders and factories and individual
+   800→   800→workers, back to Dhaka as half-finished goods, through Phase 2 final production, and into finished-goods
+   801→   801→storage. At every stage, the lot number is the primary key for tracking quantity, quality, cost, and timing. The
+   802→   802→ERP system must support a 'lot lifecycle view' that shows, for any lot number, the complete chain of custody
+   803→   803→with timestamps, quantities, responsible parties, and quality grades - answering questions such as 'how many
+   804→   804→days has this lot been with worker X?' or 'what is the current stock position of lot Y across all locations?' Figure
+   805→   805→5 illustrates the complete lot lifecycle.
+   806→   806→6. Process 3 - Washing and Preparation
+   807→   807→After lot creation in Dhaka, material is transported to the Dinajpur factory - the company's primary industrial
+   808→   808→processing facility - for washing and preparation. The Dinajpur site houses the washing plant (staffed by 5-7
+   809→   809→people including a floor manager and washing-plant lead), accounts staff (5 people), and 200 second-step
+   810→   810→production workers. The washing process is the first industrial transformation applied to the raw material and
+   811→   811→serves multiple purposes: it removes impurities accumulated during collection and transit, prepares the hair for
+   812→   812→colour separation consistency, and establishes the baseline weight against which all subsequent shortage and
+   813→   813→reject calculations are measured.
+   814→   814→6.1 Wash, Dry, and Restock Cycle
+   815→   815→The washing cycle comprises four sequential steps. First, the hair is washed using shampoo and chemical
+   816→   816→treatments calibrated to the colour and quality characteristics recorded at lot creation. Second, the washed hair
+   817→   817→is dried using controlled methods to prevent damage and to standardise moisture content. Third, the dried hair is
+   818→   818→reweighed and restocked with a new recorded quantity. Fourth, the restocked material is forwarded to the
+   819→   819→Production Manager for distribution into Phase 1 field manufacturing.
+   820→   820→Weight loss during washing is a normal and expected outcome - typically 2-3 kilograms per batch - driven by
+   821→   821→the removal of impurities, moisture loss, and minor processing waste. This weight loss must be recorded as a
+   822→   822→formal inventory adjustment against the lot, with the new restocked quantity becoming the baseline for all
+   823→   823→subsequent distribution and reconciliation. Failure to capture this adjustment accurately creates phantom
+   824→   824→shortages downstream that cannot be explained or resolved. The ERP system must therefore enforce a
+   825→   825→weight-capture step at the end of washing, with the difference between pre-wash and post-wash quantities
+   826→   826→automatically calculated and posted to a washing-loss account.
+   827→   827→6.2 Handoff to Production Manager
+   828→   828→Once restocked, washed material is handed off to the Production Manager, who becomes the single poin
+   829→   829→--- Page 13 ---
+   830→   830→Business Process Document Barendra International
+   831→   831→7. Process 4 - Phase 1 Distribution and Field
+   832→   832→Manufacturing
+   833→   833→Phase 1 distribution is the operational heart of Barendra International's manufacturing model and the process
+   834→   834→that most differentiates it from conventional factory-based production. In this phase, washed and lot-coded
+   835→   835→material is distributed through a five-tier hierarchy to approximately 4,000-5,000 home-based female workers
+   836→   836→who perform hand-tool sorting, opening, and classification in their own homes. The workers gather at a
+   837→   837→supervisor's home (typically 5-6 adjacent homes consolidate into one work location) during a 6:30 AM to 1:30
+   838→   838→PM work window, and each worker processes 100-300 grams of hair per day. The complete distribution and
+   839→   839→return flow is illustrated in Figure 3.
+   840→   840→Page 13
+   841→   841→--- Page 14 ---
+   842→   842→Business Process Document Barendra International
+   843→   843→Figure 3: Phase 1 distribution and field manufacturing flow with daily return cycle.
+   844→   844→7.1 Tier-by-Tier Distribution Mechanics
+   845→   845→Distribution begins when the Production Manager allocates a 1,200 kg washed batch across five Head Leaders
+   846→   846→at 200-300 kg each. Each Head Leader then allocates their share across approximately ten Line Leaders at
+   847→   847→roughly 30 kg each, recording the lot number and quantity assigned to each Line Leader. Line Leaders travel by
+   848→   848→motorbike between the home-based factories in their territory - a deliberate design choice because the young
+   849→   849→men who serve as Line Leaders cannot realistically walk the distances involved, and motorbikes enable daily
+   850→   850→coverage of 10-15 factories per Line Leader. Each Line Leader distributes approximately 3 kg to each of ten
+   851→   851→factories, and each factory supervisor allocates 100-300 grams to each of approximately ten workers.
+   852→   852→Page 14
+   853→   853→--- Page 15 ---
+   854→   854→Business Process Document Barendra International
+   855→   855→At every transfer point, two copies of a slip are created - one retained by the issuing party and one
+   856→   856→accompanying the material. The slip records the lot number, quantity, recipient name and ID, and date. This
+   857→   857→dual-copy slip system is the current chain-of-custody mechanism and will be replaced by ERP-issued digital
+   858→   858→vouchers with the same information but with automatic lot traceability and real-time stock updates. The slip
+   859→   859→system also enables the day-end reconciliation process: when workers return their processed packets, the
+   860→   860→supervisor records each packet against the issuing slip, creating a closed-loop audit trail from issue to return.
+   861→   861→7.2 Home-Based Factory Operations
+   862→   862→Each home-based factory is hosted by a female supervisor at her residence, where approximately ten female
+   863→   863→workers gather daily to process hair. The work uses hand tools only - no machines are permitted in the home
+   864→   864→environment - and consists of opening raw bundles, sorting by quality and length characteristics, classifying
+   865→   865→into categories, and re-bundling the processed output. Each worker's daily output is packaged individually with
+   866→   866→a slip bearing her name, worker ID, factory ID, and lot number, ensuring that quality performance can be
+   867→   867→attributed to the individual worker rather than aggregated at factory level.
+   868→   868→The hosting supervisor receives two forms of compensation for the use of her home and her supervisory labour:
+   869→   869→a fixed hosting allowance of 100-200 taka per month (sometimes up to 400 taka) and a performance extra of
+   870→   870→150 taka if she effectively controls worker attendance and quality output. This structure incentivises the
+   871→   871→supervisor to maintain discipline and quality at the factory level, which is critical because the home
+   872→   872→environment is inherently difficult for the company to monitor directly. Each factory is also subject to a quality
+   873→   873→threshold - a minimum of 60 percent A-grade workers - below which the supervisor's performance bonus is
+   874→   874→forfeit.
+   875→   875→7.3 Day-End Reporting and Return Cycle
+   876→   876→At the end of each work day, the Line Leader collects processed packets from the ten factories under his
+   877→   877→jurisdiction, carrying them by motorbike to the Quality Controller's location at Dinajpur. The ten factory bags
+   878→   878→are opened in the presence of the QC, and each packet is identified by the worker's name and ID (for example,
+   879→   879→'this one is Fatema, this one is Jhorna, this one is BrishTi'). Each worker's output is weighed and graded A, B, or
+   880→   880→C based on length retention, breakage, colour correctness, and texture. The Line Leader then returns the
+   881→   881→collected reports and any rejected material to the Head Leader, who reviews factory-level performance,
+   882→   882→calculates shortages, and consolidates the daily reports that flow to the Production Manager and ultimately to
+   883→   883→the owner's dashboard.
+   884→   884→Reporting volume is substantial. The company generates four to five reports per day per factory across the
+   885→   885→approximately 500 factories in the network, producing approximately 2
+   886→   886→--- Page 16 ---
+   887→   887→Business Process Document Barendra International
+   888→   888→7.4 Shortage, Reject, and Wastage Accounting
+   889→   889→At every return step, issued quantity is reconciled against returned quantity, and any variance is classified as
+   890→   890→either reject (quality failure - hair that cannot be used) or shortage (unaccounted loss). Industry-standard
+   891→   891→wastage is acknowledged as unavoidable - the owner notes that '100 percent of anything cannot be achieved' -
+   892→   892→but major losses are flagged for investigation. Typical Dinajpur second-step wastage runs 100-150 grams per
+   893→   893→kilogram, and final Dhaka production wastage runs 50-100 grams per kilogram. Reject material must still be
+   894→   894→returned with weight recorded, and a recovery rate (for example, 900 grams 'tikal' or recovered per 1,000 grams
+   895→   895→input) is calculated for each lot and each factory.
+   896→   896→8. Process 5 - Quality Control and Worker Grading
+   897→   897→Quality control at Barendra International operates as a continuous, daily activity rather than a discrete
+   898→   898→end-of-line inspection. Four Quality Controllers based in Dhaka are responsible for grading the output of all
+   899→   899→approximately 5,000 workers every working day, producing the A/B/C grades that directly determine each
+   900→   900→worker's daily wage. This daily grading cadence is essential because worker compensation is grade-driven - an
+   901→   901→A-grade worker earns 90 taka per day while a C-grade worker earns only 50 taka - and because the home-based
+   902→   902→manufacturing model means quality cannot be assured through process controls alone. The QC function
+   903→   903→therefore serves as both a quality gate and a payroll input.
+   904→   904→8.1 Quality Parameters and Grading Criteria
+   905→   905→Worker output is evaluated against four primary quality parameters. Length retention is the most important:
+   906→   906→after a standardised pulling test, hair that retains greater length (indicating less breakage) receives a higher
+   907→   907→grade. Breakage is directly penalised - workers whose output shows more broken hair receive lower grades
+   908→   908→because broken hair has lower commercial value. Colour correctness is visually judged against the lot's colour
+   909→   909→specification. Texture and feel are judged by hand, an experiential assessment that the QC cannot reduce to a
+   910→   910→fully objective standard. The owner acknowledges that QC judgement is approximately - but not exactly - 70
+   911→   911→percent accurate, which is an inherent limitation of the manual grading model.
+   912→   912→A critical structural feature of the grading system is lot-quality inheritance: if the raw-material lot itself is of
+   913→   913→poor quality, all workers processing that lot may receive C grades regardless of their individual effort or skill.
+   914→   914→This creates a fairness tension - workers may be penalised for lot-quality issues outside their control - and the
+   915→   915→ERP system should flag lots where the grade distribution is unusually skewed toward C so that management can
+   916→   916→distinguish lot-quality effects from worker-performance effects. Without this analytical capability, worker
+   917→   917→dissatisfaction and turnover risk increase.
+   918→   918→Page 16
+   919→   919→--- Page 17 ---
+   920→   920→Business Process Document Barendra International
+   921→   921→8.2 The A/B/C Grade System
+   922→   922→Daily Rate
+   923→   923→Grade Typical Output Benchmark Implication
+   924→   924→(Tk)
+   925→   925→>= 100 g, high length retention, low Top performer; eligible for performance
+   926→   926→A 90
+   927→   927→breakage bonus
+   928→   928→Acceptable; counted toward A+B bonus
+   929→   929→B 75 50-100 g, moderate quality
+   930→   930→threshold
+   931→   931→C 50 < 50 g output OR low quality Below standard; below 50g = automatic C
+   932→   932→Table 3: A/B/C worker grade system with daily rates and benchmarks.
+   933→   933→8.3 Factory-Level Quality Threshold
+   934→   934→Beyond individual worker grading, each factory (the unit of approximately ten workers under one supervisor) is
+   935→   935→evaluated against a quality threshold: a minimum of 60 percent of the factory's workers must achieve A grade in
+   936→   936→a given period. Below this threshold, the supervisor's performance bonus is forfeit. This factory-level threshold
+   937→   937→creates a supervisory accountability mechanism - the supervisor is incentivised to train, coach, and where
+   938→   938→necessary replace underperforming workers to maintain the factory's overall grade distribution. The ERP
+   939→   939→system must calculate and display the factory A-grade percentage on a rolling basis, with automatic alerts when
+   940→   940→a factory approaches or breaches the 60 percent threshold.
+   941→   941→8.4 Reject and Shortage Handling
+   942→   942→Reject items (hair that fails quality standards) are weighed separately from good output and from shortage
+   943→   943→(unaccounted loss). The combined reject-plus-shortage percentage is calculated for each worker, each factory,
+   944→   944→and each lot. For example, if 5 kilograms are issued to a factory and 4.9 kilograms are returned, the 100-gram
+   945→   945→variance is decomposed into reject (e.g., 10 grams at 0.2 percent) and shortage (e.g., 20 grams), with the
+   946→   946→combined loss percentage calculated for management review. Reject material is still physically returned with
+   947→   947→weight recorded - it is not discarded at the factory level - because the company may be able to recover value
+   948→   948→from lower-grade applications. The ERP system must track reject and shortage as separate inventory transaction
+   949→   949→types with distinct cost-account postings.
+   950→   950→9. Process 6 - Salary and Payroll Management
+   951→   951→Barendra International's payroll system is a hybrid model that combines grade-based daily rates, attendance
+   952→   952→bonuses, and performance bonuses to align worker compensation with both output quality and reliability. The
+   953→   953→system applies to all home-based workers on a daily-labour (not monthly-salary) basis, with monthly
+   954→   954→disbursement via bKash mobile payment. The complete salary calculation flow is illustrated in Figure 6, and the
+   955→   955→detailed components are described below. The payroll process is currently manual and consumes significant
+   956→   956→management time, making it a Phase 3 priority for ERP automation.
+   957→   957→Page 17
+   958→   958→--- Page 18 ---
+   959→   959→Business Process Document Barendra International
+   960→   960→Figure 4: Salary calculation flow from daily inputs through bKash disbursement.
+   961→   961→9.1 Compensation Components
+   962→   962→Component Basis Amount / Trigger Recipients
+   963→   963→Daily Base Rate - Grade A QC grade Tk 90 per day A-grade workers
+   964→   964→Daily Base Rate - Grade B QC grade Tk 75 per day B-grade workers
+   965→   965→QC grade / below
+   966→   966→Daily Base Rate - Grade C Tk 50 per day C-grade workers
+   967→   967→50g
+   968→   968→Performance Bonus Monthly quality Triggered when (A+B)% >= 90% Eligible workers
+   969→   969→Attendance Bonus Monthly attendance Triggered when present all 30 days Eligible workers
+   970→   970→Supervisor Hosting
+   971→   971→Monthly fixed Tk 100-400 per month Home-based supervisors
+   972→   972→Allowance
+   973→   973→Supervisor Performance
+   974→   974→Monthly quality +Tk 150 if controls workers well Eligible supervisors
+   975→   975→Extra
+   976→   976→Line Leader Salary Fixed monthly Fixed amount (not disclosed) Line Leaders
+   977→   977→Table 4: Complete compensation structure with basis, amount, and recipients.
+   978→   978→Page 18
+   979→   979→--- Page 19 ---
+   980→   980→Business Process Document Barendra International
+   981→   981→9.2 Quality Over Quantity Principle
+   982→   982→A defining design principle of the compensation system is that quality is rewarded over quantity. The owner
+   983→   983→explicitly states that producing 5 kilograms of mediocre output is less valuable than producing 100 grams of
+   984→   984→best-quality output, because the profit margin on high-quality hair is dramatically higher. This is why the
+   985→   985→monthly bonus is termed a 'performance bonus' rather than a 'production bonus' - the trigger is quality-grade
+   986→   986→achievement (A+B percentage exceeding 90 percent) rather than volume produced. The minimum daily output
+   987→   987→target of 50 grams exists primarily to identify and weed out workers who are not meeting basic productivity,
+   988→   988→with sub-50-gram output triggering an automatic C grade regardless of quality.
+   989→   989→9.3 Salary Sheet Approval Workflow
+   990→   990→The salary preparation workflow begins with daily summary sheets compiled by the data-entry operators from
+   991→   991→QC grading inputs. These daily sheets are aggregated into a monthly salary sheet for each Line Leader's
+   992→   992→territory. At month-end, the Head Leader (referred to as the 'bidder' in this context) sits with management to
+   993→   993→review the sheets before billing. The review is a quality gate - sheets can be rejected and returned for correction
+   994→   994→if errors are found, triggering a rework cycle. Only after the bidder and management concur does the sheet
+   995→   995→proceed to the owner for final approval, after which the bKash disbursement is initiated.
+   996→   996→9.4 bKash Disbursement and Skimming Risk
+   997→   997→Salary disbursement currently flows through bKash mobile payment, but the disbursement model introduces a
+   998→   998→structural skimming risk. The approved monthly payout for a single Line Leader's territory (approximately 100
+   999→   999→workers) can total approximately 1.5 lakh taka (150,000 taka). This bulk amount is transferred to the Line
+
+[showing lines 400-999 of 1002; use offset=1000 with limit to continue reading]

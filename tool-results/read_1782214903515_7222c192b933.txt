@@ -1,0 +1,640 @@
+     1→'use client';
+     2→
+     3→import { useEffect, useState, useCallback } from 'react';
+     4→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+     5→import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+     6→import { ScrollArea } from '@/components/ui/scroll-area';
+     7→import { Skeleton } from '@/components/ui/skeleton';
+     8→import { Badge } from '@/components/ui/badge';
+     9→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    10→import { Button } from '@/components/ui/button';
+    11→import { Input } from '@/components/ui/input';
+    12→import { Label } from '@/components/ui/label';
+    13→import { Textarea } from '@/components/ui/textarea';
+    14→import {
+    15→  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+    16→} from '@/components/ui/dialog';
+    17→import {
+    18→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    19→} from '@/components/ui/select';
+    20→import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+    21→import { toast } from 'sonner';
+    22→
+    23→interface Supplier {
+    24→  id: string;
+    25→  name: string;
+    26→  country: string;
+    27→}
+    28→
+    29→interface ProcItem {
+    30→  id: string;
+    31→  voucherNo: string;
+    32→  date: string;
+    33→  supplierId: string;
+    34→  supplier: { name: string; country: string } | null;
+    35→  originCountry: string;
+    36→  rawWeightKg: number;
+    37→  usdPerKg: number;
+    38→  costPerKgBdt: number;
+    39→  goodsUsd: number;
+    40→  freightUsd: number;
+    41→  dutyUsd: number;
+    42→  bankChargesUsd: number;
+    43→  landedUsd: number;
+    44→  totalLandedCostBdt: number;
+    45→  landedCostPerKgBdt: number;
+    46→  lcNo: string | null;
+    47→  paymentMode: string | null;
+    48→  qualityGrade: string | null;
+    49→  fxRate: number;
+    50→  status: string;
+    51→  notes: string | null;
+    52→}
+    53→
+    54→interface FormData {
+    55→  supplierId: string;
+    56→  date: string;
+    57→  voucherNo: string;
+    58→  lcNo: string;
+    59→  originCountry: string;
+    60→  rawWeightKg: string;
+    61→  usdPerKg: string;
+    62→  costPerKgBdt: string;
+    63→  paymentMode: string;
+    64→  qualityGrade: string;
+    65→  status: string;
+    66→  notes: string;
+    67→}
+    68→
+    69→const NAVY = '#1F3864';
+    70→const GOLD = '#C9A227';
+    71→
+    72→const STATUS_OPTIONS = ['Received', 'In Transit', 'Cleared', 'Partial'];
+    73→
+    74→const emptyForm = (): FormData => ({
+    75→  supplierId: '',
+    76→  date: new Date().toISOString().split('T')[0],
+    77→  voucherNo: '',
+    78→  lcNo: '',
+    79→  originCountry: '',
+    80→  rawWeightKg: '',
+    81→  usdPerKg: '',
+    82→  costPerKgBdt: '',
+    83→  paymentMode: '',
+    84→  qualityGrade: '',
+    85→  status: 'Received',
+    86→  notes: '',
+    87→});
+    88→
+    89→export default function ProcurementSection() {
+    90→  const [data, setData] = useState<ProcItem[]>([]);
+    91→  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+    92→  const [loading, setLoading] = useState(true);
+    93→  const [submitting, setSubmitting] = useState(false);
+    94→  const [dialogOpen, setDialogOpen] = useState(false);
+    95→  const [editing, setEditing] = useState<ProcItem | null>(null);
+    96→  const [form, setForm] = useState<FormData>(emptyForm());
+    97→  const [activeTab, setActiveTab] = useState('import');
+    98→  const [searchTerm, setSearchTerm] = useState('');
+    99→
+   100→  const fetchData = useCallback(async () => {
+   101→    try {
+   102→      const res = await fetch('/api/procurement?limit=200');
+   103→      const json = await res.json();
+   104→      setData(json.data || []);
+   105→    } catch {
+   106→      toast.error('Failed to fetch procurements');
+   107→    } finally {
+   108→      setLoading(false);
+   109→    }
+   110→  }, []);
+   111→
+   112→  const fetchSuppliers = useCallback(async () => {
+   113→    try {
+   114→      const res = await fetch('/api/suppliers?limit=200');
+   115→      const json = await res.json();
+   116→      setSuppliers(json.data || []);
+   117→    } catch {
+   118→      toast.error('Failed to fetch suppliers');
+   119→    }
+   120→  }, []);
+   121→
+   122→  useEffect(() => {
+   123→    fetchData();
+   124→    fetchSuppliers();
+   125→  }, [fetchData, fetchSuppliers]);
+   126→
+   127→  // Computed values for imports (client-side preview)
+   128→  const isImport = !!form.lcNo.trim();
+   129→  const weight = parseFloat(form.rawWeightKg) || 0;
+   130→  const usdRate = parseFloat(form.usdPerKg) || 0;
+   131→  const localCostRate = parseFloat(form.costPerKgBdt) || 0;
+   132→
+   133→  const computedImport = (() => {
+   134→    if (!isImport || weight === 0 || usdRate === 0) {
+   135→      return { goods: 0, freight: 0, duty: 0, bank: 0, landed: 0, bdt: 0, perKg: 0 };
+   136→    }
+   137→    const goods = weight * usdRate;
+   138→    const freight = Math.round(goods * 0.03 * 100) / 100;
+   139→    const duty = Math.round(goods * 0.12 * 100) / 100;
+   140→    const bank = Math.round(goods * 0.01 * 100) / 100;
+   141→    const landed = goods + freight + duty + bank;
+   142→    const bdt = landed * 120;
+   143→    const perKg = weight > 0 ? bdt / weight : 0;
+   144→    return { goods, freight, duty, bank, landed, bdt, perKg };
+   145→  })();
+   146→
+   147→  const computedLocal = {
+   148→    totalBdt: weight * localCostRate,
+   149→  };
+   150→
+   151→  const openCreateDialog = (isImportTab: boolean) => {
+   152→    const f = emptyForm();
+   153→    if (isImportTab) {
+   154→      // leave lcNo empty — user must fill it
+   155→    }
+   156→    setEditing(null);
+   157→    setForm(f);
+   158→    setDialogOpen(true);
+   159→  };
+   160→
+   161→  const openEditDialog = (item: ProcItem) => {
+   162→    setEditing(item);
+   163→    setForm({
+   164→      supplierId: item.supplierId || '',
+   165→      date: item.date ? item.date.split('T')[0] : '',
+   166→      voucherNo: item.voucherNo || '',
+   167→      lcNo: item.lcNo || '',
+   168→      originCountry: item.originCountry || '',
+   169→      rawWeightKg: String(item.rawWeightKg || ''),
+   170→      usdPerKg: String(item.usdPerKg || ''),
+   171→      costPerKgBdt: String(item.costPerKgBdt || ''),
+   172→      paymentMode: item.paymentMode || '',
+   173→      qualityGrade: item.qualityGrade || '',
+   174→      status: item.status || 'Received',
+   175→      notes: item.notes || '',
+   176→    });
+   177→    setDialogOpen(true);
+   178→  };
+   179→
+   180→  const handleSubmit = async () => {
+   181→    if (!form.supplierId) { toast.error('Please select a supplier'); return; }
+   182→    if (!form.date) { toast.error('Please select a date'); return; }
+   183→    if (!form.voucherNo.trim()) { toast.error('Voucher No is required'); return; }
+   184→    const w = parseFloat(form.rawWeightKg);
+   185→    if (!w || w <= 0) { toast.error('Raw weight must be a positive number'); return; }
+   186→
+   187→    if (isImport) {
+   188→      if (!form.lcNo.trim()) { toast.error('LC No is required for imports'); return; }
+   189→      const u = parseFloat(form.usdPerKg);
+   190→      if (!u || u <= 0) { toast.error('USD/kg must be a positive number for imports'); return; }
+   191→    } else {
+   192→      const c = parseFloat(form.costPerKgBdt);
+   193→      if (!c || c <= 0) { toast.error('Cost per kg BDT is required for local purchases'); return; }
+   194→    }
+   195→
+   196→    setSubmitting(true);
+   197→    try {
+   198→      const body: Record<string, unknown> = {
+   199→        supplierId: form.supplierId,
+   200→        date: form.date,
+   201→        voucherNo: form.voucherNo.trim(),
+   202→        lcNo: isImport ? form.lcNo.trim() : null,
+   203→        originCountry: form.originCountry.trim(),
+   204→        rawWeightKg: w,
+   205→        usdPerKg: isImport ? parseFloat(form.usdPerKg) : 0,
+   206→        costPerKgBdt: isImport ? 0 : parseFloat(form.costPerKgBdt),
+   207→        paymentMode: form.paymentMode.trim() || null,
+   208→        qualityGrade: form.qualityGrade.trim() || null,
+   209→        status: form.status,
+   210→        notes: form.notes.trim() || null,
+   211→      };
+   212→
+   213→      if (editing) {
+   214→        // For PUT, we need to send computed values too
+   215→        if (isImport) {
+   216→          body.goodsUsd = computedImport.goods;
+   217→          body.freightUsd = computedImport.freight;
+   218→          body.dutyUsd = computedImport.duty;
+   219→          body.bankChargesUsd = computedImport.bank;
+   220→          body.landedUsd = computedImport.landed;
+   221→          body.totalLandedCostBdt = computedImport.bdt;
+   222→          body.landedCostPerKgBdt = computedImport.perKg;
+   223→          body.fxRate = 120;
+   224→        } else {
+   225→          body.totalLandedCostBdt = computedLocal.totalBdt;
+   226→          body.goodsUsd = 0;
+   227→          body.freightUsd = 0;
+   228→          body.dutyUsd = 0;
+   229→          body.bankChargesUsd = 0;
+   230→          body.landedUsd = 0;
+   231→          body.landedCostPerKgBdt = 0;
+   232→        }
+   233→
+   234→        const res = await fetch(`/api/procurement/${editing.id}`, {
+   235→          method: 'PUT',
+   236→          headers: { 'Content-Type': 'application/json' },
+   237→          body: JSON.stringify(body),
+   238→        });
+   239→        if (res.ok) {
+   240→          toast.success('Procurement updated successfully');
+   241→          fetchData();
+   242→          setDialogOpen(false);
+   243→          setEditing(null);
+   244→        } else {
+   245→          const err = await res.json().catch(() => ({}));
+   246→          toast.error(err.error || 'Failed to update procurement');
+   247→        }
+   248→      } else {
+   249→        const res = await fetch('/api/procurement', {
+   250→          method: 'POST',
+   251→          headers: { 'Content-Type': 'application/json' },
+   252→          body: JSON.stringify(body),
+   253→        });
+   254→        if (res.ok) {
+   255→          toast.success('Procurement created successfully');
+   256→          fetchData();
+   257→          setDialogOpen(false);
+   258→        } else {
+   259→          const err = await res.json().catch(() => ({}));
+   260→          toast.error(err.error || 'Failed to create procurement');
+   261→        }
+   262→      }
+   263→    } catch {
+   264→      toast.error('Network error');
+   265→    } finally {
+   266→      setSubmitting(false);
+   267→    }
+   268→  };
+   269→
+   270→  const handleDelete = async (id: string) => {
+   271→    if (!window.confirm('Are you sure you want to delete this procurement?')) return;
+   272→    try {
+   273→      const res = await fetch(`/api/procurement/${id}`, { method: 'DELETE' });
+   274→      if (res.ok) {
+   275→        toast.success('Procurement deleted successfully');
+   276→        fetchData();
+   277→      } else {
+   278→        const err = await res.json().catch(() => ({}));
+   279→        toast.error(err.error || 'Failed to delete procurement');
+   280→      }
+   281→    } catch {
+   282→      toast.error('Network error');
+   283→    }
+   284→  };
+   285→
+   286→  const imports = data.filter(d => d.lcNo);
+   287→  const locals = data.filter(d => !d.lcNo);
+   288→
+   289→  const filteredImports = searchTerm
+   290→    ? imports.filter(i =>
+   291→        i.lcNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+   292→        i.supplier?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+   293→        i.originCountry?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+   294→        i.voucherNo?.toLowerCase().includes(searchTerm.toLowerCase())
+   295→      )
+   296→    : imports;
+   297→
+   298→  const filteredLocals = searchTerm
+   299→    ? locals.filter(i =>
+   300→        i.voucherNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+   301→        i.supplier?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+   302→        i.originCountry?.toLowerCase().includes(searchTerm.toLowerCase())
+   303→      )
+   304→    : locals;
+   305→
+   306→  const impTotals = imports.reduce((a, i) => ({
+   307→    weight: a.weight + (i.rawWeightKg || 0), goods: a.goods + (i.goodsUsd || 0),
+   308→    freight: a.freight + (i.freightUsd || 0), duty: a.duty + (i.dutyUsd || 0),
+   309→    bank: a.bank + (i.bankChargesUsd || 0), landed: a.landed + (i.landedUsd || 0),
+   310→    bdt: a.bdt + (i.totalLandedCostBdt || 0),
+   311→  }), { weight: 0, goods: 0, freight: 0, duty: 0, bank: 0, landed: 0, bdt: 0 });
+   312→
+   313→  const locTotals = locals.reduce((a, i) => ({
+   314→    weight: a.weight + (i.rawWeightKg || 0), bdt: a.bdt + (i.totalLandedCostBdt || 0),
+   315→  }), { weight: 0, bdt: 0 });
+   316→
+   317→  return (
+   318→    <div className="space-y-4">
+   319→      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+   320→        <h2 className="text-2xl font-bold" style={{ color: NAVY }}>Procurement</h2>
+   321→        <div className="flex items-center gap-2">
+   322→          <div className="relative">
+   323→            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+   324→            <Input
+   325→              placeholder="Search..."
+   326→              value={searchTerm}
+   327→              onChange={e => setSearchTerm(e.target.value)}
+   328→              className="pl-8 w-48 h-9 text-sm"
+   329→            />
+   330→          </div>
+   331→          <Button
+   332→            onClick={() => openCreateDialog(activeTab === 'import')}
+   333→            size="sm"
+   334→            style={{ backgroundColor: NAVY, color: '#fff' }}
+   335→            className="hover:opacity-90"
+   336→          >
+   337→            <Plus className="h-4 w-4 mr-1" /> Add New
+   338→          </Button>
+   339→        </div>
+   340→      </div>
+   341→
+   342→      <Tabs value={activeTab} onValueChange={setActiveTab}>
+   343→        <TabsList>
+   344→          <TabsTrigger value="import">Import LC ({imports.length})</TabsTrigger>
+   345→          <TabsTrigger value="local">Local Purchase ({locals.length})</TabsTrigger>
+   346→        </TabsList>
+   347→
+   348→        {/* ==================== IMPORT TAB ==================== */}
+   349→        <TabsContent value="import">
+   350→          <Card className="border shadow-sm">
+   351→            <CardHeader className="pb-3">
+   352→              <CardTitle className="text-base font-semibold" style={{ color: NAVY }}>Import LC Register</CardTitle>
+   353→            </CardHeader>
+   354→            <CardContent>
+   355→              {loading ? (
+   356→                <Skeleton className="h-64 w-full" />
+   357→              ) : (
+   358→                <ScrollArea className="max-h-[500px]">
+   359→                  <div className="min-w-[1200px]">
+   360→                    <Table>
+   361→                      <TableHeader>
+   362→                        <TableRow className="hover:bg-transparent">
+   363→                          {['LC No', 'Date', 'Supplier', 'Country', 'Qty (kg)', 'USD/kg', 'Goods USD', 'Freight 3%', 'Duty 12%', 'Bank 1%', 'Landed USD', 'Landed BDT', 'BDT/kg', 'Status', 'Actions'].map(h => (
+   364→                            <TableHead key={h} className="text-xs font-bold whitespace-nowrap" style={{ color: NAVY }}>{h}</TableHead>
+   365→                          ))}
+   366→                        </TableRow>
+   367→                      </TableHeader>
+   368→                      <TableBody>
+   369→                        {filteredImports.length === 0 && (
+   370→                          <TableRow><TableCell colSpan={15} className="text-center text-muted-foreground py-8">No import LCs found</TableCell></TableRow>
+   371→                        )}
+   372→                        {filteredImports.map(i => (
+   373→                          <TableRow key={i.id}>
+   374→                            <TableCell className="text-xs font-medium whitespace-nowrap">{i.lcNo}</TableCell>
+   375→                            <TableCell className="text-xs whitespace-nowrap">{new Date(i.date).toLocaleDateString()}</TableCell>
+   376→                            <TableCell className="text-xs whitespace-nowrap">{i.supplier?.name || '-'}</TableCell>
+   377→                            <TableCell className="text-xs whitespace-nowrap">{i.originCountry}</TableCell>
+   378→                            <TableCell className="text-xs text-right">{i.rawWeightKg.toFixed(1)}</TableCell>
+   379→                            <TableCell className="text-xs text-right">${i.usdPerKg.toFixed(2)}</TableCell>
+   380→                            <TableCell className="text-xs text-right">${(i.goodsUsd || 0).toLocaleString()}</TableCell>
+   381→                            <TableCell className="text-xs text-right">${(i.freightUsd || 0).toLocaleString()}</TableCell>
+   382→                            <TableCell className="text-xs text-right">${(i.dutyUsd || 0).toLocaleString()}</TableCell>
+   383→                            <TableCell className="text-xs text-right">${(i.bankChargesUsd || 0).toLocaleString()}</TableCell>
+   384→                            <TableCell className="text-xs text-right font-medium">${(i.landedUsd || 0).toLocaleString()}</TableCell>
+   385→                            <TableCell className="text-xs text-right font-medium" style={{ color: GOLD }}>৳{(i.totalLandedCostBdt || 0).toLocaleString()}</TableCell>
+   386→                            <TableCell className="text-xs text-right font-bold" style={{ color: GOLD }}>৳{(i.landedCostPerKgBdt || 0).toLocaleString()}</TableCell>
+   387→                            <TableCell><Badge className="bg-green-100 text-green-800 hover:bg-green-100">{i.status}</Badge></TableCell>
+   388→                            <TableCell>
+   389→                              <div className="flex items-center gap-1">
+   390→                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(i)} title="Edit">
+   391→                                  <Pencil className="h-3.5 w-3.5" />
+   392→                                </Button>
+   393→                                <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(i.id)} title="Delete">
+   394→                                  <Trash2 className="h-3.5 w-3.5" />
+   395→                                </Button>
+   396→                              </div>
+   397→                            </TableCell>
+   398→                          </TableRow>
+   399→                        ))}
+   400→                        {imports.length > 0 && (
+   401→                          <TableRow className="bg-muted/50 font-semibold">
+   402→                            <TableCell colSpan={4} className="text-xs" style={{ color: NAVY }}>TOTAL</TableCell>
+   403→                            <TableCell className="text-xs text-right">{impTotals.weight.toFixed(1)}</TableCell>
+   404→                            <TableCell colSpan={2}></TableCell>
+   405→                            <TableCell className="text-xs text-right">${impTotals.goods.toLocaleString()}</TableCell>
+   406→                            <TableCell className="text-xs text-right">${impTotals.freight.toLocaleString()}</TableCell>
+   407→                            <TableCell className="text-xs text-right">${impTotals.duty.toLocaleString()}</TableCell>
+   408→                            <TableCell className="text-xs text-right">${impTotals.bank.toLocaleString()}</TableCell>
+   409→                            <TableCell className="text-xs text-right">${impTotals.landed.toLocaleString()}</TableCell>
+   410→                            <TableCell className="text-xs text-right" style={{ color: GOLD }}>৳{impTotals.bdt.toLocaleString()}</TableCell>
+   411→                            <TableCell></TableCell>
+   412→                            <TableCell></TableCell>
+   413→                            <TableCell></TableCell>
+   414→                          </TableRow>
+   415→                        )}
+   416→                      </TableBody>
+   417→                    </Table>
+   418→                  </div>
+   419→                </ScrollArea>
+   420→              )}
+   421→            </CardContent>
+   422→          </Card>
+   423→        </TabsContent>
+   424→
+   425→        {/* ==================== LOCAL TAB ==================== */}
+   426→        <TabsContent value="local">
+   427→          <Card className="border shadow-sm">
+   428→            <CardHeader className="pb-3">
+   429→              <CardTitle className="text-base font-semibold" style={{ color: NAVY }}>Local Purchase Register</CardTitle>
+   430→            </CardHeader>
+   431→            <CardContent>
+   432→              {loading ? (
+   433→                <Skeleton className="h-64 w-full" />
+   434→              ) : (
+   435→                <ScrollArea className="max-h-[500px]">
+   436→                  <div className="min-w-[1000px]">
+   437→                    <Table>
+   438→                      <TableHeader>
+   439→                        <TableRow className="hover:bg-transparent">
+   440→                          {['Voucher #', 'Date', 'Supplier', 'Region', 'Qty (kg)', 'BDT/kg', 'Total BDT', 'Payment', 'Quality', 'Status', 'Actions'].map(h => (
+   441→                            <TableHead key={h} className="text-xs font-bold" style={{ color: NAVY }}>{h}</TableHead>
+   442→                          ))}
+   443→                        </TableRow>
+   444→                      </TableHeader>
+   445→                      <TableBody>
+   446→                        {filteredLocals.length === 0 && (
+   447→                          <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-8">No local purchases found</TableCell></TableRow>
+   448→                        )}
+   449→                        {filteredLocals.map(i => (
+   450→                          <TableRow key={i.id}>
+   451→                            <TableCell className="text-xs font-medium">{i.voucherNo}</TableCell>
+   452→                            <TableCell className="text-xs">{new Date(i.date).toLocaleDateString()}</TableCell>
+   453→                            <TableCell className="text-xs">{i.supplier?.name || '-'}</TableCell>
+   454→                            <TableCell className="text-xs">{i.originCountry}</TableCell>
+   455→                            <TableCell className="text-xs text-right">{i.rawWeightKg.toFixed(1)}</TableCell>
+   456→                            <TableCell className="text-xs text-right" style={{ color: GOLD }}>৳{i.costPerKgBdt.toLocaleString()}</TableCell>
+   457→                            <TableCell className="text-xs text-right font-medium" style={{ color: GOLD }}>৳{(i.totalLandedCostBdt || 0).toLocaleString()}</TableCell>
+   458→                            <TableCell className="text-xs">{i.paymentMode || '-'}</TableCell>
+   459→                            <TableCell className="text-xs">{i.qualityGrade || '-'}</TableCell>
+   460→                            <TableCell><Badge className="bg-green-100 text-green-800 hover:bg-green-100">{i.status}</Badge></TableCell>
+   461→                            <TableCell>
+   462→                              <div className="flex items-center gap-1">
+   463→                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(i)} title="Edit">
+   464→                                  <Pencil className="h-3.5 w-3.5" />
+   465→                                </Button>
+   466→                                <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(i.id)} title="Delete">
+   467→                                  <Trash2 className="h-3.5 w-3.5" />
+   468→                                </Button>
+   469→                              </div>
+   470→                            </TableCell>
+   471→                          </TableRow>
+   472→                        ))}
+   473→                        {locals.length > 0 && (
+   474→                          <TableRow className="bg-muted/50 font-semibold">
+   475→                            <TableCell colSpan={4} className="text-xs" style={{ color: NAVY }}>TOTAL</TableCell>
+   476→                            <TableCell className="text-xs text-right">{locTotals.weight.toFixed(1)}</TableCell>
+   477→                            <TableCell></TableCell>
+   478→                            <TableCell className="text-xs text-right" style={{ color: GOLD }}>৳{locTotals.bdt.toLocaleString()}</TableCell>
+   479→                            <TableCell colSpan={4}></TableCell>
+   480→                          </TableRow>
+   481→                        )}
+   482→                      </TableBody>
+   483→                    </Table>
+   484→                  </div>
+   485→                </ScrollArea>
+   486→              )}
+   487→            </CardContent>
+   488→          </Card>
+   489→        </TabsContent>
+   490→      </Tabs>
+   491→
+   492→      {/* ==================== CREATE/EDIT DIALOG ==================== */}
+   493→      <Dialog open={dialogOpen} onOpenChange={(open) => {
+   494→        setDialogOpen(open);
+   495→        if (!open) { setEditing(null); setForm(emptyForm()); }
+   496→      }}>
+   497→        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+   498→          <DialogHeader>
+   499→            <DialogTitle style={{ color: NAVY }}>
+   500→              {editing ? 'Edit Procurement' : 'New Procurement'}
+   501→              <span className="ml-2 text-sm font-normal text-muted-foreground">
+   502→                ({isImport ? 'Import LC' : 'Local Purchase'})
+   503→              </span>
+   504→            </DialogTitle>
+   505→          </DialogHeader>
+   506→
+   507→          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
+   508→            {/* Row 1: Type indicator & Supplier */}
+   509→            <div className="space-y-2">
+   510→              <Label className="text-xs font-semibold" style={{ color: NAVY }}>
+   511→                Type <span className="text-muted-foreground font-normal">(LC No filled = Import)</span>
+   512→              </Label>
+   513→            </div>
+   514→            <div className="space-y-2">
+   515→              <Label className="text-xs font-semibold" style={{ color: NAVY }}>Supplier *</Label>
+   516→              <Select value={form.supplierId} onValueChange={v => setForm(f => ({ ...f, supplierId: v }))}>
+   517→                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select supplier" /></SelectTrigger>
+   518→                <SelectContent className="max-h-60">
+   519→                  {suppliers.map(s => (
+   520→                    <SelectItem key={s.id} value={s.id}>{s.name} ({s.country})</SelectItem>
+   521→                  ))}
+   522→                </SelectContent>
+   523→              </Select>
+   524→            </div>
+   525→
+   526→            {/* Row 2: Date & Voucher */}
+   527→            <div className="space-y-2">
+   528→              <Label className="text-xs font-semibold" style={{ color: NAVY }}>Date *</Label>
+   529→              <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} className="h-9 text-sm" />
+   530→            </div>
+   531→            <div className="space-y-2">
+   532→              <Label className="text-xs font-semibold" style={{ color: NAVY }}>Voucher No *</Label>
+   533→              <Input value={form.voucherNo} onChange={e => setForm(f => ({ ...f, voucherNo: e.target.value }))} placeholder="e.g. V-2024-001" className="h-9 text-sm" />
+   534→            </div>
+   535→
+   536→            {/* Row 3: LC No (Import) */}
+   537→            <div className="space-y-2 sm:col-span-2">
+   538→              <Label className="text-xs font-semibold" style={{ color: NAVY }}>
+   539→                LC No {isImport ? '*' : ''} <span className="text-muted-foreground font-normal">(Leave empty for Local Purchase)</span>
+   540→              </Label>
+   541→              <Input value={form.lcNo} onChange={e => setForm(f => ({ ...f, lcNo: e.target.value }))} placeholder="e.g. LC-2024-001" className="h-9 text-sm" />
+   542→            </div>
+   543→
+   544→            {/* Conditional: Import-specific fields */}
+   545→            {isImport && (
+   546→              <>
+   547→                <div className="space-y-2">
+   548→                  <Label className="text-xs font-semibold" style={{ color: NAVY }}>Origin Country</Label>
+   549→                  <Input value={form.originCountry} onChange={e => setForm(f => ({ ...f, originCountry: e.target.value }))} placeholder="e.g. India" className="h-9 text-sm" />
+   550→                </div>
+   551→                <div className="space-y-2">
+   552→                  <Label className="text-xs font-semibold" style={{ color: NAVY }}>Raw Weight (kg) *</Label>
+   553→                  <Input type="number" step="0.1" value={form.rawWeightKg} onChange={e => setForm(f => ({ ...f, rawWeightKg: e.target.value }))} placeholder="0.0" className="h-9 text-sm" />
+   554→                </div>
+   555→                <div className="space-y-2">
+   556→                  <Label className="text-xs font-semibold" style={{ color: NAVY }}>USD per kg *</Label>
+   557→                  <Input type="number" step="0.01" value={form.usdPerKg} onChange={e => setForm(f => ({ ...f, usdPerKg: e.target.value }))} placeholder="0.00" className="h-9 text-sm" />
+   558→                </div>
+   559→                <div className="space-y-2">
+   560→                  <Label className="text-xs font-semibold" style={{ color: NAVY }}>Payment Mode</Label>
+   561→                  <Input value={form.paymentMode} onChange={e => setForm(f => ({ ...f, paymentMode: e.target.value }))} placeholder="e.g. LC, TT" className="h-9 text-sm" />
+   562→                </div>
+   563→
+   564→                {/* Computed import values (read-only) */}
+   565→                <div className="sm:col-span-2 rounded-lg border p-3 bg-muted/30 space-y-2">
+   566→                  <p className="text-xs font-semibold mb-2" style={{ color: GOLD }}>Auto-Computed Landed Cost (FX Rate: 120)</p>
+   567→                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+   568→                    <div><span className="text-muted-foreground">Goods USD:</span> <span className="font-medium">${computedImport.goods.toLocaleString()}</span></div>
+   569→                    <div><span className="text-muted-foreground">Freight 3%:</span> <span className="font-medium">${computedImport.freight.toLocaleString()}</span></div>
+   570→                    <div><span className="text-muted-foreground">Duty 12%:</span> <span className="font-medium">${computedImport.duty.toLocaleString()}</span></div>
+   571→                    <div><span className="text-muted-foreground">Bank 1%:</span> <span className="font-medium">${computedImport.bank.toLocaleString()}</span></div>
+   572→                    <div><span className="text-muted-foreground">Landed USD:</span> <span className="font-medium">${computedImport.landed.toLocaleString()}</span></div>
+   573→                    <div><span className="text-muted-foreground">Total BDT:</span> <span className="font-bold" style={{ color: GOLD }}>৳{computedImport.bdt.toLocaleString()}</span></div>
+   574→                    <div><span className="text-muted-foreground">BDT/kg:</span> <span className="font-bold" style={{ color: GOLD }}>৳{computedImport.perKg.toLocaleString()}</span></div>
+   575→                  </div>
+   576→                </div>
+   577→              </>
+   578→            )}
+   579→
+   580→            {/* Conditional: Local-specific fields */}
+   581→            {!isImport && (
+   582→              <>
+   583→                <div className="space-y-2">
+   584→                  <Label className="text-xs font-semibold" style={{ color: NAVY }}>Origin Country</Label>
+   585→                  <Input value={form.originCountry} onChange={e => setForm(f => ({ ...f, originCountry: e.target.value }))} placeholder="e.g. Narayanganj" className="h-9 text-sm" />
+   586→                </div>
+   587→                <div className="space-y-2">
+   588→                  <Label className="text-xs font-semibold" style={{ color: NAVY }}>Raw Weight (kg) *</Label>
+   589→                  <Input type="number" step="0.1" value={form.rawWeightKg} onChange={e => setForm(f => ({ ...f, rawWeightKg: e.target.value }))} placeholder="0.0" className="h-9 text-sm" />
+   590→                </div>
+   591→                <div className="space-y-2">
+   592→                  <Label className="text-xs font-semibold" style={{ color: NAVY }}>Cost per kg (BDT) *</Label>
+   593→                  <Input type="number" step="0.01" value={form.costPerKgBdt} onChange={e => setForm(f => ({ ...f, costPerKgBdt: e.target.value }))} placeholder="0.00" className="h-9 text-sm" />
+   594→                </div>
+   595→                <div className="space-y-2">
+   596→                  <Label className="text-xs font-semibold" style={{ color: NAVY }}>Payment Mode</Label>
+   597→                  <Input value={form.paymentMode} onChange={e => setForm(f => ({ ...f, paymentMode: e.target.value }))} placeholder="e.g. Cash, Credit" className="h-9 text-sm" />
+   598→                </div>
+   599→
+   600→                {/* Computed local values */}
+   601→                <div className="sm:col-span-2 rounded-lg border p-3 bg-muted/30">
+   602→                  <p className="text-xs font-semibold mb-1" style={{ color: GOLD }}>Auto-Computed Total</p>
+   603→                  <p className="text-xs"><span className="text-muted-foreground">Total Landed Cost:</span> <span className="font-bold" style={{ color: GOLD }}>৳{computedLocal.totalBdt.toLocaleString()}</span></p>
+   604→                </div>
+   605→              </>
+   606→            )}
+   607→
+   608→            {/* Quality Grade & Status */}
+   609→            <div className="space-y-2">
+   610→              <Label className="text-xs font-semibold" style={{ color: NAVY }}>Quality Grade</Label>
+   611→              <Input value={form.qualityGrade} onChange={e => setForm(f => ({ ...f, qualityGrade: e.target.value }))} placeholder="e.g. A, B, Premium" className="h-9 text-sm" />
+   612→            </div>
+   613→            <div className="space-y-2">
+   614→              <Label className="text-xs font-semibold" style={{ color: NAVY }}>Status</Label>
+   615→              <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v }))}>
+   616→                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+   617→                <SelectContent>
+   618→                  {STATUS_OPTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+   619→                </SelectContent>
+   620→              </Select>
+   621→            </div>
+   622→
+   623→            {/* Notes */}
+   624→            <div className="space-y-2 sm:col-span-2">
+   625→              <Label className="text-xs font-semibold" style={{ color: NAVY }}>Notes</Label>
+   626→              <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Additional notes..." rows={3} className="text-sm" />
+   627→            </div>
+   628→          </div>
+   629→
+   630→          <DialogFooter className="gap-2 pt-2">
+   631→            <Button variant="outline" onClick={() => { setDialogOpen(false); setEditing(null); setForm(emptyForm()); }}>Cancel</Button>
+   632→            <Button onClick={handleSubmit} disabled={submitting} style={{ backgroundColor: NAVY, color: '#fff' }} className="hover:opacity-90">
+   633→              {submitting ? 'Saving...' : editing ? 'Update Procurement' : 'Create Procurement'}
+   634→            </Button>
+   635→          </DialogFooter>
+   636→        </DialogContent>
+   637→      </Dialog>
+   638→    </div>
+   639→  );
+   640→}
