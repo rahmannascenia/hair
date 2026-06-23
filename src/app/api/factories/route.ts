@@ -72,6 +72,8 @@ export async function POST(request: NextRequest) {
         location: body.location,
         lineLeaderId: body.lineLeaderId,
         groupHead: body.groupHead,
+        fuelBdt: body.fuelBdt ?? 200,
+        transportBdt: body.transportBdt ?? 150,
         isActive: body.isActive ?? true,
       },
       include: {

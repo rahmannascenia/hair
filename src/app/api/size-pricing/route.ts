@@ -92,3 +92,27 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to update size pricing' }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type');
+    const id = searchParams.get('id');
+    const lengthInch = searchParams.get('lengthInch');
+
+    if (type === 'buyer-pricing' && id) {
+      await db.buyerPricing.delete({ where: { id } });
+      return NextResponse.json({ success: true });
+    }
+
+    if (lengthInch) {
+      await db.sizePricing.delete({ where: { lengthInch: parseInt(lengthInch) } });
+      return NextResponse.json({ success: true });
+    }
+
+    return NextResponse.json({ error: 'Provide id or lengthInch' }, { status: 400 });
+  } catch (error) {
+    console.error('Size pricing DELETE error:', error);
+    return NextResponse.json({ error: 'Failed to delete size pricing' }, { status: 500 });
+  }
+}

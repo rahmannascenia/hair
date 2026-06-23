@@ -19,6 +19,8 @@ import {
   Settings,
   ChevronLeft,
   Menu,
+  Truck,
+  Users,
 } from 'lucide-react';
 import { useErpStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -30,10 +32,12 @@ import { useState } from 'react';
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'procurement', label: 'Procurement', icon: Package },
+  { id: 'suppliers', label: 'Suppliers', icon: Truck },
   { id: 'lot-master', label: 'Lot Master', icon: FileText },
   { id: 'inventory', label: 'Inventory', icon: Warehouse },
   { id: 'washing-log', label: 'Washing Log', icon: Droplets },
   { id: 'phase1', label: 'Phase 1 Distribution', icon: GitBranch },
+  { id: 'organization', label: 'Organization', icon: Users },
   { id: 'factory', label: 'Factory Records', icon: Factory },
   { id: 'qc', label: 'QC & Grading', icon: ShieldCheck },
   { id: 'payroll', label: 'Payroll', icon: Banknote },

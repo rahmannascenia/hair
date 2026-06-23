@@ -1,162 +1,219 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import { Pencil, Trash2, Plus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-interface Bucket {
-  name: string;
-  weightKg: number;
-  valueBdt: number;
-  unitCostPerKg?: number;
-}
-
-const NAVY = '#1F3864';
-const GOLD = '#C9A227';
+interface Bucket { id: string; name: string; weightKg: number; valueBdt: number; unitCostPerKg: number; pctOfTotal: number; }
+interface BucketRaw { id: string; bucketName: string; weightKg: number; valueBdt: number; }
 
 export default function InventorySection() {
   const [buckets, setBuckets] = useState<Bucket[]>([]);
-  const [totals, setTotals] = useState<{ weightKg: number; valueBdt: number; valueUsd: number } | null>(null);
+  const [rawBuckets, setRawBuckets] = useState<BucketRaw[]>([]);
+  const [totals, setTotals] = useState({ weightKg: 0, valueBdt: 0, valueUsd: 0 });
   const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<BucketRaw | null>(null);
+  const [form, setForm] = useState({ bucketName: '', weightKg: '', valueBdt: '' });
 
-  useEffect(() => {
-    fetch('/api/inventory')
-      .then(r => r.json())
-      .then(res => {
-        setBuckets(res.buckets || []);
-        setTotals(res.totals || null);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [invRes, rawRes] = await Promise.all([
+        fetch('/api/inventory'),
+        fetch('/api/inventory-buckets'),
+      ]);
+      const invJson = await invRes.json();
+      const rawJson = await rawRes.json();
+      setBuckets(invJson.buckets || []);
+      setTotals(invJson.totals || { weightKg: 0, valueBdt: 0, valueUsd: 0 });
+      setRawBuckets(rawJson.data || []);
+    } catch { toast.error('Failed to load inventory'); }
+    setLoading(false);
+  };
 
-  const totalValue = buckets.reduce((s, b) => s + (b.valueBdt || 0), 0);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { fetchData(); }, []);
 
-  const chartData = buckets.map(b => ({
-    name: b.name.length > 12 ? b.name.slice(0, 12) + '…' : b.name,
-    fullName: b.name,
-    value: b.valueBdt,
-  }));
+  const openCreate = () => {
+    setEditing(null);
+    setForm({ bucketName: '', weightKg: '', valueBdt: '' });
+    setDialogOpen(true);
+  };
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold" style={{ color: NAVY }}>Inventory</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Card key={i}><CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent></Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const openEdit = (item: BucketRaw) => {
+    setEditing(item);
+    setForm({ bucketName: item.bucketName, weightKg: String(item.weightKg), valueBdt: String(item.valueBdt) });
+    setDialogOpen(true);
+  };
+
+  const handleSubmit = async () => {
+    if (!form.bucketName) { toast.error('Bucket name required'); return; }
+    try {
+      if (editing) {
+        const res = await fetch('/api/inventory-buckets', {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: editing.id, bucketName: form.bucketName, weightKg: parseFloat(form.weightKg) || 0, valueBdt: parseFloat(form.valueBdt) || 0 }),
+        });
+        if (res.ok) { toast.success('Updated'); setDialogOpen(false); fetchData(); }
+        else toast.error('Failed');
+      } else {
+        const res = await fetch('/api/inventory-buckets', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bucketName: form.bucketName, weightKg: parseFloat(form.weightKg) || 0, valueBdt: parseFloat(form.valueBdt) || 0 }),
+        });
+        if (res.ok) { toast.success('Created'); setDialogOpen(false); fetchData(); }
+        else toast.error('Failed');
+      }
+    } catch { toast.error('Request failed'); }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this inventory bucket?')) return;
+    const res = await fetch(`/api/inventory-buckets?id=${id}`, { method: 'DELETE' });
+    if (res.ok) { toast.success('Deleted'); fetchData(); }
+    else toast.error('Failed');
+  };
+
+  const r = (v: number) => Math.round(v * 100) / 100;
+  const chartData = buckets.map((b) => ({ name: b.name, value: r(b.valueBdt) }));
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold" style={{ color: NAVY }}>Inventory</h2>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-bold text-[#1F3864]">8-Bucket Inventory</h2>
+          <p className="text-sm text-muted-foreground">Inventory tracking across 8 production stages</p>
+        </div>
+        <Button onClick={openCreate} className="bg-[#1F3864] hover:bg-[#1F3864]/90">
+          <Plus className="h-4 w-4 mr-2" /> Add Bucket
+        </Button>
+      </div>
 
-      {/* Bucket Table */}
-      <Card className="border shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold" style={{ color: NAVY }}>Inventory by Bucket</CardTitle>
-        </CardHeader>
+      <Card>
+        <CardHeader className="pb-3"><CardTitle className="text-lg">Inventory Buckets</CardTitle></CardHeader>
         <CardContent>
-          <ScrollArea className="max-h-[500px]">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="text-xs font-bold" style={{ color: NAVY }}>Bucket #</TableHead>
-                  <TableHead className="text-xs font-bold" style={{ color: NAVY }}>Bucket Name</TableHead>
-                  <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>Weight (kg)</TableHead>
-                  <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>Unit Cost (BDT/kg)</TableHead>
-                  <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>Total Value (BDT)</TableHead>
-                  <TableHead className="text-xs font-bold text-right" style={{ color: NAVY }}>% of Total Value</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {buckets.map((b, i) => {
-                  const unitCost = b.weightKg > 0 ? b.valueBdt / b.weightKg : 0;
-                  const pctOfTotal = totalValue > 0 ? (b.valueBdt / totalValue) * 100 : 0;
-                  return (
-                    <TableRow key={i}>
-                      <TableCell className="text-xs font-medium">{i + 1}</TableCell>
-                      <TableCell className="text-xs font-medium">{b.name}</TableCell>
-                      <TableCell className="text-xs text-right">{b.weightKg.toFixed(1)}</TableCell>
-                      <TableCell className="text-xs text-right" style={{ color: GOLD }}>৳{unitCost.toFixed(0)}</TableCell>
-                      <TableCell className="text-xs text-right font-medium" style={{ color: GOLD }}>৳{b.valueBdt.toLocaleString()}</TableCell>
-                      <TableCell className="text-xs text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div className="h-full rounded-full" style={{ width: `${Math.min(pctOfTotal, 100)}%`, backgroundColor: GOLD }} />
+          {loading ? (
+            <div className="space-y-2">{[...Array(8)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-[#1F3864] text-white hover:bg-[#1F3864]">
+                    <TableHead className="text-white">Bucket</TableHead>
+                    <TableHead className="text-white text-right">Weight (kg)</TableHead>
+                    <TableHead className="text-white text-right">Value (BDT)</TableHead>
+                    <TableHead className="text-white text-right">Unit Cost/kg</TableHead>
+                    <TableHead className="text-white">% of Total</TableHead>
+                    <TableHead className="text-white text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {buckets.map((b) => (
+                    <TableRow key={b.id}>
+                      <TableCell className="font-medium">{b.name}</TableCell>
+                      <TableCell className="text-right font-mono">{r(b.weightKg)}</TableCell>
+                      <TableCell className="text-right font-mono">৳{r(b.valueBdt).toLocaleString()}</TableCell>
+                      <TableCell className="text-right font-mono">{b.weightKg > 0 ? `৳${r(b.valueBdt / b.weightKg)}` : '—'}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
+                            <div className="h-full bg-[#C9A227] rounded-full" style={{ width: `${Math.min(b.pctOfTotal, 100)}%` }} />
                           </div>
-                          <span className="text-xs">{pctOfTotal.toFixed(1)}%</span>
+                          <span className="text-sm font-mono">{r(b.pctOfTotal)}%</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(rawBuckets.find((rb) => rb.id === b.id) || b)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600" onClick={() => handleDelete(b.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
-                  );
-                })}
-                {buckets.length > 0 && (
-                  <TableRow className="bg-muted/50 font-semibold">
-                    <TableCell colSpan={2} className="text-xs" style={{ color: NAVY }}>TOTAL</TableCell>
-                    <TableCell className="text-xs text-right">{totals?.weightKg.toFixed(1) || buckets.reduce((s, b) => s + b.weightKg, 0).toFixed(1)}</TableCell>
-                    <TableCell className="text-xs text-right">-</TableCell>
-                    <TableCell className="text-xs text-right font-bold" style={{ color: GOLD }}>৳{totalValue.toLocaleString()}</TableCell>
-                    <TableCell className="text-xs text-right font-bold">100.0%</TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </ScrollArea>
-        </CardContent>
-      </Card>
-
-      {/* Horizontal Bar Chart */}
-      <Card className="border shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold" style={{ color: NAVY }}>Inventory Value by Bucket (BDT)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={(v) => '৳' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={120} />
-                <Tooltip formatter={(v: number) => ['৳' + v.toLocaleString(), 'Value (BDT)']} labelFormatter={(l: string) => {
-                  const found = chartData.find(d => d.name === l);
-                  return found?.fullName || l;
-                }} />
-                <Bar dataKey="value" fill={GOLD} radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-[280px] text-muted-foreground text-sm">No data</div>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Totals Footer Card */}
-      {totals && (
-        <Card className="border" style={{ backgroundColor: NAVY }}>
-          <CardContent className="p-4 flex flex-wrap gap-6 justify-between">
-            <div>
-              <p className="text-blue-200 text-xs font-medium">Total Weight</p>
-              <p className="text-white text-xl font-bold">{totals.weightKg.toFixed(1)} kg</p>
+      {/* Chart */}
+      <Card>
+        <CardHeader className="pb-3"><CardTitle className="text-lg">Inventory Value Distribution</CardTitle></CardHeader>
+        <CardContent>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} layout="vertical" margin={{ left: 100, right: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" tickFormatter={(v) => `৳${(v / 1000).toFixed(0)}k`} />
+                <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 12 }} />
+                <Tooltip formatter={(value: number) => [`৳${value.toLocaleString()}`, 'Value BDT']} />
+                <Bar dataKey="value" fill="#C9A227" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Totals */}
+      <Card className="bg-[#1F3864] text-white">
+        <CardContent className="p-4 grid grid-cols-3 gap-4 text-center">
+          <div>
+            <p className="text-xs opacity-80">Total Weight</p>
+            <p className="text-xl font-bold">{r(totals.weightKg)} kg</p>
+          </div>
+          <div>
+            <p className="text-xs opacity-80">Total Value (BDT)</p>
+            <p className="text-xl font-bold">৳{r(totals.valueBdt).toLocaleString()}</p>
+          </div>
+          <div>
+            <p className="text-xs opacity-80">Total Value (USD)</p>
+            <p className="text-xl font-bold">${r(totals.valueUsd).toLocaleString()}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-[#1F3864]">{editing ? 'Edit Bucket' : 'New Bucket'}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-2">
+            <div className="grid gap-2">
+              <Label>Bucket Name *</Label>
+              <Input value={form.bucketName} onChange={(e) => setForm({ ...form, bucketName: e.target.value })} placeholder="e.g. Raw Material" disabled={!!editing} />
             </div>
-            <div>
-              <p className="text-blue-200 text-xs font-medium">Total Value (BDT)</p>
-              <p className="text-xl font-bold" style={{ color: GOLD }}>৳{totals.valueBdt.toLocaleString()}</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Weight (kg)</Label>
+                <Input type="number" step="0.01" value={form.weightKg} onChange={(e) => setForm({ ...form, weightKg: e.target.value })} />
+              </div>
+              <div className="grid gap-2">
+                <Label>Value (BDT)</Label>
+                <Input type="number" step="0.01" value={form.valueBdt} onChange={(e) => setForm({ ...form, valueBdt: e.target.value })} />
+              </div>
             </div>
-            <div>
-              <p className="text-blue-200 text-xs font-medium">Total Value (USD)</p>
-              <p className="text-white text-xl font-bold">${totals.valueUsd.toLocaleString()}</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSubmit} className="bg-[#1F3864] hover:bg-[#1F3864]/90">{editing ? 'Update' : 'Create'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

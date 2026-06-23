@@ -55,6 +55,8 @@ export async function PUT(
         location: body.location,
         lineLeaderId: body.lineLeaderId,
         groupHead: body.groupHead,
+        fuelBdt: body.fuelBdt,
+        transportBdt: body.transportBdt,
         isActive: body.isActive,
       },
       include: {

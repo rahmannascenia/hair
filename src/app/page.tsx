@@ -18,14 +18,18 @@ import CostingSection from '@/components/erp/CostingSection';
 import KpiSection from '@/components/erp/KpiSection';
 import RiskSection from '@/components/erp/RiskSection';
 import SettingsSection from '@/components/erp/SettingsSection';
+import SupplierSection from '@/components/erp/SupplierSection';
+import OrganizationSection from '@/components/erp/OrganizationSection';
 
 const sections: Record<string, React.ComponentType> = {
   dashboard: DashboardSection,
   procurement: ProcurementSection,
+  suppliers: SupplierSection,
   'lot-master': LotMasterSection,
   inventory: InventorySection,
   'washing-log': WashingLogSection,
   phase1: Phase1Section,
+  organization: OrganizationSection,
   factory: FactorySection,
   qc: QcSection,
   payroll: PayrollSection,
