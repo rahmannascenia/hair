@@ -1,0 +1,446 @@
+     1→// QcSheet.cs — QC & Grading: LIVE LINKED to factory sheets
+     2→// With A/B/C grade percentages at EVERY level:
+     3→//   - Supervisor level (Section A)
+     4→//   - Line Leader level (Section E)
+     5→//   - Group Head level (Section F)
+     6→//   - Company level (Section G)
+     7→
+     8→using System;
+     9→using System.Linq;
+    10→using ClosedXML.Excel;
+    11→
+    12→namespace BarendraErpXL;
+    13→
+    14→internal static class QcSheet
+    15→{
+    16→    public static void Build(XLWorkbook wb, FactoryConfig[] factoryConfigs) {
+    17→        var ws = wb.AddWorksheet("QC & Grading");
+    18→        Program.SetColumnWidths(ws, 4, 14, 14, 14, 22, 14, 12, 12, 12, 12, 12, 10, 10, 10, 14, 14);
+    19→
+    20→        Program.WriteTitleBar(ws, "QUALITY CONTROL & GRADING — Live Linked + Grade % at All Levels",
+    21→            "A/B/C % at Supervisor, Line Leader, Group Head & Company levels. All data PULLED from factory sheets.", 16);
+    22→
+    23→        int r = 4;
+    24→
+    25→        // ════════════════════════════════════════════════════════════════
+    26→        //  SECTION A: SUPERVISOR-LEVEL QC SUMMARY (with A%/B%/C%)
+    27→        // ════════════════════════════════════════════════════════════════
+    28→        ws.Cell(r, 2).Value = "A. SUPERVISOR-LEVEL QC SUMMARY (A/B/C % per factory)";
+    29→        Program.StyleSubHeader(ws.Cell(r, 2));
+    30→        ws.Range(r, 2, r, 16).Merge();
+    31→        ws.Range(r, 2, r, 16).Style.Fill.BackgroundColor = Program.MidGrey;
+    32→        r++;
+    33→
+    34→        // Factory sheet columns: B=ID, C=Name, D=Lot, E=Input, F=A-wt, G=B-wt, H=C-wt,
+    35→        //   I=Wastage, J=Balance, K=Days, L=Base Wage, M=Att Bonus, N=Total Payable
+    36→        // Supervisor: C5=Name, C8=LineLeader, C9=GroupHead, C10=Hosting, C11=Perf, C12=TotalSupPay
+    37→        // Factory tiles: F15=A%, H15=B%, J15=C%
+    38→
+    39→        string[] aHdr = { "Factory ID", "Supervisor", "Lot ID",
+    40→                         "Input (kg)", "A-Wt (kg)", "B-Wt (kg)", "C-Wt (kg)",
+    41→                         "Wastage (kg)", "Balance",
+    42→                         "A %", "B %", "C %",
+    43→                         "WIP Remaining (kg)", "WIP %",
+    44→                         "Sup Pay (BDT)", "Worker Wages (BDT)", "Grand Total (BDT)" };
+    45→        for (int i = 0; i < aHdr.Length; i++) {
+    46→            ws.Cell(r, 2 + i).Value = aHdr[i];
+    47→            Program.StyleHeader(ws.Cell(r, 2 + i));
+    48→        }
+    49→        ws.Row(r).Height = 42;
+    50→        r++;
+    51→
+    52→        int aStartRow = r;
+    53→        for (int i = 0; i < factoryConfigs.Length; i++) {
+    54→            var cfg = factoryConfigs[i];
+    55→            int wc = cfg.Workers.Length;
+    56→            int wStart = 19;
+    57→            int wEnd = wStart + wc - 1;
+    58→            string sn = cfg.SheetName;
+    59→
+    60→            ws.Cell(r, 2).Value = cfg.FactoryId;
+    61→            ws.Cell(r, 3).Value = $"='{sn}'!C5";
+    62→            ws.Cell(r, 4).Value = $"='{sn}'!D19";
+    63→            ws.Cell(r, 5).Value = $"=SUM('{sn}'!E{wStart}:E{wEnd})";
+    64→            ws.Cell(r, 6).Value = $"=SUM('{sn}'!F{wStart}:F{wEnd})";
+    65→            ws.Cell(r, 7).Value = $"=SUM('{sn}'!G{wStart}:G{wEnd})";
+    66→            ws.Cell(r, 8).Value = $"=SUM('{sn}'!H{wStart}:H{wEnd})";
+    67→            ws.Cell(r, 9).Value = $"=SUM('{sn}'!I{wStart}:I{wEnd})";
+    68→            ws.Cell(r, 10).Value = $"=IF(ROUND(E{r}-(F{r}+G{r}+H{r}+I{r}),3)=0,\"OK\",\"MISMATCH\")";
+    69→            // A%, B%, C% — pull from factory sheet tiles
+    70→            ws.Cell(r, 11).Value = $"='{sn}'!{cfg.AGradePctRef}";
+    71→            ws.Cell(r, 12).Value = $"='{sn}'!{cfg.BGradePctRef}";
+    72→            ws.Cell(r, 13).Value = $"='{sn}'!{cfg.CGradePctRef}";
+    73→            // WIP Remaining — pull from factory sheet G17 (WIP Remaining cell)
+    74→            ws.Cell(r, 14).Value = $"='{sn}'!G17";
+    75→            // WIP % — pull from factory sheet I17
+    76→            ws.Cell(r, 15).Value = $"='{sn}'!I17";
+    77→            // Supervisor Pay
+    78→            ws.Cell(r, 16).Value = $"='{sn}'!C12";
+    79→            // Worker Wages
+    80→            ws.Cell(r, 17).Value = $"=SUM('{sn}'!L{wStart}:L{wEnd})";
+    81→            // Grand Total
+    82→            ws.Cell(r, 18).Value = $"=P{r}+Q{r}";
+    83→
+    84→            for (int c = 2; c <= 18; c++) {
+    85→                Program.StyleCell(ws.Cell(r, c), i);
+    86→                if (c == 2 || c == 4) ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+    87→                if (c >= 5 && c <= 9) ws.Cell(r, c).Style.NumberFormat.Format = "#,##0.0";
+    88→                if (c == 10) { ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; ws.Cell(r, c).Style.Font.Bold = true; }
+    89→                if (c >= 11 && c <= 13) { ws.Cell(r, c).Style.NumberFormat.Format = "0.0%"; ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; ws.Cell(r, c).Style.Font.Bold = true; }
+    90→                if (c == 14) { ws.Cell(r, c).Style.NumberFormat.Format = "#,##0.0"; ws.Cell(r, c).Style.Font.Bold = true; ws.Cell(r, c).Style.Font.FontColor = Program.Red; }
+    91→                if (c == 15) { ws.Cell(r, c).Style.NumberFormat.Format = "0.0%"; ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; ws.Cell(r, c).Style.Font.Bold = true; ws.Cell(r, c).Style.Font.FontColor = Program.Red; }
+    92→                if (c >= 16 && c <= 18) ws.Cell(r, c).Style.NumberFormat.Format = "#,##0";
+    93→                if (c == 18) { ws.Cell(r, c).Style.Fill.BackgroundColor = Program.Gold; ws.Cell(r, c).Style.Font.Bold = true; }
+    94→            }
+    95→            r++;
+    96→        }
+    97→        // Totals
+    98→        ws.Cell(r, 3).Value = "ALL FACTORIES";
+    99→        ws.Cell(r, 5).Value = $"=SUM(E{aStartRow}:E{r-1})";
+   100→        ws.Cell(r, 6).Value = $"=SUM(F{aStartRow}:F{r-1})";
+   101→        ws.Cell(r, 7).Value = $"=SUM(G{aStartRow}:G{r-1})";
+   102→        ws.Cell(r, 8).Value = $"=SUM(H{aStartRow}:H{r-1})";
+   103→        ws.Cell(r, 9).Value = $"=SUM(I{aStartRow}:I{r-1})";
+   104→        ws.Cell(r, 10).Value = $"=IF(ROUND(E{r}-(F{r}+G{r}+H{r}+I{r}),3)=0,\"OK\",\"MISMATCH\")";
+   105→        // Company-level A%/B%/C%
+   106→        ws.Cell(r, 11).Value = $"=IFERROR(F{r}/(F{r}+G{r}+H{r}),0)";
+   107→        ws.Cell(r, 12).Value = $"=IFERROR(G{r}/(F{r}+G{r}+H{r}),0)";
+   108→        ws.Cell(r, 13).Value = $"=IFERROR(H{r}/(F{r}+G{r}+H{r}),0)";
+   109→        // WIP totals
+   110→        ws.Cell(r, 14).Value = $"=SUM(N{aStartRow}:N{r-1})";
+   111→        ws.Cell(r, 15).Value = $"=IFERROR(N{r}/E{r},0)";
+   112→        // Pay totals
+   113→        ws.Cell(r, 16).Value = $"=SUM(P{aStartRow}:P{r-1})";
+   114→        ws.Cell(r, 17).Value = $"=SUM(Q{aStartRow}:Q{r-1})";
+   115→        ws.Cell(r, 18).Value = $"=SUM(R{aStartRow}:R{r-1})";
+   116→        for (int c = 2; c <= 18; c++) Program.StyleTotal(ws.Cell(r, c));
+   117→        ws.Cell(r, 5).Style.NumberFormat.Format = "#,##0.0";
+   118→        ws.Cell(r, 6).Style.NumberFormat.Format = "#,##0.0";
+   119→        ws.Cell(r, 7).Style.NumberFormat.Format = "#,##0.0";
+   120→        ws.Cell(r, 8).Style.NumberFormat.Format = "#,##0.0";
+   121→        ws.Cell(r, 9).Style.NumberFormat.Format = "#,##0.0";
+   122→        ws.Cell(r, 11).Style.NumberFormat.Format = "0.0%";
+   123→        ws.Cell(r, 12).Style.NumberFormat.Format = "0.0%";
+   124→        ws.Cell(r, 13).Style.NumberFormat.Format = "0.0%";
+   125→        ws.Cell(r, 14).Style.NumberFormat.Format = "#,##0.0";
+   126→        ws.Cell(r, 15).Style.NumberFormat.Format = "0.0%";
+   127→        ws.Cell(r, 16).Style.NumberFormat.Format = "#,##0";
+   128→        ws.Cell(r, 17).Style.NumberFormat.Format = "#,##0";
+   129→        ws.Cell(r, 18).Style.NumberFormat.Format = "#,##0";
+   130→        int aEndRow = r - 1;
+   131→        r += 2;
+   132→
+   133→        // ════════════════════════════════════════════════════════════════
+   134→        //  SECTION B: WORKER-LEVEL QC DETAIL
+   135→        // ════════════════════════════════════════════════════════════════
+   136→        ws.Cell(r, 2).Value = "B. WORKER-LEVEL QC DETAIL (Live from Factory Sheets)";
+   137→        Program.StyleSubHeader(ws.Cell(r, 2));
+   138→        ws.Range(r, 2, r, 16).Merge();
+   139→        ws.Range(r, 2, r, 16).Style.Fill.BackgroundColor = Program.MidGrey;
+   140→        r++;
+   141→
+   142→        string[] bHdr = { "Factory ID", "Worker ID", "Worker Name", "Lot ID",
+   143→                         "Input (kg)", "A-Wt (kg)", "B-Wt (kg)", "C-Wt (kg)",
+   144→                         "Wastage (kg)", "Balance", "Days Present",
+   145→                         "Base Wage (BDT)", "Total Payable (BDT)" };
+   146→        for (int i = 0; i < bHdr.Length; i++) {
+   147→            ws.Cell(r, 2 + i).Value = bHdr[i];
+   148→            Program.StyleHeader(ws.Cell(r, 2 + i));
+   149→        }
+   150→        ws.Row(r).Height = 42;
+   151→        r++;
+   152→
+   153→        int bStartRow = r;
+   154→        int workerSeq = 0;
+   155→        foreach (var cfg in factoryConfigs) {
+   156→            int wc = cfg.Workers.Length;
+   157→            int wStart = 19;
+   158→            string sn = cfg.SheetName;
+   159→            for (int wi = 0; wi < wc; wi++) {
+   160→                int fRow = wStart + wi;
+   161→                ws.Cell(r, 2).Value = cfg.FactoryId;
+   162→                ws.Cell(r, 3).Value = $"='{sn}'!B{fRow}";
+   163→                ws.Cell(r, 4).Value = $"='{sn}'!C{fRow}";
+   164→                ws.Cell(r, 5).Value = $"='{sn}'!D{fRow}";
+   165→                ws.Cell(r, 6).Value = $"='{sn}'!E{fRow}";
+   166→                ws.Cell(r, 7).Value = $"='{sn}'!F{fRow}";
+   167→                ws.Cell(r, 8).Value = $"='{sn}'!G{fRow}";
+   168→                ws.Cell(r, 9).Value = $"='{sn}'!H{fRow}";
+   169→                ws.Cell(r, 10).Value = $"='{sn}'!I{fRow}";
+   170→                ws.Cell(r, 11).Value = $"='{sn}'!J{fRow}";
+   171→                ws.Cell(r, 12).Value = $"='{sn}'!K{fRow}";
+   172→                ws.Cell(r, 13).Value = $"='{sn}'!L{fRow}";
+   173→                ws.Cell(r, 14).Value = $"='{sn}'!N{fRow}";
+   174→                for (int c = 2; c <= 15; c++) {
+   175→                    Program.StyleCell(ws.Cell(r, c), workerSeq);
+   176→                    if (c == 2 || c == 5) ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+   177→                    if (c >= 6 && c <= 10) ws.Cell(r, c).Style.NumberFormat.Format = "#,##0.0";
+   178→                    if (c == 11) { ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; ws.Cell(r, c).Style.Font.Bold = true; }
+   179→                    if (c == 12) ws.Cell(r, c).Style.NumberFormat.Format = "0";
+   180→                    if (c >= 13 && c <= 14) ws.Cell(r, c).Style.NumberFormat.Format = "#,##0";
+   181→                    if (c == 14) { ws.Cell(r, c).Style.Fill.BackgroundColor = Program.Gold; ws.Cell(r, c).Style.Font.Bold = true; }
+   182→                }
+   183→                r++;
+   184→                workerSeq++;
+   185→            }
+   186→        }
+   187→        int bEndRow = r - 1;
+   188→        r += 2;
+   189→
+   190→        // ════════════════════════════════════════════════════════════════
+   191→        //  SECTION C: LOT-LEVEL CONSOLIDATION
+   192→        // ════════════════════════════════════════════════════════════════
+   193→        ws.Cell(r, 2).Value = "C. LOT-LEVEL CONSOLIDATION (Cross-Factory by Lot ID)";
+   194→        Program.StyleSubHeader(ws.Cell(r, 2));
+   195→        ws.Range(r, 2, r, 16).Merge();
+   196→        ws.Range(r, 2, r, 16).Style.Fill.BackgroundColor = Program.MidGrey;
+   197→        r++;
+   198→
+   199→        string[] cHdr = { "Lot ID", "Factories", "Total Input (kg)",
+   200→                         "Total A (kg)", "Total B (kg)", "Total C (kg)",
+   201→                         "Total Wastage (kg)", "Balance",
+   202→                         "A %", "B %", "C %",
+   203→                         "Total Wages (BDT)", "Grand Total (BDT)" };
+   204→        for (int i = 0; i < cHdr.Length; i++) {
+   205→            ws.Cell(r, 2 + i).Value = cHdr[i];
+   206→            Program.StyleHeader(ws.Cell(r, 2 + i));
+   207→        }
+   208→        ws.Row(r).Height = 42;
+   209→        r++;
+   210→
+   211→        int cStartRow = r;
+   212→        var lotIds = factoryConfigs.Select(c => c.LotId).Distinct().ToList();
+   213→        foreach (var lotId in lotIds) {
+   214→            var factoriesForLot = factoryConfigs.Where(c => c.LotId == lotId).ToList();
+   215→            ws.Cell(r, 2).Value = lotId;
+   216→            ws.Cell(r, 3).Value = string.Join(", ", factoriesForLot.Select(c => c.FactoryId));
+   217→            ws.Cell(r, 4).Value = "=" + string.Join("+", factoriesForLot.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!E19:E{18+wc})"; }));
+   218→            ws.Cell(r, 5).Value = "=" + string.Join("+", factoriesForLot.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!F19:F{18+wc})"; }));
+   219→            ws.Cell(r, 6).Value = "=" + string.Join("+", factoriesForLot.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!G19:G{18+wc})"; }));
+   220→            ws.Cell(r, 7).Value = "=" + string.Join("+", factoriesForLot.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!H19:H{18+wc})"; }));
+   221→            ws.Cell(r, 8).Value = "=" + string.Join("+", factoriesForLot.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!I19:I{18+wc})"; }));
+   222→            ws.Cell(r, 9).Value = $"=IF(ROUND(D{r}-(E{r}+F{r}+G{r}+H{r}),3)=0,\"OK\",\"MISMATCH\")";
+   223→            ws.Cell(r, 10).Value = $"=IFERROR(E{r}/(E{r}+F{r}+G{r}),0)";
+   224→            ws.Cell(r, 11).Value = $"=IFERROR(F{r}/(E{r}+F{r}+G{r}),0)";
+   225→            ws.Cell(r, 12).Value = $"=IFERROR(G{r}/(E{r}+F{r}+G{r}),0)";
+   226→            ws.Cell(r, 13).Value = "=" + string.Join("+", factoriesForLot.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!L19:L{18+wc})"; }));
+   227→            ws.Cell(r, 14).Value = "=" + string.Join("+", factoriesForLot.Select(c => $"'{c.SheetName}'!C12")) + $"+M{r}";
+   228→            for (int col = 2; col <= 14; col++) {
+   229→                Program.StyleCell(ws.Cell(r, col), 0);
+   230→                if (col == 2 || col == 3) ws.Cell(r, col).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+   231→                if (col >= 4 && col <= 8) ws.Cell(r, col).Style.NumberFormat.Format = "#,##0.0";
+   232→                if (col == 9) { ws.Cell(r, col).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; ws.Cell(r, col).Style.Font.Bold = true; }
+   233→                if (col >= 10 && col <= 12) { ws.Cell(r, col).Style.NumberFormat.Format = "0.0%"; ws.Cell(r, col).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; ws.Cell(r, col).Style.Font.Bold = true; }
+   234→                if (col >= 13 && col <= 14) ws.Cell(r, col).Style.NumberFormat.Format = "#,##0";
+   235→                if (col == 14) { ws.Cell(r, col).Style.Fill.BackgroundColor = Program.Gold; ws.Cell(r, col).Style.Font.Bold = true; }
+   236→            }
+   237→            r++;
+   238→        }
+   239→        r += 2;
+   240→
+   241→        // ════════════════════════════════════════════════════════════════
+   242→        //  SECTION D: DISCREPANCY CROSS-CHECK
+   243→        // ════════════════════════════════════════════════════════════════
+   244→        ws.Cell(r, 2).Value = "D. DISCREPANCY CROSS-CHECK (Factory ↔ QC ↔ Lot Master)";
+   245→        Program.StyleSubHeader(ws.Cell(r, 2));
+   246→        ws.Range(r, 2, r, 16).Merge();
+   247→        ws.Range(r, 2, r, 16).Style.Fill.BackgroundColor = Program.MidGrey;
+   248→        r++;
+   249→
+   250→        string[] dHdr = { "Factory ID", "Lot ID", "Factory Input (kg)", "QC-A Input (kg)", "QC-B Input (kg)",
+   251→                         "Match F↔A", "Match F↔B", "Status" };
+   252→        for (int i = 0; i < dHdr.Length; i++) {
+   253→            ws.Cell(r, 2 + i).Value = dHdr[i];
+   254→            Program.StyleHeader(ws.Cell(r, 2 + i));
+   255→        }
+   256→        ws.Row(r).Height = 42;
+   257→        r++;
+   258→
+   259→        for (int i = 0; i < factoryConfigs.Length; i++) {
+   260→            var cfg = factoryConfigs[i];
+   261→            int wc = cfg.Workers.Length;
+   262→            string sn = cfg.SheetName;
+   263→            int aRow = aStartRow + i;
+   264→            ws.Cell(r, 2).Value = cfg.FactoryId;
+   265→            ws.Cell(r, 3).Value = cfg.LotId;
+   266→            ws.Cell(r, 4).Value = $"=SUM('{sn}'!E19:E{18+wc})";
+   267→            ws.Cell(r, 5).Value = $"=E{aRow}";
+   268→            ws.Cell(r, 6).Value = $"=SUMIF(B{bStartRow}:B{bEndRow},B{r},F{bStartRow}:F{bEndRow})";
+   269→            ws.Cell(r, 7).Value = $"=IF(ROUND(D{r}-E{r},3)=0,\"OK\",\"MISMATCH\")";
+   270→            ws.Cell(r, 8).Value = $"=IF(ROUND(D{r}-F{r},3)=0,\"OK\",\"MISMATCH\")";
+   271→            ws.Cell(r, 9).Value = $"=IF(AND(G{r}=\"OK\",H{r}=\"OK\"),\"ALL OK\",\"INVESTIGATE\")";
+   272→            for (int c = 2; c <= 9; c++) {
+   273→                Program.StyleCell(ws.Cell(r, c), i);
+   274→                if (c == 2 || c == 3) ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+   275→                if (c >= 4 && c <= 6) ws.Cell(r, c).Style.NumberFormat.Format = "#,##0.0";
+   276→                if (c >= 7 && c <= 8) { ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; ws.Cell(r, c).Style.Font.Bold = true; }
+   277→                if (c == 9) { ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; ws.Cell(r, c).Style.Font.Bold = true; ws.Cell(r, c).Style.Fill.BackgroundColor = Program.Gold; }
+   278→            }
+   279→            r++;
+   280→        }
+   281→        r += 2;
+   282→
+   283→        // ════════════════════════════════════════════════════════════════
+   284→        //  SECTION E: LINE LEADER PERFORMANCE (A%/B%/C%)
+   285→        // ════════════════════════════════════════════════════════════════
+   286→        ws.Cell(r, 2).Value = "E. LINE LEADER PERFORMANCE (A/B/C % per Line Leader)";
+   287→        Program.StyleSubHeader(ws.Cell(r, 2));
+   288→        ws.Range(r, 2, r, 16).Merge();
+   289→        ws.Range(r, 2, r, 16).Style.Fill.BackgroundColor = Program.MidGrey;
+   290→        r++;
+   291→
+   292→        string[] eHdr = { "Line Leader", "Factories", "Workers",
+   293→                         "Total A (kg)", "Total B (kg)", "Total C (kg)",
+   294→                         "A %", "B %", "C %",
+   295→                         "WIP Remaining (kg)", "WIP %",
+   296→                         "Total Wages (BDT)", "Status" };
+   297→        for (int i = 0; i < eHdr.Length; i++) {
+   298→            ws.Cell(r, 2 + i).Value = eHdr[i];
+   299→            Program.StyleHeader(ws.Cell(r, 2 + i));
+   300→        }
+   301→        ws.Row(r).Height = 42;
+   302→        r++;
+   303→
+   304→        int eStartRow = r;
+   305→        var lineLeaders = factoryConfigs.Select(c => c.LineLeader).Distinct().ToList();
+   306→        foreach (var ll in lineLeaders) {
+   307→            var factoriesForLL = factoryConfigs.Where(c => c.LineLeader == ll).ToList();
+   308→            ws.Cell(r, 2).Value = ll;
+   309→            ws.Cell(r, 3).Value = string.Join(", ", factoriesForLL.Select(c => c.FactoryId));
+   310→            ws.Cell(r, 4).Value = "=" + string.Join("+", factoriesForLL.Select(c => { int wc = c.Workers.Length; return $"COUNTA('{c.SheetName}'!B19:B{18+wc})"; }));
+   311→            ws.Cell(r, 5).Value = "=" + string.Join("+", factoriesForLL.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!F19:F{18+wc})"; }));
+   312→            ws.Cell(r, 6).Value = "=" + string.Join("+", factoriesForLL.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!G19:G{18+wc})"; }));
+   313→            ws.Cell(r, 7).Value = "=" + string.Join("+", factoriesForLL.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!H19:H{18+wc})"; }));
+   314→            ws.Cell(r, 8).Value = $"=IFERROR(E{r}/(E{r}+F{r}+G{r}),0)";
+   315→            ws.Cell(r, 9).Value = $"=IFERROR(F{r}/(E{r}+F{r}+G{r}),0)";
+   316→            ws.Cell(r, 10).Value = $"=IFERROR(G{r}/(E{r}+F{r}+G{r}),0)";
+   317→            // WIP Remaining — sum from factory sheets G17
+   318→            ws.Cell(r, 11).Value = "=" + string.Join("+", factoriesForLL.Select(c => $"'{c.SheetName}'!G17"));
+   319→            // WIP % = WIP / Total Input
+   320→            ws.Cell(r, 12).Value = $"=IFERROR(K{r}/(" + string.Join("+", factoriesForLL.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!E19:E{18+wc})"; })) + "),0)";
+   321→            ws.Cell(r, 13).Value = "=" + string.Join("+", factoriesForLL.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!L19:L{18+wc})"; }));
+   322→            ws.Cell(r, 14).Value = $"=IF(H{r}>=FACTORY_A_MIN/100,\"ON TARGET\",\"BELOW TARGET\")";
+   323→            for (int c = 2; c <= 14; c++) {
+   324→                Program.StyleCell(ws.Cell(r, c), 0);
+   325→                if (c == 2 || c == 3) ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+   326→                if (c == 4) ws.Cell(r, c).Style.NumberFormat.Format = "0";
+   327→                if (c >= 5 && c <= 7) ws.Cell(r, c).Style.NumberFormat.Format = "#,##0.0";
+   328→                if (c >= 8 && c <= 10) { ws.Cell(r, c).Style.NumberFormat.Format = "0.0%"; ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; ws.Cell(r, c).Style.Font.Bold = true; }
+   329→                if (c == 11) { ws.Cell(r, c).Style.NumberFormat.Format = "#,##0.0"; ws.Cell(r, c).Style.Font.Bold = true; ws.Cell(r, c).Style.Font.FontColor = Program.Red; }
+   330→                if (c == 12) { ws.Cell(r, c).Style.NumberFormat.Format = "0.0%"; ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; ws.Cell(r, c).Style.Font.Bold = true; ws.Cell(r, c).Style.Font.FontColor = Program.Red; }
+   331→                if (c == 13) ws.Cell(r, c).Style.NumberFormat.Format = "#,##0";
+   332→                if (c == 14) { ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; ws.Cell(r, c).Style.Font.Bold = true; ws.Cell(r, c).Style.Fill.BackgroundColor = Program.Gold; }
+   333→            }
+   334→            r++;
+   335→        }
+   336→        r += 2;
+   337→
+   338→        // ════════════════════════════════════════════════════════════════
+   339→        //  SECTION F: GROUP HEAD PERFORMANCE (A%/B%/C%)
+   340→        // ════════════════════════════════════════════════════════════════
+   341→        ws.Cell(r, 2).Value = "F. GROUP HEAD PERFORMANCE (A/B/C % per Group Head)";
+   342→        Program.StyleSubHeader(ws.Cell(r, 2));
+   343→        ws.Range(r, 2, r, 16).Merge();
+   344→        ws.Range(r, 2, r, 16).Style.Fill.BackgroundColor = Program.MidGrey;
+   345→        r++;
+   346→
+   347→        string[] fHdr = { "Group Head", "Factories", "Line Leaders", "Workers",
+   348→                         "Total A (kg)", "Total B (kg)", "Total C (kg)",
+   349→                         "A %", "B %", "C %",
+   350→                         "WIP Remaining (kg)", "WIP %",
+   351→                         "Total Wages (BDT)", "Status" };
+   352→        for (int i = 0; i < fHdr.Length; i++) {
+   353→            ws.Cell(r, 2 + i).Value = fHdr[i];
+   354→            Program.StyleHeader(ws.Cell(r, 2 + i));
+   355→        }
+   356→        ws.Row(r).Height = 42;
+   357→        r++;
+   358→
+   359→        var groupHeads = factoryConfigs.Select(c => c.GroupHead).Distinct().ToList();
+   360→        foreach (var gh in groupHeads) {
+   361→            var factoriesForGH = factoryConfigs.Where(c => c.GroupHead == gh).ToList();
+   362→            ws.Cell(r, 2).Value = gh;
+   363→            ws.Cell(r, 3).Value = string.Join(", ", factoriesForGH.Select(c => c.FactoryId));
+   364→            ws.Cell(r, 4).Value = string.Join(", ", factoriesForGH.Select(c => c.LineLeader).Distinct());
+   365→            ws.Cell(r, 5).Value = "=" + string.Join("+", factoriesForGH.Select(c => { int wc = c.Workers.Length; return $"COUNTA('{c.SheetName}'!B19:B{18+wc})"; }));
+   366→            ws.Cell(r, 6).Value = "=" + string.Join("+", factoriesForGH.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!F19:F{18+wc})"; }));
+   367→            ws.Cell(r, 7).Value = "=" + string.Join("+", factoriesForGH.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!G19:G{18+wc})"; }));
+   368→            ws.Cell(r, 8).Value = "=" + string.Join("+", factoriesForGH.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!H19:H{18+wc})"; }));
+   369→            ws.Cell(r, 9).Value = $"=IFERROR(F{r}/(F{r}+G{r}+H{r}),0)";
+   370→            ws.Cell(r, 10).Value = $"=IFERROR(G{r}/(F{r}+G{r}+H{r}),0)";
+   371→            ws.Cell(r, 11).Value = $"=IFERROR(H{r}/(F{r}+G{r}+H{r}),0)";
+   372→            // WIP Remaining — sum from factory sheets G17
+   373→            ws.Cell(r, 12).Value = "=" + string.Join("+", factoriesForGH.Select(c => $"'{c.SheetName}'!G17"));
+   374→            // WIP %
+   375→            ws.Cell(r, 13).Value = $"=IFERROR(L{r}/(" + string.Join("+", factoriesForGH.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!E19:E{18+wc})"; })) + "),0)";
+   376→            ws.Cell(r, 14).Value = "=" + string.Join("+", factoriesForGH.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!L19:L{18+wc})"; }));
+   377→            ws.Cell(r, 15).Value = $"=IF(I{r}>=FACTORY_A_MIN/100,\"ON TARGET\",\"BELOW TARGET\")";
+   378→            for (int c = 2; c <= 15; c++) {
+   379→                Program.StyleCell(ws.Cell(r, c), 0);
+   380→                if (c == 2 || c == 3 || c == 4) ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+   381→                if (c == 5) ws.Cell(r, c).Style.NumberFormat.Format = "0";
+   382→                if (c >= 6 && c <= 8) ws.Cell(r, c).Style.NumberFormat.Format = "#,##0.0";
+   383→                if (c >= 9 && c <= 11) { ws.Cell(r, c).Style.NumberFormat.Format = "0.0%"; ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; ws.Cell(r, c).Style.Font.Bold = true; }
+   384→                if (c == 12) { ws.Cell(r, c).Style.NumberFormat.Format = "#,##0.0"; ws.Cell(r, c).Style.Font.Bold = true; ws.Cell(r, c).Style.Font.FontColor = Program.Red; }
+   385→                if (c == 13) { ws.Cell(r, c).Style.NumberFormat.Format = "0.0%"; ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; ws.Cell(r, c).Style.Font.Bold = true; ws.Cell(r, c).Style.Font.FontColor = Program.Red; }
+   386→                if (c == 14) ws.Cell(r, c).Style.NumberFormat.Format = "#,##0";
+   387→                if (c == 13) { ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; ws.Cell(r, c).Style.Font.Bold = true; ws.Cell(r, c).Style.Fill.BackgroundColor = Program.Gold; }
+   388→            }
+   389→            r++;
+   390→        }
+   391→        r += 2;
+   392→
+   393→        // ════════════════════════════════════════════════════════════════
+   394→        //  SECTION G: COMPANY-LEVEL PERFORMANCE (overall A%/B%/C%)
+   395→        // ════════════════════════════════════════════════════════════════
+   396→        ws.Cell(r, 2).Value = "G. COMPANY-LEVEL PERFORMANCE (Overall A/B/C %)";
+   397→        Program.StyleSubHeader(ws.Cell(r, 2));
+   398→        ws.Range(r, 2, r, 16).Merge();
+   399→        ws.Range(r, 2, r, 16).Style.Fill.BackgroundColor = Program.MidGrey;
+   400→        r++;
+   401→
+   402→        string[] gHdr = { "Metric", "Value" };
+   403→        ws.Cell(r, 2).Value = gHdr[0]; ws.Cell(r, 3).Value = gHdr[1];
+   404→        Program.StyleHeader(ws.Cell(r, 2)); Program.StyleHeader(ws.Cell(r, 3));
+   405→        r++;
+   406→
+   407→        // Build aggregate formulas across all factories
+   408→        string allWorkers = "=" + string.Join("+", factoryConfigs.Select(c => { int wc = c.Workers.Length; return $"COUNTA('{c.SheetName}'!B19:B{18+wc})"; }));
+   409→        string allInput = "=" + string.Join("+", factoryConfigs.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!E19:E{18+wc})"; }));
+   410→        string allASum = string.Join("+", factoryConfigs.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!F19:F{18+wc})"; }));
+   411→        string allBSum = string.Join("+", factoryConfigs.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!G19:G{18+wc})"; }));
+   412→        string allCSum = string.Join("+", factoryConfigs.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!H19:H{18+wc})"; }));
+   413→        string allWaste = "=" + string.Join("+", factoryConfigs.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!I19:I{18+wc})"; }));
+   414→        string allWages = "=" + string.Join("+", factoryConfigs.Select(c => { int wc = c.Workers.Length; return $"SUM('{c.SheetName}'!L19:L{18+wc})"; }));
+   415→
+   416→        var companyMetrics = new (string label, string formula, string fmt)[] {
+   417→            ("Total Factories",       $"={factoryConfigs.Length}", "0"),
+   418→            ("Total Workers",         allWorkers, "0"),
+   419→            ("Total Input (kg)",      allInput, "#,##0.0"),
+   420→            ("Total A-Grade (kg)",    "=" + allASum, "#,##0.0"),
+   421→            ("Total B-Grade (kg)",    "=" + allBSum, "#,##0.0"),
+   422→            ("Total C-Grade (kg)",    "=" + allCSum, "#,##0.0"),
+   423→            ("Total Wastage (kg)",    allWaste, "#,##0.0"),
+   424→            ("A-Grade % (Company)",   $"=IFERROR(({allASum})/(({allASum})+({allBSum})+({allCSum})),0)", "0.0%"),
+   425→            ("B-Grade % (Company)",   $"=IFERROR(({allBSum})/(({allASum})+({allBSum})+({allCSum})),0)", "0.0%"),
+   426→            ("C-Grade % (Company)",   $"=IFERROR(({allCSum})/(({allASum})+({allBSum})+({allCSum})),0)", "0.0%"),
+   427→            ("Total Wages (BDT)",     allWages, "#,##0"),
+   428→        };
+   429→        for (int i = 0; i < companyMetrics.Length; i++) {
+   430→            ws.Cell(r, 2).Value = companyMetrics[i].label;
+   431→            ws.Cell(r, 3).Value = companyMetrics[i].formula;
+   432→            for (int c = 2; c <= 3; c++) {
+   433→                Program.StyleCell(ws.Cell(r, c), i);
+   434→                ws.Cell(r, c).Style.Alignment.Horizontal = (c == 3) ? XLAlignmentHorizontalValues.Center : XLAlignmentHorizontalValues.Left;
+   435→                if (c == 2) ws.Cell(r, c).Style.Alignment.Indent = 1;
+   436→            }
+   437→            ws.Cell(r, 3).Style.NumberFormat.Format = companyMetrics[i].fmt;
+   438→            ws.Cell(r, 3).Style.Fill.BackgroundColor = Program.Gold;
+   439→            ws.Cell(r, 3).Style.Font.Bold = true;
+   440→            r++;
+   441→        }
+   442→
+   443→        Program.FreezeTop(ws);
+   444→    }
+   445→}
+   446→

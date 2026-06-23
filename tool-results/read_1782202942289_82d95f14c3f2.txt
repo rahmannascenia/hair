@@ -1,0 +1,986 @@
+     1→     1→// ============================================================================
+     2→     2→//  Barendra International — End-to-End ERP Workbook Generator
+     3→     3→//  .NET 8 + ClosedXML  |  Generates BarendraInternational_ERP.xlsx
+     4→     4→//
+     5→     5→//  Every derived value is written as a LIVE Excel formula so the workbook
+     6→     6→//  stays dynamic — change an input on Settings and the Dashboard, Payroll,
+     7→     7→//  Costing, Sales, KPI and Risk sheets all re-compute on open.
+     8→     8→//
+     9→     9→//  Charts are added in a second pass by add_charts.py (openpyxl), because
+    10→    10→//  ClosedXML 0.104 does not yet ship native chart support.
+    11→    11→// ============================================================================
+    12→    12→
+    13→    13→using System;
+    14→    14→using System.Globalization;
+    15→    15→using System.Linq;
+    16→    16→using ClosedXML.Excel;
+    17→    17→
+    18→    18→namespace BarendraErpXL;
+    19→    19→
+    20→    20→internal static class Program
+    21→    21→{
+    22→    22→    // ──────────────────────────────────────────────────────────────────────
+    23→    23→    //  DESIGN TOKENS — "Corporate Pro ERP"
+    24→    24→    // ──────────────────────────────────────────────────────────────────────
+    25→    25→    public static readonly XLColor Navy   = XLColor.FromHtml("#1F3864");
+    26→    26→    public static readonly XLColor Gold   = XLColor.FromHtml("#C9A227");
+    27→    27→    public static readonly XLColor Light  = XLColor.FromHtml("#F4F6FB");
+    28→    28→    public static readonly XLColor MidGrey= XLColor.FromHtml("#D9DDE6");
+    29→    29→    public static readonly XLColor Red    = XLColor.FromHtml("#C0392B");
+    30→    30→    public static readonly XLColor Green  = XLColor.FromHtml("#1E8449");
+    31→    31→    public static readonly XLColor Amber  = XLColor.FromHtml("#B7791F");
+    32→    32→    public static readonly XLColor White  = XLColor.White;
+    33→    33→
+    34→    34→    public const string FontName = "Calibri";
+    35→    35→
+    36→    36→    // ──────────────────────────────────────────────────────────────────────
+    37→    37→    //  STYLE HELPERS  (public static so all sheet builders can call directly)
+    38→    38→    // ──────────────────────────────────────────────────────────────────────
+    39→    39→    public static void StyleTitle(IXLCell c) {
+    40→    40→        c.Style.Font.FontName = FontName;
+    41→    41→        c.Style.Font.FontSize = 18;
+    42→    42→        c.Style.Font.Bold = true;
+    43→    43→        c.Style.Font.FontColor = White;
+    44→    44→        c.Style.Fill.BackgroundColor = Navy;
+    45→    45→        c.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+    46→    46→        c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+    47→    47→        c.Style.Alignment.Indent = 1;
+    48→    48→    }
+    49→    49→
+    50→    50→    public static void StyleSubtitle(IXLCell c) {
+    51→    51→        c.Style.Font.FontName = FontName;
+    52→    52→        c.Style.Font.FontSize = 11;
+    53→    53→        c.Style.Font.Italic = true;
+    54→    54→        c.Style.Font.FontColor = Navy;
+    55→    55→        c.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+    56→    56→        c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+    57→    57→        c.Style.Alignment.Indent = 1;
+    58→    58→    }
+    59→    59→
+    60→    60→    public static void StyleHeader(IXLCell c) {
+    61→    61→        c.Style.Font.FontName = FontName;
+    62→    62→        c.Style.Font.FontSize = 11;
+    63→    63→        c.Style.Font.Bold = true;
+    64→    64→        c.Style.Font.FontColor = White;
+    65→    65→        c.Style.Fill.BackgroundColor = Navy;
+    66→    66→        c.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+    67→    67→        c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+    68→    68→        c.Style.Alignment.WrapText = true;
+    69→    69→        c.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+    70→    70→        c.Style.Border.OutsideBorderColor = Navy;
+    71→    71→    }
+    72→    72→
+    73→    73→    public static void StyleSubHeader(IXLCell c) {
+    74→    74→        c.Style.Font.FontName = FontName;
+    75→    75→        c.Style.Font.FontSize = 10;
+    76→    76→        c.Style.Font.Bold = true;
+    77→    77→        c.Style.Font.FontColor = Navy;
+    78→    78→        c.Style.Fill.BackgroundColor = MidGrey;
+    79→    79→        c.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+    80→    80→        c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+    81→    81→        c.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+    82→    82→        c.Style.Border.OutsideBorderColor = Navy;
+    83→    83→    }
+    84→    84→
+    85→    85→    public static void StyleCell(IXLCell c, int rowIdx) {
+    86→    86→        c.Style.Font.FontName = FontName;
+    87→    87→        c.Style.Font.FontSize = 10;
+    88→    88→        c.Style.Fill.BackgroundColor = (rowIdx % 2 == 0) ? Light : White;
+    89→    89→        c.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+    90→    90→        c.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+    91→    91→        c.Style.Border.OutsideBorderColor = MidGrey;
+    92→    92→    }
+    93→    93→
+    94→    94→    public static void StyleTotal(IXLCell c) {
+    95→    95→        c.Style.Font.FontName = FontName;
+    96→    96→        c.Style.Font.FontSize = 10;
+    97→    97→        c.Style.Font.Bold = true;
+    98→    98→        c.Style.Font.FontColor = White;
+    99→    99→        c.Style.Fill.BackgroundColor = Navy;
+   100→   100→        c.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+   101→   101→        c.Style.Border.OutsideBorderColor = Navy;
+   102→   102→    }
+   103→   103→
+   104→   104→    public static void SetColumnWidths(IXLWorksheet ws, params double[] widths) {
+   105→   105→        for (int i = 0; i < widths.Length; i++)
+   106→   106→            ws.Column(i + 1).Width = widths[i];
+   107→   107→    }
+   108→   108→
+   109→   109→    public static void WriteTitleBar(IXLWorksheet ws, string title, string subtitle, int lastCol) {
+   110→   110→        ws.Row(1).Height = 32;
+   111→   111→        ws.Row(2).Height = 18;
+   112→   112→        var c1 = ws.Cell(1, 1);
+   113→   113→        c1.Value = title;
+   114→   114→        StyleTitle(c1);
+   115→   115→        ws.Range(1, 1, 1, lastCol).Merge();
+   116→   116→        foreach (var col in Enumerable.Range(1, lastCol))
+   117→   117→            ws.Cell(1, col).Style.Fill.BackgroundColor = Navy;
+   118→   118→
+   119→   119→        var c2 = ws.Cell(2, 1);
+   120→   120→        c2.Value = subtitle;
+   121→   121→        StyleSubtitle(c2);
+   122→   122→        ws.Range(2, 1, 2, lastCol).Merge();
+   123→   123→    }
+   124→   124→
+   125→   125→    public static void FreezeTop(IXLWorksheet ws, int rows = 3) {
+   126→   126→        ws.SheetView.FreezeRows(rows);
+   127→   127→    }
+   128→   128→
+   129→   129→    // ──────────────────────────────────────────────────────────────────────
+   130→   130→    //  MAIN
+   131→   131→    // ──────────────────────────────────────────────────────────────────────
+   132→   132→    static void Main(string[] args) {
+   133→   133→        Console.WriteLine("Building Barendra International ERP workbook (v2 — per-factory sheets)...");
+   134→   134→
+   135→   135→        using var wb = new XLWorkbook();
+   136→   136→        wb.Properties.Author = "Z.ai";
+   137→   137→        wb.Properties.Title = "Barendra International — ERP Workbook (v2)";
+   138→   138→        wb.Properties.Subject = "End-to-End Business Process Model with per-factory payroll";
+   139→   139→        wb.Properties.Company = "Barendra International";
+   140→   140→
+   141→   141→        // Build factory configs first so we know how many sheets + their names
+   142→   142→        var factoryConfigs = BuildFactoryConfigs();
+   143→   143→
+   144→   144→        BuildCoverAndIndex(wb, factoryConfigs);
+   145→   145→        BuildSettingsAndFx(wb, factoryConfigs);
+   146→   146→        BuildProcurementAndLC(wb);
+   147→   147→        BuildLotMaster(wb, factoryConfigs);
+   148→   148→        BuildInventoryBuckets(wb);
+   149→   149→        WashingLogSheet.Build(wb);
+   150→   150→        Phase1Sheet.Build(wb);
+   151→   151→        QcSheet.Build(wb, factoryConfigs);
+   152→   152→        // NEW: one sheet per factory
+   153→   153→        foreach (var cfg in factoryConfigs) {
+   154→   154→            FactorySheet.Build(wb, cfg);
+   155→   155→        }
+   156→   156→        // UPDATED: Payroll Summary now rolls up all factory sheets
+   157→   157→        PayrollSheet.Build(wb, factoryConfigs);
+   158→   158→        Phase2Sheet.Build(wb);
+   159→   159→        SizePricingSheet.Build(wb);
+   160→   160→        CostingSheet.Build(wb, factoryConfigs);
+   161→   161→        SalesSheet.Build(wb);
+   162→   162→        KpiSheet.Build(wb, factoryConfigs);
+   163→   163→        RiskSheet.Build(wb);
+   164→   164→        DashboardSheet.Build(wb, factoryConfigs);
+   165→   165→
+   166→   166→        // Reorder: Cover, Dashboard, Settings, ...rest
+   167→   167→        wb.Worksheets.First(s => s.Name == "Cover & Index").Position = 1;
+   168→   168→        wb.Worksheets.First(s => s.Name == "Dashboard").Position = 2;
+   169→   169→        wb.Worksheets.First(s => s.Name == "Settings & FX").Position = 3;
+   170→   170→
+   171→   171→        wb.Worksheet("Cover & Index").SetTabActive();
+   172→   172→        wb.Worksheet("Cover & Index").SetTabColor(Navy);
+   173→   173→        wb.Worksheet("Dashboard").SetTabColor(Gold);
+   174→   174→
+   175→   175→        string outPath = "/home/z/my-project/download/BarendraInternational_ERP.xlsx";
+   176→   176→        wb.SaveAs(outPath);
+   177→   177→        Console.WriteLine($"OK Saved -> {outPath}");
+   178→   178→        Console.WriteLine($"  Sheets: {wb.Worksheets.Count} (incl. {factoryConfigs.Length} factory sheets)");
+   179→   179→
+   180→   180→        // Add charts via Open XML SDK (replaces Python openpyxl)
+   181→   181→        ChartBuilder.AddCharts(outPath, factoryConfigs);
+   182→   182→    }
+   183→   183→
+   184→   184→    // ──────────────────────────────────────────────────────────────────────
+   185→   185→    //  FACTORY CONFIGS — defines all home-based factory sheets (DAILY RECORD)
+   186→   186→    //  Worker data: (WorkerId, Name, Bkash, InputGiven, A-wt, B-wt, C-wt, Wastage, DaysPresent)
+   187→   187→    //  Constraint: Input Given = A + B + C + Wastage (balance check)
+   188→   188→    // ──────────────────────────────────────────────────────────────────────
+   189→   189→    static FactoryConfig[] BuildFactoryConfigs() {
+   190→   190→        DateTime recordDate = new DateTime(2026, 6, 21);
+   191→   191→        return new FactoryConfig[] {
+   192→   192→            new FactoryConfig {
+   193→   193→                SheetName = "F-01 Fatema",
+   194→   194→                FactoryId = "F-01",
+   195→   195→                SupervisorName = "Fatema Khatun",
+   196→   196→                SupervisorBkash = "01711-100001",
+   197→   197→                Location = "Dinajpur - Chirirbandar",
+   198→   198→                LineLeader = "Line Leader L-03",
+   199→   199→                GroupHead = "Group Head GH-01 (North)",
+   200→   200→                AGradePctRef = "F15",
+   201→   201→                BGradePctRef = "H15",
+   202→   202→                CGradePctRef = "J15",
+   203→   203→                LotId = "LOT-20260412-01",
+   204→   204→                RecordDate = recordDate,
+   205→   205→                Workers = BuildWorkers(new[] {
+   206→   206→                    ("W-FAT-001", "Fatema Khatun",   "01711-200001", 5.0, 4.2, 0.6, 0.0, 0.2, 30),
+   207→   207→                    ("W-JHO-002", "Jhorna Akter",    "01711-200002", 4.0, 2.3, 1.2, 0.0, 0.5, 28),
+   208→   208→                    ("W-BRI-003", "BrishTi Rahman",  "01711-200003", 3.0, 0.8, 1.0, 0.3, 0.9, 26),
+   209→   209→                    ("W-ROS-004", "Rosy Akter",      "01711-200004", 4.5, 3.5, 0.5, 0.0, 0.5, 30),
+   210→   210→                    ("W-NUR-005", "Nurjahan Akter",  "01711-200005", 3.5, 1.0, 1.2, 0.4, 0.9, 28),
+   211→   211→                    ("W-SAL-006", "Salma Khatun",    "01711-200006", 4.0, 2.0, 1.0, 0.2, 0.8, 27),
+   212→   212→                    ("W-PAR-007", "Parul Akter",     "01711-200007", 2.5, 0.5, 0.8, 0.5, 0.7, 24),
+   213→   213→                    ("W-MAH-008", "Mahmuda Khatun",  "01711-200008", 5.0, 4.0, 0.6, 0.0, 0.4, 30),
+   214→   214→                    ("W-KHO-009", "Kohinoor Akter",  "01711-200009", 4.5, 3.5, 0.7, 0.0, 0.3, 29),
+   215→   215→                    ("W-JAM-010", "Jahanara Begum",  "01711-200010", 3.5, 1.5, 1.0, 0.3, 0.7, 28),
+   216→   216→                }),
+   217→   217→            },
+   218→   218→            new FactoryConfig {
+   219→   219→                SheetName = "F-02 Jhorna",
+   220→   220→                FactoryId = "F-02",
+   221→   221→                SupervisorName = "Jhorna Akter",
+   222→   222→                SupervisorBkash = "01711-100002",
+   223→   223→                Location = "Dinajpur - Phulbari",
+   224→   224→                LineLeader = "Line Leader L-07",
+   225→   225→                GroupHead = "Group Head GH-01 (North)",
+   226→   226→                AGradePctRef = "F15",
+   227→   227→                BGradePctRef = "H15",
+   228→   228→                CGradePctRef = "J15",
+   229→   229→                LotId = "LOT-20260425-02",
+   230→   230→                RecordDate = recordDate,
+   231→   231→                Workers = BuildWorkers(new[] {
+   232→   232→                    ("W-RAS-045", "Rashida Begum",   "01711-200045", 5.5, 4.5, 0.7, 0.0, 0.3, 30),
+   233→   233→                    ("W-SAL-046", "Salma Khatun",    "01711-200046", 4.0, 2.0, 1.0, 0.3, 0.7, 27),
+   234→   234→                    ("W-NUR-047", "Nurjahan Akter",  "01711-200047", 3.0, 0.7, 1.0, 0.5, 0.8, 25),
+   235→   235→                    ("W-AKI-048", "Aklima Khatun",   "01711-200048", 3.0, 0.8, 1.2, 0.4, 0.6, 25),
+   236→   236→                    ("W-SHA-049", "Shahida Begum",   "01711-200049", 4.5, 3.2, 0.6, 0.0, 0.7, 30),
+   237→   237→                    ("W-NAF-050", "Nurun Nahar",     "01711-200050", 3.5, 1.0, 1.2, 0.5, 0.8, 26),
+   238→   238→                    ("W-MIM-051", "Mim Akter",       "01711-200051", 4.5, 3.5, 0.6, 0.0, 0.4, 28),
+   239→   239→                    ("W-JAH-052", "Jahanara Khatun", "01711-200052", 4.0, 2.5, 1.0, 0.1, 0.4, 29),
+   240→   240→                    ("W-RAH-053", "Rahima Begum",    "01711-200053", 3.5, 1.5, 1.2, 0.3, 0.5, 27),
+   241→   241→                    ("W-ZAR-054", "Zarina Akter",    "01711-200054", 5.0, 4.0, 0.5, 0.0, 0.5, 30),
+   242→   242→                }),
+   243→   243→            },
+   244→   244→            new FactoryConfig {
+   245→   245→                SheetName = "F-03 Rashida",
+   246→   246→                FactoryId = "F-03",
+   247→   247→                SupervisorName = "Rashida Begum",
+   248→   248→                SupervisorBkash = "01711-100003",
+   249→   249→                Location = "Dinajpur - Birampur",
+   250→   250→                LineLeader = "Line Leader L-12",
+   251→   251→                GroupHead = "Group Head GH-01 (North)",
+   252→   252→                AGradePctRef = "F15",
+   253→   253→                BGradePctRef = "H15",
+   254→   254→                CGradePctRef = "J15",
+   255→   255→                LotId = "LOT-20260503-03",
+   256→   256→                RecordDate = recordDate,
+   257→   257→                Workers = BuildWorkers(new[] {
+   258→   258→                    ("W-ROS-082", "Rosy Akter",      "01711-200082", 5.5, 4.3, 0.7, 0.0, 0.5, 30),
+   259→   259→                    ("W-AKI-083", "Aklima Khatun",   "01711-200083", 3.0, 0.8, 1.0, 0.5, 0.7, 25),
+   260→   260→                    ("W-SHA-084", "Shahida Begum",   "01711-200084", 4.5, 3.0, 0.7, 0.0, 0.8, 29),
+   261→   261→                    ("W-NAF-085", "Nurun Nahar",     "01711-200085", 3.5, 1.0, 1.2, 0.4, 0.9, 26),
+   262→   262→                    ("W-MAH-086", "Mahmuda Khatun",  "01711-200086", 5.0, 4.2, 0.5, 0.0, 0.3, 30),
+   263→   263→                    ("W-MIM-087", "Mim Akter",       "01711-200087", 4.5, 3.3, 0.7, 0.0, 0.5, 28),
+   264→   264→                    ("W-JAH-088", "Jahanara Khatun", "01711-200088", 4.0, 2.5, 1.0, 0.0, 0.5, 29),
+   265→   265→                    ("W-RAH-089", "Rahima Begum",    "01711-200089", 3.5, 1.5, 1.2, 0.2, 0.6, 27),
+   266→   266→                    ("W-ZAR-090", "Zarina Akter",    "01711-200090", 5.0, 3.8, 0.6, 0.0, 0.6, 30),
+   267→   267→                    ("W-KHO-091", "Kohinoor Akter",  "01711-200091", 4.5, 3.3, 0.8, 0.0, 0.4, 30),
+   268→   268→                }),
+   269→   269→            },
+   270→   270→            new FactoryConfig {
+   271→   271→                SheetName = "F-04 Selina",
+   272→   272→                FactoryId = "F-04",
+   273→   273→                SupervisorName = "Selina Akter",
+   274→   274→                SupervisorBkash = "01711-100004",
+   275→   275→                Location = "Naogaon - Manda",
+   276→   276→                LineLeader = "Line Leader L-15",
+   277→   277→                GroupHead = "Group Head GH-02 (South)",
+   278→   278→                AGradePctRef = "F15",
+   279→   279→                BGradePctRef = "H15",
+   280→   280→                CGradePctRef = "J15",
+   281→   281→                LotId = "LOT-20260518-04",
+   282→   282→                RecordDate = recordDate,
+   283→   283→                Workers = BuildWorkers(new[] {
+   284→   284→                    ("W-SHA-101", "Shahida Begum",   "01711-200101", 4.5, 3.0, 0.6, 0.0, 0.9, 29),
+   285→   285→                    ("W-NAF-102", "Nurun Nahar",     "01711-200102", 3.5, 1.0, 1.2, 0.3, 1.0, 26),
+   286→   286→                    ("W-MAH-103", "Mahmuda Khatun",  "01711-200103", 5.0, 4.0, 0.5, 0.0, 0.5, 30),
+   287→   287→                    ("W-MIM-104", "Mim Akter",       "01711-200104", 4.5, 3.3, 0.6, 0.0, 0.6, 28),
+   288→   288→                    ("W-JAH-105", "Jahanara Khatun", "01711-200105", 4.0, 2.5, 0.9, 0.0, 0.6, 29),
+   289→   289→                    ("W-RAH-106", "Rahima Begum",    "01711-200106", 3.5, 1.5, 1.0, 0.3, 0.7, 27),
+   290→   290→                    ("W-ZAR-107", "Zarina Akter",    "01711-200107", 5.0, 3.8, 0.5, 0.0, 0.7, 30),
+   291→   291→                    ("W-KHO-108", "Kohinoor Akter",  "01711-200108", 4.5, 3.3, 0.7, 0.0, 0.5, 30),
+   292→   292→                }),
+   293→   293→            },
+   294→   294→            new FactoryConfig {
+   295→   295→                SheetName = "F-05 Kohinoor",
+   296→   296→                FactoryId = "F-05",
+   297→   297→                SupervisorName = "Kohinoor Akter",
+   298→   298→                SupervisorBkash = "01711-100005",
+   299→   299→                Location = "Dinajpur - Ghoraghat",
+   300→   300→                LineLeader = "Line Leader L-21",
+   301→   301→                GroupHead = "Group Head GH-02 (South)",
+   302→   302→                AGradePctRef = "F15",
+   303→   303→                BGradePctRef = "H15",
+   304→   304→                CGradePctRef = "J15",
+   305→   305→                LotId = "LOT-20260602-05",
+   306→   306→                RecordDate = recordDate,
+   307→   307→                Workers = BuildWorkers(new[] {
+   308→   308→                    ("W-ROS-121", "Rosy Akter",      "01711-200121", 5.5, 4.2, 0.7, 0.0, 0.6, 30),
+   309→   309→                    ("W-AKI-122", "Aklima Khatun",   "01711-200122", 3.0, 0.8, 1.0, 0.4, 0.8, 25),
+   310→   310→                    ("W-SHA-123", "Shahida Begum",   "01711-200123", 4.5, 3.0, 0.6, 0.0, 0.9, 29),
+   311→   311→                    ("W-NAF-124", "Nurun Nahar",     "01711-200124", 3.5, 1.0, 1.2, 0.3, 1.0, 26),
+   312→   312→                    ("W-MAH-125", "Mahmuda Khatun",  "01711-200125", 5.0, 4.0, 0.6, 0.0, 0.4, 30),
+   313→   313→                    ("W-MIM-126", "Mim Akter",       "01711-200126", 4.5, 3.3, 0.6, 0.0, 0.6, 28),
+   314→   314→                    ("W-JAH-127", "Jahanara Khatun", "01711-200127", 4.0, 2.5, 1.0, 0.0, 0.5, 29),
+   315→   315→                    ("W-RAH-128", "Rahima Begum",    "01711-200128", 3.5, 1.5, 1.0, 0.3, 0.7, 27),
+   316→   316→                    ("W-ZAR-129", "Zarina Akter",    "01711-200129", 5.0, 3.8, 0.6, 0.0, 0.6, 30),
+   317→   317→                }),
+   318→   318→            },
+   319→   319→        };
+   320→   320→    }
+   321→   321→
+   322→   322→    static WorkerRow[] BuildWorkers(
+   323→   323→        (string id, string name, string bkash, double input, double aWt, double bWt, double cWt, double waste, int present)[] data) {
+   324→   324→        return data.Select(d => new WorkerRow {
+   325→   325→            WorkerId = d.id,
+   326→   326→            Name = d.name,
+   327→   327→            Bkash = d.bkash,
+   328→   328→            InputGivenKg = d.input,
+   329→   329→            AWeightKg = d.aWt,
+   330→   330→            BWeightKg = d.bWt,
+   331→   331→            CWeightKg = d.cWt,
+   332→   332→            WastageKg = d.waste,
+   333→   333→            DaysPresent = d.present,
+   334→   334→        }).ToArray();
+   335→   335→    }
+   336→   336→
+   337→   337→    // ========================================================================
+   338→   338→    //  SHEET 1 — COVER & INDEX
+   339→   339→    // ========================================================================
+   340→   340→    static void BuildCoverAndIndex(XLWorkbook wb, FactoryConfig[] factoryConfigs) {
+   341→   341→        var ws = wb.AddWorksheet("Cover & Index");
+   342→   342→        SetColumnWidths(ws, 4, 28, 50, 18, 14, 4);
+   343→   343→
+   344→   344→        ws.Row(2).Height = 8;
+   345→   345→        ws.Row(3).Height = 36;
+   346→   346→        ws.Row(4).Height = 28;
+   347→   347→        ws.Row(5).Height = 22;
+   348→   348→        ws.Row(6).Height = 18;
+   349→   349→
+   350→   350→        var title = ws.Cell(3, 2); title.Value = "BARENDRA INTERNATIONAL";
+   351→   351→        title.Style.Font.FontName = FontName; title.Style.Font.FontSize = 24;
+   352→   352→        title.Style.Font.Bold = true; title.Style.Font.FontColor = Navy;
+   353→   353→        title.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+   354→   354→
+   355→   355→        var sub = ws.Cell(4, 2); sub.Value = "Human Hair Processing & Wig Manufacturing — Integrated ERP Workbook";
+   356→   356→        sub.Style.Font.FontName = FontName; sub.Style.Font.FontSize = 13;
+   357→   357→        sub.Style.Font.Italic = true; sub.Style.Font.FontColor = Gold;
+   358→   358→        sub.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+   359→   359→
+   360→   360→        var meta = ws.Cell(5, 2); meta.Value = "Head Office: Uttara, Sector 6, Dhaka  |  Main Factory: Dinajpur  |  Version 1.0  |  Issue Date: 21 June 2026";
+   361→   361→        meta.Style.Font.FontName = FontName; meta.Style.Font.FontSize = 10;
+   362→   362→        meta.Style.Font.FontColor = Navy;
+   363→   363→        meta.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+   364→   364→
+   365→   365→        var cls = ws.Cell(6, 2); cls.Value = "Classification: Internal — Confidential  |  Prepared For: Management — Strategic ERP Implementation";
+   366→   366→        cls.Style.Font.FontName = FontName; cls.Style.Font.FontSize = 9;
+   367→   367→        cls.Style.Font.Italic = true; cls.Style.Font.FontColor = XLColor.FromHtml("#666666");
+   368→   368→        cls.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+   369→   369→
+   370→   370→        ws.Range(7, 2, 7, 5).Style.Fill.BackgroundColor = Gold;
+   371→   371→
+   372→   372→        ws.Row(9).Height = 24;
+   373→   373→        var h = ws.Cell(9, 2); h.Value = "WORKBOOK CONTENTS";
+   374→   374→        h.Style.Font.FontName = FontName; h.Style.Font.FontSize = 12;
+   375→   375→        h.Style.Font.Bold = true; h.Style.Font.FontColor = White;
+   376→   376→        h.Style.Fill.BackgroundColor = Navy;
+   377→   377→        h.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+   378→   378→        h.Style.Alignment.Indent = 1;
+   379→   379→        ws.Range(9, 2, 9, 5).Merge();
+   380→   380→        ws.Range(9, 2, 9, 5).Style.Fill.BackgroundColor = Navy;
+   381→   381→
+   382→   382→        ws.Row(11).Height = 22;
+   383→   383→        StyleHeader(ws.Cell(11, 2)); ws.Cell(11, 2).Value = "#";
+   384→   384→        StyleHeader(ws.Cell(11, 3)); ws.Cell(11, 3).Value = "Sheet Name";
+   385→   385→        StyleHeader(ws.Cell(11, 4)); ws.Cell(11, 4).Value = "Purpose";
+   386→   386→        StyleHeader(ws.Cell(11, 5)); ws.Cell(11, 5).Value = "Module";
+   387→   387→
+   388→   388→        var index = new (string name, string purpose, string module)[] {
+   389→   389→            ("Cover & Index",       "Workbook front page & navigation map",                     "Navigation"),
+   390→   390→            ("Dashboard",           "Executive KPI tiles + 6 embedded charts",                  "Analytics"),
+   391→   391→            ("Settings & FX",       "Exchange rate, grade rates, bonus rules, size rate master","Master Data"),
+   392→   392→            ("Procurement & LC",    "Import LCs, local purchases, landed cost calculator",      "Procurement"),
+   393→   393→            ("Lot Master",          "All lots — full traceability & current state",             "Inventory"),
+   394→   394→            ("Inventory (8 Buckets)","Real-time stock position with valuation per bucket",       "Inventory"),
+   395→   395→            ("Washing Log",         "Wash batches with input/output/wastage tracking",          "Production"),
+   396→   396→            ("Phase 1 Distribution","Tier-by-tier handoff: PM->Head->Line->Supervisor->Worker", "Production"),
+   397→   397→            ("QC & Grading",        "Daily A/B/C grading per worker with wage formula",         "Quality"),
+   398→   398→            ("F-01 Fatema",         "Factory F-01 payroll — Supervisor: Fatema Khatun",         "Factory Payroll"),
+   399→   399→            ("F-02 Jhorna",         "Factory F-02 payroll — Supervisor: Jhorna Akter",          "Factory Payroll"),
+   400→   400→            ("F-03 Rashida",        "Factory F-03 payroll — Supervisor: Rashida Begum",         "Factory Payroll"),
+   401→   401→            ("F-04 Selina",         "Factory F-04 payroll — Supervisor: Selina Akter",          "Factory Payroll"),
+   402→   402→            ("F-05 Kohinoor",       "Factory F-05 payroll — Supervisor: Kohinoor Akter",        "Factory Payroll"),
+   403→   403→            ("Payroll Summary",     "Cross-factory rollup: total workers, wages, bKash disb.",  "Payroll"),
+   404→   404→            ("Phase 2 Production",  "Dhaka factory: sizing, re-wash, assembly, value rollup",   "Production"),
+   405→   405→            ("Size-wise Pricing",   "Length -> BDT/kg -> USD/kg rate master",                   "Sales"),
+   406→   406→            ("Costing Analysis",    "Per-worker / per-factory / per-kg cost analysis",          "Finance"),
+   407→   407→            ("Sales & Export",      "Buyer contracts, FX conversion, margin analysis",          "Sales"),
+   408→   408→            ("KPI Tracker",         "All KPIs: target vs actual with traffic-light status",     "Analytics"),
+   409→   409→            ("Risk Register",       "Risk log with likelihood x impact scoring",                "Governance"),
+   410→   410→        };
+   411→   411→
+   412→   412→        for (int i = 0; i < index.Length; i++) {
+   413→   413→            int r = 12 + i;
+   414→   414→            var c1 = ws.Cell(r, 2); c1.Value = i + 1; StyleCell(c1, i);
+   415→   415→            c1.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+   416→   416→            c1.Style.Font.Bold = true; c1.Style.Font.FontColor = Navy;
+   417→   417→
+   418→   418→            var c2 = ws.Cell(r, 3);
+   419→   419→            c2.Value = index[i].name;
+   420→   420→            StyleCell(c2, i);
+   421→   421→            c2.Style.Font.Bold = true; c2.Style.Font.FontColor = Navy;
+   422→   422→            c2.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+   423→   423→            c2.Style.Alignment.Indent = 1;
+   424→   424→            // Use HYPERLINK formula for cross-sheet navigation
+   425→   425→            c2.FormulaA1 = $"=HYPERLINK(\"#'{index[i].name}'!A1\",\"{index[i].name}\")";
+   426→   426→            c2.Style.Font.Underline = XLFontUnderlineValues.Single;
+   427→   427→
+   428→   428→            var c3 = ws.Cell(r, 4); c3.Value = index[i].purpose;
+   429→   429→            StyleCell(c3, i);
+   430→   430→            c3.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+   431→   431→            c3.Style.Alignment.Indent = 1;
+   432→   432→
+   433→   433→            var c4 = ws.Cell(r, 5); c4.Value = index[i].module;
+   434→   434→            StyleCell(c4, i);
+   435→   435→            c4.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+   436→   436→        }
+   437→   437→
+   438→   438→        int footerRow = 12 + index.Length + 2;
+   439→   439→        var f = ws.Cell(footerRow, 2);
+   440→   440→        f.Value = "All derived values are LIVE Excel formulas. Edit only the white cells; blue/gold cells are formula-driven.";
+   441→   441→        ws.Range(footerRow, 2, footerRow, 5).Merge();
+   442→   442→        f.Style.Font.FontName = FontName; f.Style.Font.FontSize = 9;
+   443→   443→        f.Style.Font.Italic = true; f.Style.Font.FontColor = Gold;
+   444→   444→        f.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+   445→   445→    }
+   446→   446→
+   447→   447→    // ========================================================================
+   448→   448→    //  SHEET 3 — SETTINGS & FX  (single source of truth)
+   449→   449→    // ========================================================================
+   450→   450→    static void BuildSettingsAndFx(XLWorkbook wb, FactoryConfig[] factoryConfigs) {
+   451→   451→        var ws = wb.AddWorksheet("Settings & FX");
+   452→   452→        SetColumnWidths(ws, 4, 38, 18, 20, 30);
+   453→   453→
+   454→   454→        WriteTitleBar(ws, "SETTINGS & MASTER DATA",
+   455→   455→            "Single source of truth — edit these cells to drive the entire workbook", 5);
+   456→   456→
+   457→   457→        int r = 4;
+   458→   458→
+   459→   459→        // ── FX Section ──────────────────────────────────────────────
+   460→   460→        ws.Cell(r, 2).Value = "FOREIGN EXCHANGE"; StyleSubHeader(ws.Cell(r, 2));
+   461→   461→        ws.Range(r, 2, r, 5).Merge(); ws.Range(r, 2, r, 5).Style.Fill.BackgroundColor = MidGrey;
+   462→   462→        r++;
+   463→   463→
+   464→   464→        ws.Cell(r, 2).Value = "USD to BDT rate";        ws.Cell(r, 2).Style.Font.Bold = true;
+   465→   465→        ws.Cell(r, 3).Value = 120.00;
+   466→   466→        ws.Cell(r, 3).Style.NumberFormat.Format = "#,##0.00";
+   467→   467→        ws.Cell(r, 3).Style.Fill.BackgroundColor = Gold;
+   468→   468→        ws.Cell(r, 3).Style.Font.Bold = true;
+   469→   469→        ws.Cell(r, 3).Style.Font.FontColor = Navy;
+   470→   470→        ws.Cell(r, 4).Value = "BDT per 1 USD";
+   471→   471→        ws.Cell(r, 4).Style.Font.Italic = true; ws.Cell(r, 4).Style.Font.FontColor = XLColor.Gray;
+   472→   472→        int fxRow = r;
+   473→   473→        wb.DefinedNames.Add("FX_USD_BDT", $"'Settings & FX'!$C${fxRow}");
+   474→   474→        for (int c = 2; c <= 4; c++) ws.Cell(r, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+   475→   475→        r += 2;
+   476→   476→
+   477→   477→        // ── Grade Rates Section ─────────────────────────────────────
+   478→   478→        ws.Cell(r, 2).Value = "WORKER GRADE RATES (BDT per kg)"; StyleSubHeader(ws.Cell(r, 2));
+   479→   479→        ws.Range(r, 2, r, 5).Merge(); ws.Range(r, 2, r, 5).Style.Fill.BackgroundColor = MidGrey;
+   480→   480→        r++;
+   481→   481→        ws.Cell(r, 2).Value = "Grade"; ws.Cell(r, 3).Value = "Rate (BDT/kg)";
+   482→   482→        ws.Cell(r, 4).Value = "Breakage Benchmark"; ws.Cell(r, 5).Value = "Notes";
+   483→   483→        for (int c = 2; c <= 5; c++) StyleHeader(ws.Cell(r, c));
+   484→   484→        r++;
+   485→   485→        var grades = new (string g, double rate, string bench, string note)[] {
+   486→   486→            ("A", 500, "< 50 g breakage/kg", "Excellent — minimal wastage"),
+   487→   487→            ("B", 400, "50-100 g, moderate", "Acceptable; counts toward A+B bonus"),
+   488→   488→            ("C", 300, "> 100 g / poor quality", "Below threshold; no bonus eligibility"),
+   489→   489→        };
+   490→   490→        int gradeARow = r, gradeBRow = r + 1, gradeCRow = r + 2;
+   491→   491→        for (int i = 0; i < grades.Length; i++) {
+   492→   492→            ws.Cell(r, 2).Value = grades[i].g;
+   493→   493→            ws.Cell(r, 3).Value = grades[i].rate;
+   494→   494→            ws.Cell(r, 4).Value = grades[i].bench;
+   495→   495→            ws.Cell(r, 5).Value = grades[i].note;
+   496→   496→            for (int c = 2; c <= 5; c++) {
+   497→   497→                StyleCell(ws.Cell(r, c), i);
+   498→   498→                ws.Cell(r, c).Style.Alignment.Horizontal = (c == 2) ? XLAlignmentHorizontalValues.Center : XLAlignmentHorizontalValues.Left;
+   499→   499→            }
+   500→   500→            ws.Cell(r, 3).Style.NumberFormat.Format = "#,##0";
+   501→   501→            ws.Cell(r, 3).Style.Fill.BackgroundColor = Gold;
+   502→   502→            ws.Cell(r, 3).Style.Font.Bold = true;
+   503→   503→            r++;
+   504→   504→        }
+   505→   505→        wb.DefinedNames.Add("RATE_A", $"'Settings & FX'!$C${gradeARow}");
+   506→   506→        wb.DefinedNames.Add("RATE_B", $"'Settings & FX'!$C${gradeBRow}");
+   507→   507→        wb.DefinedNames.Add("RATE_C", $"'Settings & FX'!$C${gradeCRow}");
+   508→   508→        r += 1;
+   509→   509→
+   510→   510→        // ── Bonus & Policy Rules ────────────────────────────────────
+   511→   511→        ws.Cell(r, 2).Value = "BONUS & POLICY RULES"; StyleSubHeader(ws.Cell(r, 2));
+   512→   512→        ws.Range(r, 2, r, 5).Merge(); ws.Range(r, 2, r, 5).Style.Fill.BackgroundColor = MidGrey;
+   513→   513→        r++;
+   514→   514→        ws.Cell(r, 2).Value = "Rule"; ws.Cell(r, 3).Value = "Value";
+   515→   515→        ws.Cell(r, 4).Value = "Unit"; ws.Cell(r, 5).Value = "Trigger";
+   516→   516→        for (int c = 2; c <= 5; c++) StyleHeader(ws.Cell(r, c));
+   517→   517→        r++;
+   518→   518→        var rules = new (string rule, double val, string unit, string trigger, string name)[] {
+   519→   519→            ("Performance bonus threshold",   90, "%",        "(A+B) weight / total weight >= threshold", "PERF_THRESHOLD"),
+   520→   520→            ("Performance bonus amount",      300, "BDT",     "Monthly, paid when threshold met",     "PERF_BONUS"),
+   521→   521→            ("Attendance bonus — days reqd",   30, "days",    "Worker present every working day in month","ATT_DAYS"),
+   522→   522→            ("Attendance bonus amount",        200, "BDT",    "Monthly flat",                        "ATT_BONUS"),
+   523→   523→            ("Supervisor hosting allowance — min", 100, "BDT/month", "Home-based supervisor base",      "SUP_MIN"),
+   524→   524→            ("Supervisor hosting allowance — max", 400, "BDT/month", "Home-based supervisor max",       "SUP_MAX"),
+   525→   525→            ("Supervisor performance extra",   150, "BDT/month","If factory >= 60% A-grade",          "SUP_EXTRA"),
+   526→   526→            ("Factory A-grade minimum",         60, "%",      "Below = supervisor bonus forfeit",    "FACTORY_A_MIN"),
+   527→   527→            ("Auto-C grade if output below",    50, "grams",  "Sub-50g output forced to C",          "AUTO_C_GRAMS"),
+   528→   528→            ("Washing loss tolerance",          15, "%",      "Flag investigation if exceeded",      "WASH_TOL"),
+   529→   529→            ("Hackling loss tolerance",         15, "%",      "Combing loss threshold",              "HACK_TOL"),
+   530→   530→            ("Cost per kg target",             320, "BDT/kg", "Below target = healthy",              "COST_PER_KG_TGT"),
+   531→   531→            ("Worker turnover target",           5, "%/month","Below = healthy",                     "TURNOVER_TGT"),
+   532→   532→        };
+   533→   533→        int rulesStart = r;
+   534→   534→        for (int i = 0; i < rules.Length; i++) {
+   535→   535→            ws.Cell(r, 2).Value = rules[i].rule;
+   536→   536→            ws.Cell(r, 3).Value = rules[i].val;
+   537→   537→            ws.Cell(r, 4).Value = rules[i].unit;
+   538→   538→            ws.Cell(r, 5).Value = rules[i].trigger;
+   539→   539→            for (int c = 2; c <= 5; c++) {
+   540→   540→                StyleCell(ws.Cell(r, c), i);
+   541→   541→                ws.Cell(r, c).Style.Alignment.Horizontal = (c == 3 || c == 4) ? XLAlignmentHorizontalValues.Center : XLAlignmentHorizontalValues.Left;
+   542→   542→                if (c == 2 || c == 5) ws.Cell(r, c).Style.Alignment.Indent = 1;
+   543→   543→            }
+   544→   544→            ws.Cell(r, 3).Style.NumberFormat.Format = "#,##0.##";
+   545→   545→            ws.Cell(r, 3).Style.Fill.BackgroundColor = Gold;
+   546→   546→            ws.Cell(r, 3).Style.Font.Bold = true;
+   547→   547→            wb.DefinedNames.Add(rules[i].name, $"'Settings & FX'!$C${r}");
+   548→   548→            r++;
+   549→   549→        }
+   550→   550→        r += 1;
+   551→   551→
+   552→   552→        // ── Size-wise Rate Master ───────────────────────────────────
+   553→   553→        ws.Cell(r, 2).Value = "SIZE-WISE RATE MASTER (Finished Product)"; StyleSubHeader(ws.Cell(r, 2));
+   554→   554→        ws.Range(r, 2, r, 5).Merge(); ws.Range(r, 2, r, 5).Style.Fill.BackgroundColor = MidGrey;
+   555→   555→        r++;
+   556→   556→        ws.Cell(r, 2).Value = "Length (inch)"; ws.Cell(r, 3).Value = "BDT per kg";
+   557→   557→        ws.Cell(r, 4).Value = "USD per kg"; ws.Cell(r, 5).Value = "Market Segment";
+   558→   558→        for (int c = 2; c <= 5; c++) StyleHeader(ws.Cell(r, c));
+   559→   559→        r++;
+   560→   560→        var sizes = new (int len, double bdt, string seg)[] {
+   561→   561→            (5, 500,    "Short — low-end"),
+   562→   562→            (6, 1200,   "Short"),
+   563→   563→            (8, 5000,   "Short-medium"),
+   564→   564→            (10,8000,   "Medium"),
+   565→   565→            (12,12000,  "Medium-long"),
+   566→   566→            (14,18000,  "Long"),
+   567→   567→            (16,25000,  "Long"),
+   568→   568→            (18,35000,  "Long-premium"),
+   569→   569→            (20,50000,  "Premium"),
+   570→   570→            (24,70000,  "Premium"),
+   571→   571→            (30,90000,  "Top-tier"),
+   572→   572→        };
+   573→   573→        int sizeMasterStart = r;
+   574→   574→        for (int i = 0; i < sizes.Length; i++) {
+   575→   575→            ws.Cell(r, 2).Value = sizes[i].len;
+   576→   576→            ws.Cell(r, 3).Value = sizes[i].bdt;
+   577→   577→            ws.Cell(r, 4).Value = $"=C{r}/FX_USD_BDT";
+   578→   578→            ws.Cell(r, 5).Value = sizes[i].seg;
+   579→   579→            for (int c = 2; c <= 5; c++) {
+   580→   580→                StyleCell(ws.Cell(r, c), i);
+   581→   581→                ws.Cell(r, c).Style.Alignment.Horizontal = (c == 2) ? XLAlignmentHorizontalValues.Center : XLAlignmentHorizontalValues.Left;
+   582→   582→                if (c == 5) ws.Cell(r, c).Style.Alignment.Indent = 1;
+   583→   583→            }
+   584→   584→            ws.Cell(r, 3).Style.NumberFormat.Format = "#,##0";
+   585→   585→            ws.Cell(r, 4).Style.NumberFormat.Format = "#,##0.00";
+   586→   586→            ws.Cell(r, 3).Style.Fill.BackgroundColor = Gold;
+   587→   587→            ws.Cell(r, 3).Style.Font.Bold = true;
+   588→   588→            r++;
+   589→   589→        }
+   590→   590→        int sizeMasterEnd = r - 1;
+   591→   591→        wb.DefinedNames.Add("SIZE_MASTER", $"'Settings & FX'!$B${sizeMasterStart}:$C${sizeMasterEnd}");
+   592→   592→        r += 1;
+   593→   593→
+   594→   594→        // ── Buyer / Market Segments ─────────────────────────────────
+   595→   595→        ws.Cell(r, 2).Value = "BUYER MARKET SEGMENTS"; StyleSubHeader(ws.Cell(r, 2));
+   596→   596→        ws.Range(r, 2, r, 5).Merge(); ws.Range(r, 2, r, 5).Style.Fill.BackgroundColor = MidGrey;
+   597→   597→        r++;
+   598→   598→        ws.Cell(r, 2).Value = "Region"; ws.Cell(r, 3).Value = "Price Range (USD/kg)";
+   599→   599→        ws.Cell(r, 4).Value = "Quality Tier"; ws.Cell(r, 5).Value = "Notes";
+   600→   600→        for (int c = 2; c <= 5; c++) StyleHeader(ws.Cell(r, c));
+   601→   601→        r++;
+   602→   602→        var buyers = new (string region, string range, string tier, string note)[] {
+   603→   603→            ("USA",        "50 - 105",  "Premium",   "End-use: high-end wigs & extensions"),
+   604→   604→            ("Europe",     "30 - 80",   "Premium",   "Ethical-sourcing requirements"),
+   605→   605→            ("China",      "20 - 60",   "Mid",       "Bulk distributor market"),
+   606→   606→            ("Africa",     "5 - 50",    "Volume",    "High volume, lower price"),
+   607→   607→            ("Local BD",   "300 - 2000", "Volume (BDT)", "Domestic distribution"),
+   608→   608→        };
+   609→   609→        for (int i = 0; i < buyers.Length; i++) {
+   610→   610→            ws.Cell(r, 2).Value = buyers[i].region;
+   611→   611→            ws.Cell(r, 3).Value = buyers[i].range;
+   612→   612→            ws.Cell(r, 4).Value = buyers[i].tier;
+   613→   613→            ws.Cell(r, 5).Value = buyers[i].note;
+   614→   614→            for (int c = 2; c <= 5; c++) {
+   615→   615→                StyleCell(ws.Cell(r, c), i);
+   616→   616→                ws.Cell(r, c).Style.Alignment.Horizontal = (c == 2 || c == 3 || c == 4) ? XLAlignmentHorizontalValues.Center : XLAlignmentHorizontalValues.Left;
+   617→   617→                if (c == 5) ws.Cell(r, c).Style.Alignment.Indent = 1;
+   618→   618→            }
+   619→   619→            r++;
+   620→   620→        }
+   621→   621→
+   622→   622→        // ── Factory List ────────────────────────────────────────────
+   623→   623→        r += 1;
+   624→   624→        ws.Cell(r, 2).Value = "FACTORY REGISTER (Home-based)"; StyleSubHeader(ws.Cell(r, 2));
+   625→   625→        ws.Range(r, 2, r, 5).Merge(); ws.Range(r, 2, r, 5).Style.Fill.BackgroundColor = MidGrey;
+   626→   626→        r++;
+   627→   627→        ws.Cell(r, 2).Value = "Factory ID"; ws.Cell(r, 3).Value = "Supervisor";
+   628→   628→        ws.Cell(r, 4).Value = "Location"; ws.Cell(r, 5).Value = "Sheet Name";
+   629→   629→        for (int c = 2; c <= 5; c++) StyleHeader(ws.Cell(r, c));
+   630→   630→        r++;
+   631→   631→        for (int i = 0; i < factoryConfigs.Length; i++) {
+   632→   632→            var fc = factoryConfigs[i];
+   633→   633→            ws.Cell(r, 2).Value = fc.FactoryId;
+   634→   634→            ws.Cell(r, 3).Value = fc.SupervisorName;
+   635→   635→            ws.Cell(r, 4).Value = fc.Location;
+   636→   636→            ws.Cell(r, 5).Value = fc.SheetName;
+   637→   637→            for (int c = 2; c <= 5; c++) {
+   638→   638→                StyleCell(ws.Cell(r, c), i);
+   639→   639→                ws.Cell(r, c).Style.Alignment.Horizontal = (c == 2) ? XLAlignmentHorizontalValues.Center : XLAlignmentHorizontalValues.Left;
+   640→   640→                if (c == 2) ws.Cell(r, c).Style.Font.Bold = true;
+   641→   641→                if (c != 2) ws.Cell(r, c).Style.Alignment.Indent = 1;
+   642→   642→            }
+   643→   643→            r++;
+   644→   644→        }
+   645→   645→
+   646→   646→        FreezeTop(ws);
+   647→   647→    }
+   648→   648→
+   649→   649→    // ========================================================================
+   650→   650→    //  SHEET 4 — PROCUREMENT & LC
+   651→   651→    // ========================================================================
+   652→   652→    static void BuildProcurementAndLC(XLWorkbook wb) {
+   653→   653→        var ws = wb.AddWorksheet("Procurement & LC");
+   654→   654→        SetColumnWidths(ws, 4, 14, 14, 14, 20, 10, 12, 14, 12, 14, 14, 14, 14, 14, 14);
+   655→   655→
+   656→   656→        WriteTitleBar(ws, "PROCUREMENT & LC MANAGEMENT",
+   657→   657→            "Import LC register + local purchases. Landed cost auto-calculated per kg.", 15);
+   658→   658→
+   659→   659→        int r = 4;
+   660→   660→        ws.Cell(r, 2).Value = "IMPORT LC REGISTER"; StyleSubHeader(ws.Cell(r, 2));
+   661→   661→        ws.Range(r, 2, r, 15).Merge(); ws.Range(r, 2, r, 15).Style.Fill.BackgroundColor = MidGrey;
+   662→   662→        r++;
+   663→   663→
+   664→   664→        string[] headers = { "LC No", "LC Date", "Supplier", "Country", "Lot ID",
+   665→   665→                             "Qty (kg)", "Unit USD/kg", "Goods USD", "Freight USD",
+   666→   666→                             "Duty USD", "Bank Charges USD", "Landed USD", "Landed BDT", "Landed BDT/kg" };
+   667→   667→        for (int i = 0; i < headers.Length; i++) {
+   668→   668→            ws.Cell(r, 2 + i).Value = headers[i];
+   669→   669→            StyleHeader(ws.Cell(r, 2 + i));
+   670→   670→        }
+   671→   671→        ws.Row(r).Height = 32;
+   672→   672→        r++;
+   673→   673→
+   674→   674→        var importData = new object[,] {
+   675→   675→            { "LC-2026-001", "2026-04-12", "Rajesh Hair Exports",     "India",     "LOT-20260412-01", 500.0, 35.00 },
+   676→   676→            { "LC-2026-002", "2026-04-25", "Tashkent Hair Co",        "Uzbekistan","LOT-20260425-02", 350.0, 22.00 },
+   677→   677→            { "LC-2026-003", "2026-05-03", "Tajik Raw Hair Ltd",       "Tajikistan","LOT-20260503-03", 280.0, 18.50 },
+   678→   678→            { "LC-2026-004", "2026-05-18", "Karachi Hair Traders",     "Pakistan",  "LOT-20260518-04", 420.0, 28.00 },
+   679→   679→            { "LC-2026-005", "2026-06-02", "Yangon Hair Suppliers",    "Myanmar",   "LOT-20260602-05", 300.0, 15.00 },
+   680→   680→            { "LC-2026-006", "2026-06-15", "Premium Hair Pvt Ltd",     "India",     "LOT-20260615-06", 200.0, 95.00 },
+   681→   681→        };
+   682→   682→        int importStart = r;
+   683→   683→        for (int i = 0; i < importData.GetLength(0); i++) {
+   684→   684→            ws.Cell(r, 2).Value = (string)importData[i, 0];
+   685→   685→            ws.Cell(r, 3).Value = DateTime.ParseExact((string)importData[i, 1], "yyyy-MM-dd", CultureInfo.InvariantCulture);
+   686→   686→            ws.Cell(r, 4).Value = (string)importData[i, 2];
+   687→   687→            ws.Cell(r, 5).Value = (string)importData[i, 3];
+   688→   688→            ws.Cell(r, 6).Value = (string)importData[i, 4];
+   689→   689→            ws.Cell(r, 7).Value = Convert.ToDouble(importData[i, 5]);
+   690→   690→            ws.Cell(r, 8).Value = Convert.ToDouble(importData[i, 6]);
+   691→   691→            ws.Cell(r, 9).Value  = $"=G{r}*H{r}";
+   692→   692→            ws.Cell(r, 10).Value = $"=ROUND(I{r}*0.03,2)";
+   693→   693→            ws.Cell(r, 11).Value = $"=ROUND(I{r}*0.12,2)";
+   694→   694→            ws.Cell(r, 12).Value = $"=ROUND(I{r}*0.01,2)";
+   695→   695→            ws.Cell(r, 13).Value = $"=I{r}+J{r}+K{r}+L{r}";
+   696→   696→            ws.Cell(r, 14).Value = $"=M{r}*FX_USD_BDT";
+   697→   697→            ws.Cell(r, 15).Value = $"=IFERROR(N{r}/G{r},0)";
+   698→   698→            for (int c = 2; c <= 15; c++) {
+   699→   699→                StyleCell(ws.Cell(r, c), i);
+   700→   700→            }
+   701→   701→            ws.Cell(r, 3).Style.NumberFormat.Format = "yyyy-mm-dd";
+   702→   702→            ws.Cell(r, 7).Style.NumberFormat.Format = "#,##0.0";
+   703→   703→            ws.Cell(r, 8).Style.NumberFormat.Format = "#,##0.00";
+   704→   704→            ws.Cell(r, 9).Style.NumberFormat.Format = "#,##0.00";
+   705→   705→            ws.Cell(r, 10).Style.NumberFormat.Format = "#,##0.00";
+   706→   706→            ws.Cell(r, 11).Style.NumberFormat.Format = "#,##0.00";
+   707→   707→            ws.Cell(r, 12).Style.NumberFormat.Format = "#,##0.00";
+   708→   708→            ws.Cell(r, 13).Style.NumberFormat.Format = "#,##0.00";
+   709→   709→            ws.Cell(r, 14).Style.NumberFormat.Format = "#,##0.00";
+   710→   710→            ws.Cell(r, 15).Style.NumberFormat.Format = "#,##0.00";
+   711→   711→            ws.Cell(r, 15).Style.Fill.BackgroundColor = Gold;
+   712→   712→            ws.Cell(r, 15).Style.Font.Bold = true;
+   713→   713→            r++;
+   714→   714→        }
+   715→   715→        // Totals
+   716→   716→        ws.Cell(r, 4).Value = "TOTALS";
+   717→   717→        ws.Cell(r, 7).Value = $"=SUM(G{importStart}:G{r-1})";
+   718→   718→        ws.Cell(r, 9).Value = $"=SUM(I{importStart}:I{r-1})";
+   719→   719→        ws.Cell(r, 13).Value = $"=SUM(M{importStart}:M{r-1})";
+   720→   720→        ws.Cell(r, 14).Value = $"=SUM(N{importStart}:N{r-1})";
+   721→   721→        ws.Cell(r, 15).Value = $"=IFERROR(N{r}/G{r},0)";
+   722→   722→        for (int c = 2; c <= 15; c++) StyleTotal(ws.Cell(r, c));
+   723→   723→        ws.Cell(r, 7).Style.NumberFormat.Format = "#,##0.0";
+   724→   724→        ws.Cell(r, 9).Style.NumberFormat.Format = "#,##0.00";
+   725→   725→        ws.Cell(r, 13).Style.NumberFormat.Format = "#,##0.00";
+   726→   726→        ws.Cell(r, 14).Style.NumberFormat.Format = "#,##0.00";
+   727→   727→        ws.Cell(r, 15).Style.NumberFormat.Format = "#,##0.00";
+   728→   728→        r += 2;
+   729→   729→
+   730→   730→        // Local Purchase Section
+   731→   731→        ws.Cell(r, 2).Value = "LOCAL PURCHASE REGISTER"; StyleSubHeader(ws.Cell(r, 2));
+   732→   732→        ws.Range(r, 2, r, 15).Merge(); ws.Range(r, 2, r, 15).Style.Fill.BackgroundColor = MidGrey;
+   733→   733→        r++;
+   734→   734→
+   735→   735→        string[] lhdr = { "Voucher #", "Date", "Supplier", "Region", "Lot ID",
+   736→   736→                          "Qty (kg)", "Unit BDT/kg", "Total BDT", "Payment Mode",
+   737→   737→                          "Quality Grade", "Color Code", "Status" };
+   738→   738→        for (int i = 0; i < lhdr.Length; i++) {
+   739→   739→            ws.Cell(r, 2 + i).Value = lhdr[i];
+   740→   740→            StyleHeader(ws.Cell(r, 2 + i));
+   741→   741→        }
+   742→   742→        ws.Row(r).Height = 32;
+   743→   743→        r++;
+   744→   744→        var localData = new object[,] {
+   745→   745→            { "LPV-2026-001", "2026-04-15", "Karim Uddin",      "Narayanganj", "LOT-20260415-L01", 80.0,  1800.0 },
+   746→   746→            { "LPV-2026-002", "2026-04-22", "Salma Begum",      "Gazipur",     "LOT-20260422-L02", 60.0,  2200.0 },
+   747→   747→            { "LPV-2026-003", "2026-05-08", "Rohim Collector",  "Tangail",     "LOT-20260508-L03", 95.0,  1500.0 },
+   748→   748→            { "LPV-2026-004", "2026-05-20", "Jahura Hair Agency","Dhaka",      "LOT-20260520-L04", 50.0,  12000.0 },
+   749→   749→            { "LPV-2026-005", "2026-06-05", "Maa Shetu Traders","Narayanganj", "LOT-20260605-L05", 110.0, 2000.0 },
+   750→   750→        };
+   751→   751→        int localStart = r;
+   752→   752→        for (int i = 0; i < localData.GetLength(0); i++) {
+   753→   753→            ws.Cell(r, 2).Value = (string)localData[i, 0];
+   754→   754→            ws.Cell(r, 3).Value = DateTime.ParseExact((string)localData[i, 1], "yyyy-MM-dd", CultureInfo.InvariantCulture);
+   755→   755→            ws.Cell(r, 4).Value = (string)localData[i, 2];
+   756→   756→            ws.Cell(r, 5).Value = (string)localData[i, 3];
+   757→   757→            ws.Cell(r, 6).Value = (string)localData[i, 4];
+   758→   758→            ws.Cell(r, 7).Value = Convert.ToDouble(localData[i, 5]);
+   759→   759→            ws.Cell(r, 8).Value = Convert.ToDouble(localData[i, 6]);
+   760→   760→            ws.Cell(r, 9).Value = $"=G{r}*H{r}";
+   761→   761→            ws.Cell(r, 10).Value = "Cash";
+   762→   762→            ws.Cell(r, 11).Value = (i % 2 == 0) ? "Standard" : "Premium";
+   763→   763→            ws.Cell(r, 12).Value = (i % 3 == 0) ? "#600" : (i % 3 == 1 ? "#627" : "Natural");
+   764→   764→            ws.Cell(r, 13).Value = "Received";
+   765→   765→            for (int c = 2; c <= 13; c++) {
+   766→   766→                StyleCell(ws.Cell(r, c), i);
+   767→   767→                if (c == 3) ws.Cell(r, c).Style.NumberFormat.Format = "yyyy-mm-dd";
+   768→   768→                if (c == 7) ws.Cell(r, c).Style.NumberFormat.Format = "#,##0.0";
+   769→   769→                if (c == 8) ws.Cell(r, c).Style.NumberFormat.Format = "#,##0";
+   770→   770→                if (c == 9) { ws.Cell(r, c).Style.NumberFormat.Format = "#,##0"; ws.Cell(r, c).Style.Fill.BackgroundColor = Gold; ws.Cell(r, c).Style.Font.Bold = true; }
+   771→   771→            }
+   772→   772→            r++;
+   773→   773→        }
+   774→   774→        ws.Cell(r, 4).Value = "TOTALS";
+   775→   775→        ws.Cell(r, 7).Value = $"=SUM(G{localStart}:G{r-1})";
+   776→   776→        ws.Cell(r, 9).Value = $"=SUM(I{localStart}:I{r-1})";
+   777→   777→        for (int c = 2; c <= 13; c++) StyleTotal(ws.Cell(r, c));
+   778→   778→        ws.Cell(r, 7).Style.NumberFormat.Format = "#,##0.0";
+   779→   779→        ws.Cell(r, 9).Style.NumberFormat.Format = "#,##0";
+   780→   780→
+   781→   781→        FreezeTop(ws);
+   782→   782→    }
+   783→   783→
+   784→   784→    // ========================================================================
+   785→   785→    //  SHEET 5 — LOT MASTER  (linked to Procurement & LC + Factory sheets)
+   786→   786→    // ========================================================================
+   787→   787→    static void BuildLotMaster(XLWorkbook wb, FactoryConfig[] factoryConfigs) {
+   788→   788→        var ws = wb.AddWorksheet("Lot Master");
+   789→   789→        SetColumnWidths(ws, 4, 18, 14, 14, 12, 14, 14, 14, 18, 14, 14, 14, 14, 14, 14, 14);
+   790→   790→        WriteTitleBar(ws, "LOT MASTER — Full Traceability (Live-Linked)",
+   791→   791→            "Landed cost pulled from Procurement. Factory distribution tracked. All formula-driven.", 17);
+   792→   792→        int r = 4;
+   793→   793→        string[] hdr = { "Lot ID", "Created", "Source Country", "Color Code", "Raw Wt (kg)",
+   794→   794→                         "Landed Cost/kg (BDT)", "Total Landed Cost", "Current Bucket", "Current Location",
+   795→   795→                         "Current Qty (kg)", "Age (days)", "Current Value (BDT)",
+   796→   796→                         "Factory Assigned", "Factory Input Used (kg)", "Distributed to Workers (kg)", "Distribution Balance", "Status" };
+   797→   797→        for (int i = 0; i < hdr.Length; i++) {
+   798→   798→            ws.Cell(r, 2 + i).Value = hdr[i];
+   799→   799→            StyleHeader(ws.Cell(r, 2 + i));
+   800→   800→        }
+   801→   801→        ws.Row(r).Height = 42;
+   802→   802→        r++;
+   803→   803→
+   804→   804→        var lots = new object[,] {
+   805→   805→            { "LOT-20260412-01", "2026-04-12", "India",     "#600", 500.0, 4200.0 },
+   806→   806→            { "LOT-20260415-L01","2026-04-15", "Local BD",  "#627",  80.0, 1800.0 },
+   807→   807→            { "LOT-20260422-L02","2026-04-22", "Local BD",  "Nat",   60.0, 2200.0 },
+   808→   808→            { "LOT-20260425-02", "2026-04-25", "Uzbekistan","#1B",  350.0, 2640.0 },
+   809→   809→            { "LOT-20260503-03", "2026-05-03", "Tajikistan","Nat",  280.0, 2220.0 },
+   810→   810→            { "LOT-20260508-L03","2026-05-08", "Local BD",  "#600",  95.0, 1500.0 },
+   811→   811→            { "LOT-20260518-04", "2026-05-18", "Pakistan",  "#1B",  420.0, 3360.0 },
+   812→   812→            { "LOT-20260520-L04","2026-05-20", "Local BD",  "Nat",   50.0,12000.0 },
+   813→   813→            { "LOT-20260602-05", "2026-06-02", "Myanmar",   "#600", 300.0, 1800.0 },
+   814→   814→            { "LOT-20260605-L05","2026-06-05", "Local BD",  "#627", 110.0, 2000.0 },
+   815→   815→            { "LOT-20260615-06", "2026-06-15", "India",     "Nat",  200.0,11400.0 },
+   816→   816→        };
+   817→   817→        int lotStart = r;
+   818→   818→        string[] buckets = { "Washed Stock", "Distributed", "In-Factory", "Washed Stock",
+   819→   819→                             "Distributed", "Raw Material", "Washed Stock", "Half-Finish",
+   820→   820→                             "Distributed", "In Final Production", "Raw Material" };
+   821→   821→        string[] locations = { "Dinajpur Wash Plant", "Head Leader - North", "Factory F-12",
+   822→   822→                               "Dinajpur Wash Plant", "Line Leader L-07", "Dhaka Warehouse",
+   823→   823→                               "Dinajpur Wash Plant", "Dhaka Warehouse", "Line Leader L-15",
+   824→   824→                               "Dhaka Final Floor", "Dhaka Warehouse" };
+   825→   825→        string[] owners = { "Washing Lead", "Head Leader 2", "Supervisor S-22", "Washing Lead",
+   826→   826→                            "Line Leader L-07", "Store Keeper", "Washing Lead", "Store Keeper",
+   827→   827→                            "Line Leader L-15", "Floor Manager", "Store Keeper" };
+   828→   828→
+   829→   829→        // Build a lookup: Lot ID → Factory sheet name
+   830→   830→        var lotToFactory = factoryConfigs.ToDictionary(c => c.LotId, c => c.SheetName);
+   831→   831→
+   832→   832→        for (int i = 0; i < lots.GetLength(0); i++) {
+   833→   833→            string lotId = (string)lots[i, 0];
+   834→   834→            ws.Cell(r, 2).Value = lotId;
+   835→   835→            ws.Cell(r, 3).Value = DateTime.ParseExact((string)lots[i, 1], "yyyy-MM-dd", CultureInfo.InvariantCulture);
+   836→   836→            ws.Cell(r, 4).Value = (string)lots[i, 2];
+   837→   837→            ws.Cell(r, 5).Value = (string)lots[i, 3];
+   838→   838→            ws.Cell(r, 6).Value = Convert.ToDouble(lots[i, 4]);
+   839→   839→            // Landed Cost/kg — VLOOKUP from Procurement & LC (col O = Landed BDT/kg, col F = Lot ID)
+   840→   840→            // Import LC register starts at row 6, Lot ID is col F (6), Landed BDT/kg is col O (15)
+   841→   841→            // Local purchase register: Lot ID col F (6), Unit BDT/kg col H (8)
+   842→   842→            // Try import first, then local
+   843→   843→            ws.Cell(r, 7).Value = $"=IFERROR(VLOOKUP(B{r},'Procurement & LC'!F6:O11,10,FALSE),IFERROR(VLOOKUP(B{r},'Procurement & LC'!F20:H24,3,FALSE),G{r}))";
+   844→   844→            // Total Landed Cost = Raw Wt × Landed Cost/kg
+   845→   845→            ws.Cell(r, 8).Value = $"=F{r}*G{r}";
+   846→   846→            ws.Cell(r, 9).Value = buckets[i];
+   847→   847→            ws.Cell(r, 10).Value = locations[i];
+   848→   848→            double remainFactor = buckets[i] switch {
+   849→   849→                "Raw Material" => 1.00,
+   850→   850→                "Washed Stock" => 0.92,
+   851→   851→                "Distributed" => 0.90,
+   852→   852→                "In-Factory" => 0.85,
+   853→   853→                "Half-Finish" => 0.78,
+   854→   854→                "In Final Production" => 0.72,
+   855→   855→                _ => 0.95
+   856→   856→            };
+   857→   857→            ws.Cell(r, 11).Value = $"=ROUND(F{r}*{remainFactor},1)";
+   858→   858→            ws.Cell(r, 12).Value = $"=TODAY()-C{r}";
+   859→   859→            double uplift = buckets[i] switch {
+   860→   860→                "Raw Material" => 0.0,
+   861→   861→                "Washed Stock" => 200.0,
+   862→   862→                "Distributed" => 350.0,
+   863→   863→                "In-Factory" => 600.0,
+   864→   864→                "Half-Finish" => 1500.0,
+   865→   865→                "In Final Production" => 4500.0,
+   866→   866→                _ => 0.0
+   867→   867→            };
+   868→   868→            ws.Cell(r, 13).Value = $"=K{r}*(G{r}+{uplift})";
+   869→   869→
+   870→   870→            // Factory Assigned — lookup from factory configs
+   871→   871→            if (lotToFactory.ContainsKey(lotId)) {
+   872→   872→                var cfg = lotToFactory[lotId];
+   873→   873→                ws.Cell(r, 14).Value = $"=IFERROR('{cfg}'!C5,\"-\")";  // supervisor name
+   874→   874→                // Factory Input Used (kg) — sum of input given from factory sheet col E
+   875→   875→                int wc = lotToFactory[lotId] != null ? factoryConfigs.First(c => c.LotId == lotId).Workers.Length : 0;
+   876→   876→                if (wc > 0) {
+   877→   877→                    string sn = lotToFactory[lotId];
+   878→   878→                    ws.Cell(r, 15).Value = $"=SUM('{sn}'!E19:E{18+wc})";
+   879→   879→                    // Distributed to Workers — sum of A+B+C+Wastage
+   880→   880→                    ws.Cell(r, 16).Value = $"=SUM('{sn}'!F19:F{18+wc})+SUM('{sn}'!G19:G{18+wc})+SUM('{sn}'!H19:H{18+wc})+SUM('{sn}'!I19:I{18+wc})";
+   881→   881→                    // Distribution Balance: Input Used = Distributed (OK/MISMATCH)
+   882→   882→                    ws.Cell(r, 17).Value = $"=IF(ROUND(O{r}-P{r},3)=0,\"OK\",\"MISMATCH\")";
+   883→   883→                }
+   884→   884→            } else {
+   885→   885→                ws.Cell(r, 14).Value = "-";
+   886→   886→                ws.Cell(r, 15).Value = 0;
+   887→   887→                ws.Cell(r, 16).Value = 0;
+   888→   888→                ws.Cell(r, 17).Value = "-";
+   889→   889→            }
+   890→   890→
+   891→   891→            ws.Cell(r, 18).Value = "Active";
+   892→   892→
+   893→   893→            for (int c = 2; c <= 18; c++) {
+   894→   894→                StyleCell(ws.Cell(r, c), i);
+   895→   895→                if (c == 3) ws.Cell(r, c).Style.NumberFormat.Format = "yyyy-mm-dd";
+   896→   896→                if (c == 6 || c == 11 || c == 15 || c == 16) ws.Cell(r, c).Style.NumberFormat.Format = "#,##0.0";
+   897→   897→                if (c == 7 || c == 8 || c == 13) ws.Cell(r, c).Style.NumberFormat.Format = "#,##0";
+   898→   898→                if (c == 8 || c == 13) { ws.Cell(r, c).Style.Fill.BackgroundColor = Gold; ws.Cell(r, c).Style.Font.Bold = true; }
+   899→   899→                if (c == 12) ws.Cell(r, c).Style.NumberFormat.Format = "0";
+   900→   900→                if (c == 17) { ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; ws.Cell(r, c).Style.Font.Bold = true; }
+   901→   901→                if (c == 18) ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+   902→   902→            }
+   903→   903→            r++;
+   904→   904→        }
+   905→   905→        // Totals
+   906→   906→        ws.Cell(r, 5).Value = "TOTALS";
+   907→   907→        ws.Cell(r, 6).Value = $"=SUM(F{lotStart}:F{r-1})";
+   908→   908→        ws.Cell(r, 8).Value = $"=SUM(H{lotStart}:H{r-1})";
+   909→   909→        ws.Cell(r, 11).Value = $"=SUM(K{lotStart}:K{r-1})";
+   910→   910→        ws.Cell(r, 13).Value = $"=SUM(M{lotStart}:M{r-1})";
+   911→   911→        ws.Cell(r, 15).Value = $"=SUM(O{lotStart}:O{r-1})";
+   912→   912→        ws.Cell(r, 16).Value = $"=SUM(P{lotStart}:P{r-1})";
+   913→   913→        for (int c = 2; c <= 18; c++) StyleTotal(ws.Cell(r, c));
+   914→   914→        ws.Cell(r, 6).Style.NumberFormat.Format = "#,##0.0";
+   915→   915→        ws.Cell(r, 8).Style.NumberFormat.Format = "#,##0";
+   916→   916→        ws.Cell(r, 11).Style.NumberFormat.Format = "#,##0.0";
+   917→   917→        ws.Cell(r, 13).Style.NumberFormat.Format = "#,##0";
+   918→   918→        ws.Cell(r, 15).Style.NumberFormat.Format = "#,##0.0";
+   919→   919→        ws.Cell(r, 16).Style.NumberFormat.Format = "#,##0.0";
+   920→   920→
+   921→   921→        FreezeTop(ws);
+   922→   922→    }
+   923→   923→
+   924→   924→    // ========================================================================
+   925→   925→    //  SHEET 6 — INVENTORY (8 BUCKETS)
+   926→   926→    // ========================================================================
+   927→   927→    static void BuildInventoryBuckets(XLWorkbook wb) {
+   928→   928→        var ws = wb.AddWorksheet("Inventory (8 Buckets)");
+   929→   929→        SetColumnWidths(ws, 4, 24, 28, 16, 16, 16, 18, 14);
+   930→   930→        WriteTitleBar(ws, "INVENTORY — 8 BUCKETS (Real-Time Stock Position)",
+   931→   931→            "Stock by inventory state with valuation. SUMIFS pulls from Lot Master.", 8);
+   932→   932→
+   933→   933→        int r = 4;
+   934→   934→        string[] hdr = { "Bucket #", "Bucket Name", "Description", "Qty (kg)",
+   935→   935→                         "Unit Cost (BDT/kg)", "Total Value (BDT)", "% of Total Value", "Status" };
+   936→   936→        for (int i = 0; i < hdr.Length; i++) {
+   937→   937→            ws.Cell(r, 2 + i).Value = hdr[i];
+   938→   938→            StyleHeader(ws.Cell(r, 2 + i));
+   939→   939→        }
+   940→   940→        ws.Row(r).Height = 32;
+   941→   941→        r++;
+   942→   942→
+   943→   943→        var buckets = new (int id, string name, string desc, double avgCost)[] {
+   944→   944→            (1, "Raw Material",          "Dhaka warehouse, pre-wash",                       500),
+   945→   945→            (2, "Washed Stock",          "Dinajpur wash plant, post-wash",                  850),
+   946→   946→            (3, "Distributed (Field)",   "Allocated to Head/Line Leaders, in transit",      420),
+   947→   947→            (4, "In-Factory (Home)",     "With home-based workers under supervisors",       280),
+   948→   948→            (5, "Half-Finish Return",    "Returned to Dhaka, awaiting Phase 2",             150),
+   949→   949→            (6, "In Final Production",   "Dhaka floor — sizing, re-wash, assembly",         95),
+   950→   950→            (7, "Finished Goods",        "Packed, ready for export shipment",               70),
+   951→   951→            (8, "Reject / Wastage",      "Recovered short-hair / reject material",          35),
+   952→   952→        };
+   953→   953→        int bStart = r;
+   954→   954→        for (int i = 0; i < buckets.Length; i++) {
+   955→   955→            ws.Cell(r, 2).Value = buckets[i].id;
+   956→   956→            ws.Cell(r, 3).Value = buckets[i].name;
+   957→   957→            ws.Cell(r, 4).Value = buckets[i].desc;
+   958→   958→            ws.Cell(r, 5).Value = $"=SUMIFS('Lot Master'!K:K,'Lot Master'!I:I,C{r})";
+   959→   959→            ws.Cell(r, 6).Value = buckets[i].avgCost;
+   960→   960→            ws.Cell(r, 7).Value = $"=IFERROR(E{r}*F{r},0)";
+   961→   961→            ws.Cell(r, 8).Value = $"=IFERROR(G{r}/SUM($G${bStart}:$G${bStart+7}),0)";
+   962→   962→            ws.Cell(r, 9).Value = (buckets[i].id <= 6) ? "Active" : "Held";
+   963→   963→            for (int c = 2; c <= 9; c++) {
+   964→   964→                StyleCell(ws.Cell(r, c), i);
+   965→   965→                if (c == 2) ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+   966→   966→                if (c == 5) ws.Cell(r, c).Style.NumberFormat.Format = "#,##0.0";
+   967→   967→                if (c == 6) ws.Cell(r, c).Style.NumberFormat.Format = "#,##0";
+   968→   968→                if (c == 7) { ws.Cell(r, c).Style.NumberFormat.Format = "#,##0"; ws.Cell(r, c).Style.Fill.BackgroundColor = Gold; ws.Cell(r, c).Style.Font.Bold = true; }
+   969→   969→                if (c == 8) ws.Cell(r, c).Style.NumberFormat.Format = "0.0%";
+   970→   970→                if (c == 9) ws.Cell(r, c).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+   971→   971→            }
+   972→   972→            r++;
+   973→   973→        }
+   974→   974→        ws.Cell(r, 4).Value = "TOTAL";
+   975→   975→        ws.Cell(r, 5).Value = $"=SUM(E{bStart}:E{r-1})";
+   976→   976→        ws.Cell(r, 7).Value = $"=SUM(G{bStart}:G{r-1})";
+   977→   977→        ws.Cell(r, 8).Value = $"=SUM(H{bStart}:H{r-1})";
+   978→   978→        for (int c = 2; c <= 9; c++) StyleTotal(ws.Cell(r, c));
+   979→   979→        ws.Cell(r, 5).Style.NumberFormat.Format = "#,##0.0";
+   980→   980→        ws.Cell(r, 7).Style.NumberFormat.Format = "#,##0";
+   981→   981→        ws.Cell(r, 8).Style.NumberFormat.Format = "0.0%";
+   982→   982→
+   983→   983→        FreezeTop(ws);
+   984→   984→    }
+   985→   985→}
+   986→   986→

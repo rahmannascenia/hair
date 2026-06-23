@@ -1,0 +1,333 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== SETTINGS ====================
+model Settings {
+  id              String   @id @default("default")
+  fxUsdBdt        Float    @default(120.0)
+  rateA           Float    @default(500.0)
+  rateB           Float    @default(400.0)
+  rateC           Float    @default(300.0)
+  washTol         Float    @default(0.15)
+  hackTol         Float    @default(0.15)
+  costPerKgTgt    Float    @default(320.0)
+  factoryAMin     Float    @default(0.60)
+  supMax          Float    @default(400.0)
+  supMin          Float    @default(100.0)
+  supExtra        Float    @default(150.0)
+  perfThreshold   Float    @default(0.90)
+  perfBonus       Float    @default(300.0)
+  attDays         Int      @default(30)
+  attBonus        Float    @default(200.0)
+  autoCGrams      Float    @default(50.0)
+  turnoverTgt     Float    @default(5.0)
+  updatedAt       DateTime @updatedAt
+}
+
+// ==================== PROCUREMENT ====================
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  country   String
+  contact   String?
+  phone     String?
+  isLocal   Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  procurements Procurement[]
+}
+
+model Procurement {
+  id                String   @id @default(cuid())
+  voucherNo         String
+  date              DateTime
+  supplierId        String
+  supplier          Supplier @relation(fields: [supplierId], references: [id])
+  originCountry     String
+  rawWeightKg       Float
+  usdPerKg          Float    @default(0)
+  costPerKgBdt      Float
+  goodsUsd          Float    @default(0)
+  freightUsd        Float    @default(0)
+  dutyUsd           Float    @default(0)
+  bankChargesUsd    Float    @default(0)
+  landedUsd         Float    @default(0)
+  totalLandedCostBdt Float
+  landedCostPerKgBdt Float   @default(0)
+  lcNo              String?
+  paymentMode       String?
+  qualityGrade      String?
+  fxRate            Float    @default(120.0)
+  status            String   @default("Received")
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  lots              Lot[]
+}
+
+// ==================== LOT MASTER ====================
+model Lot {
+  id                String @id @default(cuid())
+  lotNo             String @unique
+  procurementId     String?
+  procurement       Procurement? @relation(fields: [procurementId], references: [id])
+  colour            String
+  rawWeightKg       Float
+  landedCostPerKg   Float
+  totalLandedCost   Float
+  washStatus        String @default("Pending")
+  distributedKg     Float  @default(0)
+  returnedKg        Float  @default(0)
+  finishedKg        Float  @default(0)
+  status            String @default("Active")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  washLogs          WashLog[]
+  distributions     Phase1Distribution[]
+  factoryRecords    FactoryDailyRecord[]
+  phase2Jobs        Phase2Job[]
+}
+
+// ==================== WASHING ====================
+model WashLog {
+  id            String   @id @default(cuid())
+  washId        String @unique
+  lotId         String
+  lot           Lot      @relation(fields: [lotId], references: [id])
+  washDate      DateTime
+  operator      String
+  inputKg       Float
+  outputKg      Float
+  wastageKg     Float
+  wastagePct    Float
+  chemicalsBdt  Float
+  labourBdt     Float
+  costPerKgOut  Float
+  status        String @default("OK")
+  createdAt     DateTime @default(now())
+}
+
+// ==================== PHASE 1 DISTRIBUTION ====================
+model Phase1Distribution {
+  id          String @id @default(cuid())
+  handoffId   String @unique
+  date        DateTime
+  fromRole    String
+  fromName    String
+  toRole      String
+  toName      String
+  lotId       String
+  lot         Lot    @relation(fields: [lotId], references: [id])
+  qtyKg       Float
+  cumulativeKg Float
+  tierMultiplier Int
+  status      String @default("OK")
+  createdAt   DateTime @default(now())
+}
+
+// ==================== ORGANIZATION ====================
+model HeadLeader {
+  id        String @id @default(cuid())
+  name      String
+  phone     String?
+  region    String
+  isActive  Boolean @default(true)
+  lineLeaders LineLeader[]
+}
+
+model LineLeader {
+  id          String @id @default(cuid())
+  name        String
+  phone       String?
+  bKash       String?
+  headLeaderId String
+  headLeader  HeadLeader @relation(fields: [headLeaderId], references: [id])
+  isActive    Boolean @default(true)
+  factories   Factory[]
+}
+
+model Factory {
+  id              String @id @default(cuid())
+  factoryId       String @unique
+  name            String
+  supervisorName  String
+  supervisorBkash String?
+  location        String
+  fuelBdt         Float  @default(200)
+  transportBdt    Float  @default(150)
+  lineLeaderId    String
+  lineLeader      LineLeader @relation(fields: [lineLeaderId], references: [id])
+  groupHead       String
+  isActive        Boolean @default(true)
+  workers         Worker[]
+  dailyRecords    FactoryDailyRecord[]
+}
+
+model Worker {
+  id          String @id @default(cuid())
+  workerId    String @unique
+  name        String
+  bKash       String?
+  factoryId   String
+  factory     Factory @relation(fields: [factoryId], references: [id])
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  dailyEntries WorkerDailyEntry[]
+}
+
+// ==================== FACTORY DAILY RECORDS ====================
+model FactoryDailyRecord {
+  id            String @id @default(cuid())
+  recordDate    DateTime
+  factoryId     String
+  factory       Factory @relation(fields: [factoryId], references: [id])
+  lotId         String
+  lot           Lot    @relation(fields: [lotId], references: [id])
+  hostingAllowance Float @default(0)
+  perfBonus     Float @default(0)
+  totalSupPay   Float @default(0)
+  totalInputKg  Float @default(0)
+  totalAGradeKg Float @default(0)
+  totalBGradeKg Float @default(0)
+  totalCGradeKg Float @default(0)
+  totalWastageKg Float @default(0)
+  totalPayrollBdt Float @default(0)
+  grandTotalBdt Float @default(0)
+  wipStatus     String @default("IN PROGRESS")
+  createdAt     DateTime @default(now())
+  entries       WorkerDailyEntry[]
+}
+
+model WorkerDailyEntry {
+  id              String @id @default(cuid())
+  recordId        String
+  record          FactoryDailyRecord @relation(fields: [recordId], references: [id])
+  workerId        String
+  worker          Worker @relation(fields: [workerId], references: [id])
+  inputGivenKg    Float
+  aWeightKg       Float
+  bWeightKg       Float
+  cWeightKg       Float
+  wastageKg       Float
+  balanceStatus   String @default("OK")
+  daysPresent     Int @default(0)
+  baseWage        Float
+  attendanceBonus Float
+  totalPayable    Float
+  status          String @default("Pending Approval")
+  createdAt       DateTime @default(now())
+}
+
+// ==================== PHASE 2 PRODUCTION ====================
+model Phase2Job {
+  id          String @id @default(cuid())
+  jobId       String @unique
+  lotId       String
+  lot         Lot    @relation(fields: [lotId], references: [id])
+  date        DateTime
+  inputKg     Float
+  size5Kg     Float  @default(0)
+  size6Kg     Float  @default(0)
+  size8Kg     Float  @default(0)
+  size10Kg    Float  @default(0)
+  size12Kg    Float  @default(0)
+  size14Kg    Float  @default(0)
+  size16Kg    Float  @default(0)
+  size18Kg    Float  @default(0)
+  size20Kg    Float  @default(0)
+  size24Kg    Float  @default(0)
+  size30Kg    Float  @default(0)
+  totalSizedKg   Float
+  combingLossKg  Float
+  lossPct        Float
+  realisableValueBdt Float
+  costBdt        Float
+  marginBdt      Float
+  createdAt     DateTime @default(now())
+}
+
+// ==================== SIZE PRICING ====================
+model SizePricing {
+  id            String @id @default(cuid())
+  lengthInch    Int    @unique
+  bdtPerKg      Float
+  usdPerKg      Float
+  marketSegment String
+  minMarginBdt  Float
+  minMarginPct  Float
+}
+
+// ==================== BUYER ====================
+model Buyer {
+  id        String @id @default(cuid())
+  name      String
+  country   String
+  isActive  Boolean @default(true)
+  sales     Sale[]
+  pricings  BuyerPricing[]
+}
+
+model BuyerPricing {
+  id            String @id @default(cuid())
+  buyerId       String
+  buyer         Buyer  @relation(fields: [buyerId], references: [id])
+  lengthInch    Int
+  premiumPct    Float
+  createdAt     DateTime @default(now())
+}
+
+// ==================== SALES ====================
+model Sale {
+  id              String @id @default(cuid())
+  contractNo      String @unique
+  contractDate    DateTime
+  buyerId         String
+  buyer           Buyer  @relation(fields: [buyerId], references: [id])
+  productSpec     String
+  lengthInch      Int
+  qtyKg           Float
+  usdPerKg        Float
+  usdValue        Float
+  bdtValue        Float
+  costPerKgBdt    Float
+  totalCostBdt    Float
+  marginPerKgBdt  Float
+  totalMarginBdt  Float
+  marginPct       Float
+  status          String @default("Healthy")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ==================== RISK REGISTER ====================
+model Risk {
+  id            String @id @default(cuid())
+  riskId        String @unique
+  description   String
+  category      String
+  likelihood    Int
+  impact        Int
+  riskScore     Int
+  mitigation    String
+  owner         String
+  status        String @default("Open")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ==================== INVENTORY BUCKETS ====================
+model InventoryBucket {
+  id          String @id @default(cuid())
+  bucketName  String @unique
+  weightKg    Float @default(0)
+  valueBdt    Float @default(0)
+  updatedAt   DateTime @updatedAt
+}

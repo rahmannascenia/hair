@@ -1,0 +1,901 @@
+Complete Business Process Document
+Human Hair / Wig Manufacturing & Export
+
+বিজনেস প্রোসেস ডকুমেন্ট
+——— ✦ ———
+
+Barindra International | Hair Processing Division
+Prepared for: Nascenia Limited | ERP Implementation Project
+
+June 2026
+
+Table of Contents
+Right-click the TOC and select "Update Field" to refresh page numbers
+
+1. Company Overview​
+
+3
+
+2. Raw Material Procurement Process​
+
+4
+
+2.1 Import Procurement​
+
+4
+
+2.2 Local Procurement​
+
+5
+
+3. Raw Material Receiving & Inventory​
+
+6
+
+4. Sorting, Grading & Lot Assignment​
+
+7
+
+5. Material Transfer: Dhaka to Dinajpur​
+
+8
+
+6. Washing & Pre-Processing​
+
+9
+
+7. Phase 1 Production: Home-Based Workers​
+
+10
+
+7.1 Worker Hierarchy​
+
+10
+
+7.2 Material Distribution​
+
+11
+
+8. Quality Control & Grading (A/B/C)​
+
+12
+
+9. Wastage & Weight Loss Tracking​
+
+13
+
+10. Phase 2 Production: Factory Processing​
+
+14
+
+11. Final Processing & Size Sorting​
+
+15
+
+12. Export Preparation & Sales​
+
+16
+
+13. LC Management & Import Documentation​
+
+17
+
+14. Worker Attendance & Salary Management​
+
+18
+
+15. Performance Tracking & Reporting​
+
+19
+
+16. Accounts & Finance Process​
+
+20
+
+17. Complete Process Flow Summary​
+
+21
+
+Barindra International | Business Process Document
+
+1. Company Overview
+Barindra International is a leading human hair processing and manufacturing company based in
+Bangladesh. The company specializes in procuring raw human hair from various countries, processing
+it through multiple stages, and exporting the final products to international markets.
+The company operates a unique business model combining home-based workers with factory-based
+processing to achieve scale and efficiency. With over 5,000 workers and a sophisticated supply chain,
+Barindra International has established itself as Bangladesh's first formal exporter in the human hair
+industry.
+
+Key Company Information
+Company Name
+
+Barindra International
+
+Business Type
+
+Human Hair Processing & Export
+
+Head Office
+
+Uttara, Dhaka (Sector 6)
+
+Factory Location
+
+Dinajpur
+
+Total Workers
+
+~5,000+ (Home-based + Factory)
+
+Field Supervisors
+
+~50 Line Leaders
+
+Export Markets
+
+China, USA, Europe, Africa, and more
+
+Source Countries
+
+India, Uzbekistan, Tajikistan, Pakistan, Myanmar, China,
+Nepal, Vietnam, Malaysia
+
+Processing Stages
+
+3 Major Phases
+
+Current System
+
+Manual (Excel + Hard Copy)
+
+Organizational Hierarchy
+Level
+
+Role
+
+Count
+
+Responsibility
+
+1
+
+Managing Director
+
+1
+
+Overall business strategy and decision making
+
+2
+
+Production Manager
+
+3
+
+Oversee all production operations
+
+3
+
+Group Head (Head Leader)
+
+5
+
+Manage Line Leaders, coordinate with PM
+
+4
+
+Line Leader
+
+~50
+
+Field supervision, material distribution
+
+5
+
+Supervisor
+
+~500
+
+Home-based worker management
+
+4 / 18
+
+Barindra International | Business Process Document
+
+Level
+
+Role
+
+Count
+
+Responsibility
+
+6
+
+Worker
+
+~5,000
+
+Production work (weft making, etc.)
+
+2. Raw Material Procurement Process
+The procurement process is the foundation of the entire business operation. Raw human hair is
+sourced both internationally and locally. The procurement team maintains relationships with
+suppliers across multiple countries to ensure consistent supply of quality raw materials.
+
+2.1 Import Procurement
+Raw human hair is imported from multiple countries including India, Uzbekistan, Tajikistan, Pakistan,
+Myanmar, China, Nepal, Vietnam, and Malaysia. The import process involves:
+1. Supplier Selection & Negotiation: Identify and negotiate with suppliers in source countries. Price
+varies significantly based on hair quality, length, and origin.
+2. Letter of Credit (LC) Issuance: Commercial bank issues LC for international purchases. LC
+management tracks from opening to clearance.
+3. Shipping & Customs Clearance: Goods shipped to Bangladesh and cleared through customs at
+ports.
+4. Transport to Dhaka Warehouse: Cleared goods transported to main warehouse in Dhaka for
+sorting and grading.
+
+2.2 Local Procurement
+In addition to imports, raw hair is also purchased locally from various regions within Bangladesh.
+Local procurement involves direct purchase from collectors and intermediaries. Prices vary by
+location (e.g., Narayanganj, Gazipur, and other areas have different rates for similar quality).
+• Local suppliers bring raw hair to the Dhaka office
+• Quality assessment performed on-site before purchase
+• Immediate cash payment or credit arrangement
+• Goods直接进入 sorting process without customs clearance
+
+5 / 18
+
+Barindra International | Business Process Document
+
+3. Raw Material Receiving & Inventory
+All incoming raw materials (both imported and locally purchased) are received at the Dhaka
+warehouse. This stage is critical as it establishes the foundation for all subsequent tracking and
+costing.
+
+Receiving Process Steps
+1. Physical Receipt: Goods are physically received and counted at the warehouse.
+2. Weight Recording: Initial weight is recorded (e.g., 500 kg per batch).
+3. Quality Inspection: Initial quality check to verify it matches purchase order specifications.
+4. Inventory Entry: Goods are entered into stock as 'Raw Material Stock' with purchase value.
+5. Lot/Batch Number Assignment: A unique lot number is assigned for tracking purposes.
+
+Inventory Management
+Stock Type
+
+Raw Material Stock (Pre-Processing)
+
+Location
+
+Dhaka Main Warehouse
+
+Tracking
+
+Lot/Batch Number based
+
+Unit
+
+Kilograms (kg)
+
+Average Batch
+
+200-500 kg per lot
+
+Valuation
+
+Purchase cost + freight + duties
+
+4. Sorting, Grading & Lot Assignment
+The sorting and grading process is one of the most critical stages in the entire operation. Experienced
+workers in Dhaka sort the raw hair by color and quality before assigning lot numbers. This process
+requires significant expertise as the quality assessment directly impacts pricing and processing
+decisions.
+
+Sorting Process
+1. Color Separation: Hair is separated by natural color categories (black, brown, blonde, etc.).
+2. Quality Assessment: Each batch is assessed for texture, strength, length consistency, and overall
+quality.
+
+6 / 18
+
+Barindra International | Business Process Document
+
+3. Length Evaluation: Initial length evaluation performed (affects pricing significantly).
+4. Grading: Hair graded into quality categories that determine processing path.
+
+Lot Assignment
+After sorting, a unique Lot Number is assigned to each batch. This lot number becomes the primary
+tracking identifier throughout the entire production process, from raw material to finished goods
+export.
+Lot Identifier
+
+Unique Lot Number
+
+Attributes Tracked
+
+Color, Quality Grade, Weight, Source, Date
+
+Tracking Scope
+
+From raw material to export
+
+Multiple Lots
+
+Supervisors may handle multiple lots simultaneously
+
+5. Material Transfer: Dhaka to Dinajpur
+After sorting and lot assignment in Dhaka, materials are transferred to the Dinajpur factory for
+processing. This transfer process must be carefully tracked to maintain inventory accuracy.
+
+Transfer Process
+1. Requisition: Production Manager or Group Head creates a requisition for materials needed at
+Dinajpur.
+2. Material Booking: Requested materials are booked against specific lot numbers in the system.
+3. Dispatch from Dhaka: Materials physically dispatched with proper documentation (delivery slip).
+4. Transport: Goods transported via road to Dinajpur factory.
+5. Receipt at Dinajpur: Materials received and verified against requisition at factory.
+6. Stock Update: Dhaka stock reduced, Dinajpur stock increased accordingly.
+
+Tracking Points
+• Booking status: booked vs. physically dispatched
+• In-transit tracking
+• Receipt confirmation and variance check
+
+7 / 18
+
+Barindra International | Business Process Document
+
+6. Washing & Pre-Processing
+Upon receipt at the Dinajpur factory, raw hair undergoes the first major processing phase — washing
+and pre-treatment. This stage transforms the raw, unprocessed hair into clean, sanitized material
+ready for production.
+
+Washing Process Steps
+1. Initial Sorting: Received lots are organized by the floor manager.
+2. Washing: Hair is washed using specialized shampoo and chemicals in the washing plant.
+3. Chemical Treatment: Specific chemicals applied based on hair type and desired output.
+4. Drying: Hair is dried using industrial drying equipment.
+5. Re-stocking: Cleaned hair is weighed and restocked as 'Washed Material' (weight may vary ±2kg).
+
+Personnel Involved
+Floor Manager
+
+Oversees washing operations
+
+Washing Plant Workers
+
+~7-8 workers operate washing equipment
+
+QC (Initial)
+
+Checks wash quality before handover to production
+
+7. Phase 1 Production: Home-Based Workers
+Phase 1 Production is the core manufacturing activity involving approximately 5,000 home-based
+workers. This unique distributed manufacturing model allows the company to achieve massive scale
+while keeping overhead costs low. The production is managed through a hierarchical supervisor
+system.
+
+7.1 Worker Hierarchy
+Role
+
+Count
+
+Details
+
+Production Manager
+
+1-3
+
+Plans production, assigns targets to Group Heads
+
+Group Head
+
+5
+
+Each manages ~10 Line Leaders, 200-300kg allocation
+
+Line Leader
+
+~50
+
+Each manages ~10 Supervisors, travels by motorcycle, 30kg
+allocation
+
+8 / 18
+
+Barindra International | Business Process Document
+
+Role
+
+Count
+
+Details
+
+Supervisor
+
+~500
+
+Each manages 15-20 workers, works from home
+
+Worker
+
+~5,000
+
+Home-based, receives 100-300g per task
+
+7.2 Material Distribution Flow
+1. Production Manager (PM): Receives washed material and plans production distribution. Assigns
+targets to Group Heads.
+2. Group Head (Head Leader): Receives 200-300 kg allocation. Divides among 8-10 Line Leaders.
+Records lot numbers and quantities distributed.
+3. Line Leader (Field Supervisor): Receives 30 kg allocation. Travels by motorcycle to factory areas.
+Distributes to 10 Supervisors (each getting 3 kg).
+4. Supervisor (Home-Based): Receives material for 15-20 workers. Organizes workers at her home or
+nearby location. Distributes 100-300g per worker based on capacity.
+5. Worker (Home-Based): Performs production tasks (weft making, alignment, etc.) at supervisor's
+location or nearby homes.
+
+Daily Production Cycle
+• Morning: Line Leaders collect material from Group Head
+• Day: Workers process material at their locations
+• Evening: Workers return completed work to Supervisor
+• Evening: Supervisor returns all packets to Line Leader
+• Evening: Line Leader delivers to Group Head with worker reports
+
+8. Quality Control & Grading (A/B/C)
+Quality control is the cornerstone of Barindra International's business model. Unlike many
+competitors, the company prioritizes quality over quantity. A worker producing 100g of best quality
+earns more than one producing 5kg of poor quality.
+
+QC Process
+1. Packet Collection: All packets from a Line Leader's workers are collected and brought to the QC
+station.
+
+9 / 18
+
+Barindra International | Business Process Document
+
+2. Individual Inspection: 4 QC inspectors examine each worker's output individually.
+3. Quality Grading: Each packet is graded as A, B, or C based on:
+• Length consistency
+• Hair strength and texture
+• Color uniformity
+• Tangle-free quality
+• Overall finish
+
+Grading Criteria
+Grade A
+
+Best quality - highest salary rate, smooth texture,
+consistent length, strong
+
+Grade B
+
+Good quality - standard salary rate, minor inconsistencies
+acceptable
+
+Grade C
+
+Below standard - lower salary rate, significant quality
+issues
+
+Salary Impact
+Worker salary is directly linked to quality grade:
+• Grade A workers receive premium daily rate
+• Grade B workers receive standard daily rate
+• Grade C workers receive reduced daily rate
+• Continuous Grade C performance may lead to termination
+• Performance bonus calculated based on quality consistency
+
+9. Wastage & Weight Loss Tracking
+Weight loss occurs at every stage of processing and must be carefully tracked. Understanding
+wastage patterns is essential for accurate costing and pricing.
+
+Weight Loss by Stage
+Stage
+
+Typical Weight Loss
+
+Example
+
+Raw to Washed
+
+Variable (water, dirt removal)
+
+500 kg → ~480 kg
+
+10 / 18
+
+Barindra International | Business Process Document
+
+Stage
+
+Typical Weight Loss
+
+Example
+
+Phase 1 Production
+
+~10-15%
+
+10 kg given → 8.5-9 kg returned
+
+Phase 2 Processing
+
+~10-15%
+
+Further reduction in factory
+
+Final Processing
+
+~5-10%
+
+Final trimming and QC rejection
+
+Total (Raw to Export)
+
+~30-40% overall
+
+500 kg raw → 300-350 kg finished
+
+Tracking Method
+• Every material movement is weighed and recorded
+• Input weight vs. output weight compared at each stage
+• Variance flagged for investigation if outside tolerance
+• Supervisor performance evaluated based on wastage rates
+
+10. Phase 2 Production: Factory Processing
+After Phase 1 completion, materials return to the Dinajpur factory for the second major processing
+stage. Approximately 200 workers are employed at the factory for this phase.
+
+Phase 2 Process
+1. Material Receipt: Phase 1 output received from Group Heads as individual packets by Line Leader.
+2. Consolidation: Packets consolidated by lot number.
+3. Second Processing: 200 factory workers perform additional processing steps:
+• Further alignment and sorting
+• Length-based categorization
+• Removal of imperfect strands
+• Intermediate quality checks
+4. Wastage Recording: Additional weight loss recorded at this stage.
+5. Re-packing: Material repacked by quality and size for final processing.
+6. Dispatch to Dhaka: Completed Phase 2 material sent back to Dhaka factory.
+
+11 / 18
+
+Barindra International | Business Process Document
+
+11. Final Processing & Size Sorting
+The final processing stage takes place at the Dhaka factory where approximately 100 workers
+complete the last processing steps before the products are ready for export.
+
+Final Processing Steps
+1. Receipt from Dinajpur: Phase 2 output received at Dhaka.
+2. Final Quality Control: Final QC inspection by dedicated Quality Controller.
+3. Size Sorting: Hair sorted by length in inches:
+• Sizes range from 5 inches to 30 inches
+• Each size category sorted separately
+• Size availability tracked for order fulfillment
+4. Final Trimming: Last trimming and finishing.
+5. Export Preparation: Products packaged and labeled for export.
+
+Size Categories
+Short
+
+5-10 inches
+
+Lower price range
+
+Medium
+
+12-18 inches
+
+Standard price range
+
+Long
+
+20-24 inches
+
+Premium price range
+
+Extra Long
+
+26-30 inches
+
+Highest price range
+
+12. Export Preparation & Sales
+The export process begins when a sales contract is secured. Products are prepared and shipped
+according to buyer specifications.
+
+Export Process
+1. Sales Contract: Export sales contract received from international buyer.
+2. Order Processing: Order checked against available inventory by size and quality.
+3. Product Allocation: Specific lots allocated to fulfill order.
+4. Final Inspection: Export-ready inspection performed.
+5. Packaging & Labeling: Products packaged per buyer requirements.
+12 / 18
+
+Barindra International | Business Process Document
+
+6. Documentation: Export documentation prepared (invoice, packing list, certificate of origin, etc.).
+7. Shipment: Goods shipped via sea/air freight to destination.
+
+Export Markets
+• China (primary market)
+• United States
+• European Union
+• African markets
+• Various other international destinations
+
+13. LC Management & Import Documentation
+Letter of Credit management is critical for international procurement. The company handles multiple
+LCs simultaneously across different countries and banks.
+
+LC Management Process
+1. LC Opening: LC opened through commercial bank for supplier.
+2. Amendments: Any amendments tracked and documented.
+3. Shipment Tracking: Monitor shipment against LC timeline.
+4. Document Receipt: Receive and verify documents from negotiating bank.
+5. Payment Settlement: LC payment settlement upon document verification.
+6. LC Closure: Formal closure after all obligations met.
+
+Key Tracking Requirements
+• LC status: Open, Utilized, Closed
+• Shipment status per LC
+• Document status: Received, Pending, Discrepant
+• Bank communication log
+
+13 / 18
+
+Barindra International | Business Process Document
+
+14. Worker Attendance & Salary Management
+Worker management is one of the most complex aspects of operations. With approximately 5,000
+daily workers, the attendance and salary calculation process requires careful tracking and multiple
+verification steps.
+
+Attendance Tracking
+1. Daily Attendance: Each worker's attendance marked daily by their Supervisor.
+2. Supervisor Report: Supervisor submits attendance report to Line Leader.
+3. Line Leader Verification: Line Leader verifies and consolidates attendance data.
+4. Data Entry: Two dedicated staff enter 5,000 workers' daily data.
+5. Attendance Bonus: Workers with 30 consecutive days attendance receive bonus.
+
+Salary Calculation
+Component
+
+Description
+
+Base Daily Wage
+
+Standard daily rate based on worker category
+
+Quality Multiplier
+
+Grade A = Premium, Grade B = Standard, Grade C =
+Reduced
+
+Attendance Bonus
+
+Bonus for perfect monthly attendance (30 days)
+
+Performance Bonus
+
+Additional bonus based on supervisor's profit contribution
+
+Bonus Types
+• Attendance Bonus: For 30-day perfect attendance
+• Performance Bonus: Based on supervisor's profit/loss contribution
+• Supervisors generating profit receive production bonus
+• Supervisors generating consistent loss may be terminated
+
+15. Performance Tracking & Reporting
+Performance tracking is essential for maintaining quality and efficiency. The company tracks
+performance at multiple levels to identify issues and reward excellence.
+
+14 / 18
+
+Barindra International | Business Process Document
+
+Tracking Levels
+Level
+
+Metrics Tracked
+
+Individual Worker
+
+Daily output (kg), Quality grade (A/B/C), Attendance
+
+Supervisor
+
+Team output, Team quality average, Worker attendance
+rate
+
+Line Leader
+
+Total production, Wastage rate, Factory coverage
+
+Group Head
+
+Overall production vs. target, Quality summary
+
+Daily Reporting
+• Daily production report by Line Leader
+• Daily quality report by QC team
+• Daily attendance summary
+• Daily wastage analysis
+
+Monthly Reporting
+• Monthly production summary
+• Monthly salary sheet
+• Monthly performance evaluation
+• Monthly inventory report
+
+16. Accounts & Finance Process
+The accounts and finance function handles all financial transactions, cost tracking, and reporting.
+Currently managed through Excel with plans for full ERP integration.
+
+Financial Processes
+1. Purchase Accounting: Record all raw material purchases with cost breakdown.
+2. Expense Tracking: Track factory costs, head office costs, and operational expenses.
+3. Worker Payments: Calculate and disburse daily wages and bonuses.
+4. Sales Recording: Record export sales and local sales.
+5. Voucher Creation: Create vouchers for all financial transactions.
+6. Reporting: Generate financial reports and statements.
+15 / 18
+
+Barindra International | Business Process Document
+
+Key Financial Reports
+• Balance Sheet
+• Profit & Loss Statement
+• Cash Flow Statement
+• Inventory Valuation Report
+• Cost Analysis by Process Stage
+
+17. Complete Process Flow Summary
+The following summarizes the complete end-to-end business process flow from procurement to
+export:
+Ste
+
+Process
+
+Location
+
+Output
+
+Procurement
+
+Source Countries /
+
+Raw Human Hair
+
+p
+1
+
+Local
+2
+
+Receiving
+
+Dhaka Warehouse
+
+Raw Material Inventory
+
+3
+
+Sorting & Grading
+
+Dhaka
+
+Color-sorted, Quality-graded Lots
+
+4
+
+Lot Assignment
+
+Dhaka
+
+Tracked Lots with Lot Numbers
+
+5
+
+Transfer to Factory
+
+Dhaka to Dinajpur
+
+Material at Factory
+
+6
+
+Washing
+
+Dinajpur Factory
+
+Cleaned Material
+
+7
+
+Phase 1 Production
+
+Home-based (5,000
+
+Processed Packets
+
+workers)
+8
+
+Quality Control
+
+Dinajpur
+
+Graded Packets (A/B/C)
+
+9
+
+Phase 2 Processing
+
+Dinajpur Factory (200
+
+Semi-finished Product
+
+workers)
+10
+
+Return to Dhaka
+
+Dinajpur to Dhaka
+
+Material for Final Processing
+
+11
+
+Final Processing
+
+Dhaka Factory (100
+
+Size-sorted Final Product
+
+workers)
+12
+
+Export Preparation
+
+Dhaka
+
+Export-ready Products
+
+13
+
+Sales & Export
+
+International
+
+Revenue
+
+This document provides a comprehensive overview of all business processes at Barindra
+International. Each process area represents a critical function that must be carefully managed to
+16 / 18
+
+Barindra International | Business Process Document
+
+ensure operational efficiency, quality control, and profitability. The proposed ERP system will
+automate and integrate these processes to improve tracking, reduce manual work, and provide
+real-time visibility into all operations.
+
+17 / 18
+
+Barindra International | Business Process Document
+
+Barindra International
+Human Hair Processing & Export
+
+Head Office: Uttara, Dhaka | Factory: Dinajpur, Bangladesh
+Document prepared for Nascenia Limited - ERP Implementation
+
+© 2026 Barindra International. All Rights Reserved.
+
+18 / 18
+
+

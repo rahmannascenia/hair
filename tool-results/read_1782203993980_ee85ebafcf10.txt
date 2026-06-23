@@ -1,0 +1,423 @@
+     1→     1→import { PrismaClient } from "@prisma/client";
+     2→     2→
+     3→     3→const db = new PrismaClient();
+     4→     4→
+     5→     5→async function main() {
+     6→     6→  // Clear existing data
+     7→     7→  await db.workerDailyEntry.deleteMany();
+     8→     8→  await db.factoryDailyRecord.deleteMany();
+     9→     9→  await db.worker.deleteMany();
+    10→    10→  await db.factory.deleteMany();
+    11→    11→  await db.lineLeader.deleteMany();
+    12→    12→  await db.headLeader.deleteMany();
+    13→    13→  await db.phase2Job.deleteMany();
+    14→    14→  await db.phase1Distribution.deleteMany();
+    15→    15→  await db.washLog.deleteMany();
+    16→    16→  await db.lot.deleteMany();
+    17→    17→  await db.procurement.deleteMany();
+    18→    18→  await db.supplier.deleteMany();
+    19→    19→  await db.sale.deleteMany();
+    20→    20→  await db.buyerPricing.deleteMany();
+    21→    21→  await db.buyer.deleteMany();
+    22→    22→  await db.sizePricing.deleteMany();
+    23→    23→  await db.risk.deleteMany();
+    24→    24→  await db.inventoryBucket.deleteMany();
+    25→    25→  await db.settings.deleteMany();
+    26→    26→
+    27→    27→  // ============ SETTINGS ============
+    28→    28→  await db.settings.upsert({
+    29→    29→    where: { id: "default" },
+    30→    30→    update: {},
+    31→    31→    create: {
+    32→    32→      id: "default",
+    33→    33→      fxUsdBdt: 121.50,
+    34→    34→      rateA: 90.0,
+    35→    35→      rateB: 75.0,
+    36→    36→      rateC: 50.0,
+    37→    37→      washTol: 0.15,
+    38→    38→      costPerKgTgt: 320.0,
+    39→    39→      factoryAMin: 0.60,
+    40→    40→      supMax: 500.0,
+    41→    41→      supMin: 300.0,
+    42→    42→      supExtra: 200.0,
+    43→    43→      attDays: 26,
+    44→    44→      attBonus: 50.0,
+    45→    45→    },
+    46→    46→  });
+    47→    47→
+    48→    48→  // ============ SUPPLIERS ============
+    49→    49→  const suppliers = await Promise.all([
+    50→    50→    db.supplier.create({ data: { name: "Temple Hair Traders", country: "India", contact: "Rajesh Kumar", phone: "+91-98765-43210", isLocal: false } }),
+    51→    51→    db.supplier.create({ data: { name: "Mumbai Hair Exports", country: "India", contact: "Priya Sharma", phone: "+91-87654-32109", isLocal: false } }),
+    52→    52→    db.supplier.create({ data: { name: "South India Hair Co", country: "India", contact: "Venkat Rao", phone: "+91-76543-21098", isLocal: false } }),
+    53→    53→    db.supplier.create({ data: { name: "Karachi Hair Supply", country: "Pakistan", contact: "Ahmed Khan", phone: "+92-300-1234567", isLocal: false } }),
+    54→    54→    db.supplier.create({ data: { name: "Tashkent Hair LLC", country: "Uzbekistan", contact: "Dilshod Karimov", isLocal: false } }),
+    55→    55→    db.supplier.create({ data: { name: "Dushanbe Hair Trading", country: "Tajikistan", contact: "Farhod Saidov", isLocal: false } }),
+    56→    56→    db.supplier.create({ data: { name: "Yangon Hair Exports", country: "Myanmar", contact: "Aye Myint", isLocal: false } }),
+    57→    57→    db.supplier.create({ data: { name: "Narayanganj Local Vendor", country: "Bangladesh", contact: "Jamil Hossain", phone: "+880-1712-345678", isLocal: true } }),
+    58→    58→    db.supplier.create({ data: { name: "Dinajpur Local Collector", country: "Bangladesh", contact: "Abdul Karim", phone: "+880-1813-456789", isLocal: true } }),
+    59→    59→  ]);
+    60→    60→
+    61→    61→  // ============ PROCUREMENTS ============
+    62→    62→  const procurements = await Promise.all([
+    63→    63→    db.procurement.create({
+    64→    64→      data: { voucherNo: "PUR-2026-001", date: new Date("2026-04-12"), supplierId: suppliers[0].id, originCountry: "India", rawWeightKg: 500, costPerKgBdt: 3500, lcNo: "LC-2026-0421", sitNo: "SIT-2026-0412", landingChargesBdt: 15000, customsDutyBdt: 25000, bankChargesBdt: 5000, totalLandedCostBdt: 1795000, fxRate: 119.80, status: "Received" },
+    65→    65→    }),
+    66→    66→    db.procurement.create({
+    67→    67→      data: { voucherNo: "PUR-2026-002", date: new Date("2026-04-25"), supplierId: suppliers[1].id, originCountry: "India", rawWeightKg: 350, costPerKgBdt: 4200, lcNo: "LC-2026-0438", sitNo: "SIT-2026-0425", landingChargesBdt: 12000, customsDutyBdt: 20000, bankChargesBdt: 4000, totalLandedCostBdt: 1507000, fxRate: 120.20, status: "Received" },
+    68→    68→    }),
+    69→    69→    db.procurement.create({
+    70→    70→      data: { voucherNo: "PUR-2026-003", date: new Date("2026-05-03"), supplierId: suppliers[3].id, originCountry: "Pakistan", rawWeightKg: 300, costPerKgBdt: 3800, lcNo: "LC-2026-0512", sitNo: "SIT-2026-0503", landingChargesBdt: 10000, customsDutyBdt: 18000, bankChargesBdt: 3500, totalLandedCostBdt: 1171500, fxRate: 120.50, status: "Received" },
+    71→    71→    }),
+    72→    72→    db.procurement.create({
+    73→    73→      data: { voucherNo: "PUR-2026-004", date: new Date("2026-05-18"), supplierId: suppliers[0].id, originCountry: "India", rawWeightKg: 400, costPerKgBdt: 5500, lcNo: "LC-2026-0528", sitNo: "SIT-2026-0518", landingChargesBdt: 14000, customsDutyBdt: 28000, bankChargesBdt: 4500, totalLandedCostBdt: 2266500, fxRate: 121.00, status: "Received" },
+    74→    74→    }),
+    75→    75→    db.procurement.create({
+    76→    76→      data: { voucherNo: "PUR-2026-005", date: new Date("2026-06-02"), supplierId: suppliers[7].id, originCountry: "Bangladesh", rawWeightKg: 250, costPerKgBdt: 2000, landingChargesBdt: 2000, totalLandedCostBdt: 502000, status: "Received" },
+    77→    77→    }),
+    78→    78→    db.procurement.create({
+    79→    79→      data: { voucherNo: "PUR-2026-006", date: new Date("2026-06-15"), supplierId: suppliers[4].id, originCountry: "Uzbekistan", rawWeightKg: 200, costPerKgBdt: 6000, lcNo: "LC-2026-0615", sitNo: "SIT-2026-0615", landingChargesBdt: 8000, customsDutyBdt: 22000, bankChargesBdt: 3000, totalLandedCostBdt: 1253000, fxRate: 121.30, status: "Received" },
+    80→    80→    }),
+    81→    81→  ]);
+    82→    82→
+    83→    83→  // ============ LOTS ============
+    84→    84→  const lots = await Promise.all([
+    85→    85→    db.lot.create({
+    86→    86→      data: { lotNo: "LOT-20260412-01", procurementId: procurements[0].id, colour: "Natural Black #1B", rawWeightKg: 500, landedCostPerKg: 3590, totalLandedCost: 1795000, washStatus: "Washed", distributedKg: 245, returnedKg: 230, finishedKg: 210, status: "In Production" },
+    87→    87→    }),
+    88→    88→    db.lot.create({
+    89→    89→      data: { lotNo: "LOT-20260425-02", procurementId: procurements[1].id, colour: "Dark Brown #2", rawWeightKg: 350, landedCostPerKg: 4306, totalLandedCost: 1507000, washStatus: "Washed", distributedKg: 180, returnedKg: 168, finishedKg: 150, status: "In Production" },
+    90→    90→    }),
+    91→    91→    db.lot.create({
+    92→    92→      data: { lotNo: "LOT-20260503-03", procurementId: procurements[2].id, colour: "Color #600", rawWeightKg: 300, landedCostPerKg: 3905, totalLandedCost: 1171500, washStatus: "Washed", distributedKg: 200, returnedKg: 190, finishedKg: 175, status: "In Production" },
+    93→    93→    }),
+    94→    94→    db.lot.create({
+    95→    95→      data: { lotNo: "LOT-20260518-04", procurementId: procurements[3].id, colour: "Color #627", rawWeightKg: 400, landedCostPerKg: 5666, totalLandedCost: 2266500, washStatus: "Washed", distributedKg: 300, returnedKg: 280, finishedKg: 0, status: "Phase 1 Active" },
+    96→    96→    }),
+    97→    97→    db.lot.create({
+    98→    98→      data: { lotNo: "LOT-20260602-05", procurementId: procurements[4].id, colour: "Mixed", rawWeightKg: 250, landedCostPerKg: 2008, totalLandedCost: 502000, washStatus: "Washed", distributedKg: 220, returnedKg: 205, finishedKg: 0, status: "Phase 1 Active" },
+    99→    99→    }),
+   100→   100→    db.lot.create({
+   101→   101→      data: { lotNo: "LOT-20260615-06", procurementId: procurements[5].id, colour: "Natural", rawWeightKg: 200, landedCostPerKg: 6265, totalLandedCost: 1253000, washStatus: "Washed", distributedKg: 0, returnedKg: 0, finishedKg: 0, status: "Washed Stock" },
+   102→   102→    }),
+   103→   103→    db.lot.create({
+   104→   104→      data: { lotNo: "LOT-20260422-L02", procurementId: procurements[0].id, colour: "Light Brown #4", rawWeightKg: 80, landedCostPerKg: 3800, totalLandedCost: 304000, washStatus: "Washed", distributedKg: 60, returnedKg: 55, finishedKg: 48, status: "Finished" },
+   105→   105→    }),
+   106→   106→    db.lot.create({
+   107→   107→      data: { lotNo: "LOT-20260520-L04", procurementId: procurements[3].id, colour: "Natural Black #1B", rawWeightKg: 60, landedCostPerKg: 5200, totalLandedCost: 312000, washStatus: "Washed", distributedKg: 50, returnedKg: 46, finishedKg: 0, status: "Phase 1 Active" },
+   108→   108→    }),
+   109→   109→    db.lot.create({
+   110→   110→      data: { lotNo: "LOT-20260610-07", procurementId: procurements[5].id, colour: "Color #27", rawWeightKg: 100, landedCostPerKg: 6100, totalLandedCost: 610000, washStatus: "Pending", status: "Raw Material" },
+   111→   111→    }),
+   112→   112→    db.lot.create({
+   113→   113→      data: { lotNo: "LOT-20260618-08", procurementId: procurements[4].id, colour: "Mixed Volume", rawWeightKg: 150, landedCostPerKg: 2200, totalLandedCost: 330000, washStatus: "Pending", status: "Raw Material" },
+   114→   114→    }),
+   115→   115→  ]);
+   116→   116→
+   117→   117→  // ============ WASH LOGS ============
+   118→   118→  await Promise.all([
+   119→   119→    db.washLog.create({ data: { washId: "W-2026-001", lotId: lots[0].id, washDate: new Date("2026-04-15"), operator: "Rina Begum", inputKg: 500, outputKg: 462, wastageKg: 38, wastagePct: 0.076, chemicalsBdt: 6000, labourBdt: 4000, costPerKgOut: 21.6, status: "OK" } }),
+   120→   120→    db.washLog.create({ data: { washId: "W-2026-002", lotId: lots[1].id, washDate: new Date("2026-04-26"), operator: "Rina Begum", inputKg: 350, outputKg: 322, wastageKg: 28, wastagePct: 0.08, chemicalsBdt: 4200, labourBdt: 2800, costPerKgOut: 21.7, status: "OK" } }),
+   121→   121→    db.washLog.create({ data: { washId: "W-2026-003", lotId: lots[2].id, washDate: new Date("2026-05-04"), operator: "Selina Akter", inputKg: 300, outputKg: 257, wastageKg: 43, wastagePct: 0.143, chemicalsBdt: 3600, labourBdt: 2400, costPerKgOut: 23.3, status: "OK" } }),
+   122→   122→    db.washLog.create({ data: { washId: "W-2026-004", lotId: lots[3].id, washDate: new Date("2026-05-19"), operator: "Selina Akter", inputKg: 420, outputKg: 386, wastageKg: 34, wastagePct: 0.081, chemicalsBdt: 5040, labourBdt: 3360, costPerKgOut: 21.8, status: "OK" } }),
+   123→   123→    db.washLog.create({ data: { washId: "W-2026-005", lotId: lots[4].id, washDate: new Date("2026-06-03"), operator: "Rina Begum", inputKg: 300, outputKg: 277, wastageKg: 23, wastagePct: 0.077, chemicalsBdt: 3600, labourBdt: 2400, costPerKgOut: 21.7, status: "OK" } }),
+   124→   124→    db.washLog.create({ data: { washId: "W-2026-006", lotId: lots[5].id, washDate: new Date("2026-06-16"), operator: "Selina Akter", inputKg: 200, outputKg: 181, wastageKg: 19, wastagePct: 0.095, chemicalsBdt: 2400, labourBdt: 1600, costPerKgOut: 22.1, status: "OK" } }),
+   125→   125→    db.washLog.create({ data: { washId: "W-2026-007", lotId: lots[6].id, washDate: new Date("2026-06-18"), operator: "Rina Begum", inputKg: 60, outputKg: 55, wastageKg: 5, wastagePct: 0.083, chemicalsBdt: 720, labourBdt: 480, costPerKgOut: 21.8, status: "OK" } }),
+   126→   126→    db.washLog.create({ data: { washId: "W-2026-008", lotId: lots[7].id, washDate: new Date("2026-06-19"), operator: "Selina Akter", inputKg: 50, outputKg: 46, wastageKg: 4, wastagePct: 0.08, chemicalsBdt: 600, labourBdt: 400, costPerKgOut: 21.7, status: "OK" } }),
+   127→   127→  ]);
+   128→   128→
+   129→   129→  // ============ PHASE 1 DISTRIBUTION ============
+   130→   130→  const distData = [
+   131→   131→    { handoffId: "H-001", date: "2026-04-13", fromRole: "Production Manager", fromName: "PM Office", toRole: "Head Leader", toName: "Head Leader 1", lotIdx: 0, qty: 250 },
+   132→   132→    { handoffId: "H-002", date: "2026-04-13", fromRole: "Production Manager", fromName: "PM Office", toRole: "Head Leader", toName: "Head Leader 2", lotIdx: 0, qty: 250 },
+   133→   133→    { handoffId: "H-003", date: "2026-04-14", fromRole: "Head Leader", fromName: "Head Leader 1", toRole: "Line Leader", toName: "Line Leader L-03", lotIdx: 0, qty: 25 },
+   134→   134→    { handoffId: "H-004", date: "2026-04-14", fromRole: "Head Leader", fromName: "Head Leader 2", toRole: "Line Leader", toName: "Line Leader L-07", lotIdx: 0, qty: 25 },
+   135→   135→    { handoffId: "H-005", date: "2026-04-15", fromRole: "Line Leader", fromName: "Line Leader L-03", toRole: "Supervisor", toName: "Supervisor S-22", lotIdx: 0, qty: 3 },
+   136→   136→    { handoffId: "H-006", date: "2026-04-15", fromRole: "Line Leader", fromName: "Line Leader L-07", toRole: "Supervisor", toName: "Supervisor S-45", lotIdx: 0, qty: 3 },
+   137→   137→    { handoffId: "H-007", date: "2026-04-16", fromRole: "Supervisor", fromName: "Supervisor S-22", toRole: "Worker", toName: "W-Fatema-001", lotIdx: 0, qty: 0.3 },
+   138→   138→    { handoffId: "H-008", date: "2026-04-16", fromRole: "Supervisor", fromName: "Supervisor S-22", toRole: "Worker", toName: "W-Jhorna-002", lotIdx: 0, qty: 0.25 },
+   139→   139→    { handoffId: "H-009", date: "2026-04-17", fromRole: "Production Manager", fromName: "PM Office", toRole: "Head Leader", toName: "Head Leader 3", lotIdx: 1, qty: 200 },
+   140→   140→    { handoffId: "H-010", date: "2026-04-18", fromRole: "Head Leader", fromName: "Head Leader 3", toRole: "Line Leader", toName: "Line Leader L-12", lotIdx: 1, qty: 20 },
+   141→   141→    { handoffId: "H-011", date: "2026-04-19", fromRole: "Line Leader", fromName: "Line Leader L-12", toRole: "Supervisor", toName: "Supervisor S-78", lotIdx: 1, qty: 2.5 },
+   142→   142→    { handoffId: "H-012", date: "2026-04-20", fromRole: "Supervisor", fromName: "Supervisor S-78", toRole: "Worker", toName: "W-Rashida-045", lotIdx: 1, qty: 0.25 },
+   143→   143→  ];
+   144→   144→  await Promise.all(distData.map(d => {
+   145→   145→    const tierMul = d.toRole === "Head Leader" ? 5 : d.toRole === "Line Leader" ? 10 : d.toRole === "Supervisor" ? 10 : d.toRole === "Worker" ? 10 : 1;
+   146→   146→    return db.phase1Distribution.create({
+   147→   147→      data: { handoffId: d.handoffId, date: new Date(d.date), fromRole: d.fromRole, fromName: d.fromName, toRole: d.toRole, toName: d.toName, lotId: lots[d.lotIdx].id, qtyKg: d.qty, cumulativeKg: d.qty, tierMultiplier: tierMul, status: "OK" },
+   148→   148→    });
+   149→   149→  }));
+   150→   150→
+   151→   151→  // ============ ORG HIERARCHY ============
+   152→   152→  const headLeaders = await Promise.all([
+   153→   153→    db.headLeader.create({ data: { name: "Head Leader 1", phone: "+880-1", region: "Dinajpur - Chirirbandar" } }),
+   154→   154→    db.headLeader.create({ data: { name: "Head Leader 2", phone: "+880-2", region: "Dinajpur - Phulbari" } }),
+   155→   155→    db.headLeader.create({ data: { name: "Head Leader 3", phone: "+880-3", region: "Dinajpur - Birampur" } }),
+   156→   156→    db.headLeader.create({ data: { name: "Head Leader 4", phone: "+880-4", region: "Naogaon - Manda" } }),
+   157→   157→    db.headLeader.create({ data: { name: "Head Leader 5", phone: "+880-5", region: "Dinajpur - Ghoraghat" } }),
+   158→   158→  ]);
+   159→   159→
+   160→   160→  const lineLeaders = await Promise.all([
+   161→   161→    db.lineLeader.create({ data: { name: "Line Leader L-03", bKash: "+880-17", headLeaderId: headLeaders[0].id } }),
+   162→   162→    db.lineLeader.create({ data: { name: "Line Leader L-07", bKash: "+880-18", headLeaderId: headLeaders[1].id } }),
+   163→   163→    db.lineLeader.create({ data: { name: "Line Leader L-12", bKash: "+880-19", headLeaderId: headLeaders[2].id } }),
+   164→   164→    db.lineLeader.create({ data: { name: "Line Leader L-15", bKash: "+880-20", headLeaderId: headLeaders[3].id } }),
+   165→   165→    db.lineLeader.create({ data: { name: "Line Leader L-21", bKash: "+880-21", headLeaderId: headLeaders[4].id } }),
+   166→   166→  ]);
+   167→   167→
+   168→   168→  // ============ FACTORIES ============
+   169→   169→  const factoryData = [
+   170→   170→    { fid: "F-01", name: "Chirirbandar Factory 1", sup: "Fatema Khatun", bkash: "+880-1711-111111", loc: "Dinajpur - Chirirbandar", ll: 0, gh: "Head Leader 1" },
+   171→   171→    { fid: "F-02", name: "Phulbari Factory 1", sup: "Jhorna Akter", bkash: "+880-1712-222222", loc: "Dinajpur - Phulbari", ll: 1, gh: "Head Leader 2" },
+   172→   172→    { fid: "F-03", name: "Birampur Factory 1", sup: "BrishTi Rahman", bkash: "+880-1713-333333", loc: "Dinajpur - Birampur", ll: 2, gh: "Head Leader 3" },
+   173→   173→    { fid: "F-04", name: "Manda Factory 1", sup: "Rashida Begum", bkash: "+880-1714-444444", loc: "Naogaon - Manda", ll: 3, gh: "Head Leader 4" },
+   174→   174→    { fid: "F-05", name: "Ghoraghat Factory 1", sup: "Mahmuda Khatun", bkash: "+880-1715-555555", loc: "Dinajpur - Ghoraghat", ll: 4, gh: "Head Leader 5" },
+   175→   175→  ];
+   176→   176→
+   177→   177→  const factories = await Promise.all(factoryData.map(f =>
+   178→   178→    db.factory.create({
+   179→   179→      data: { factoryId: f.fid, name: f.name, supervisorName: f.sup, supervisorBkash: f.bkash, location: f.loc, lineLeaderId: lineLeaders[f.ll].id, groupHead: f.gh },
+   180→   180→    })
+   181→   181→  ));
+   182→   182→
+   183→   183→  // ============ WORKERS ============
+   184→   184→  const workerTemplates = [
+   185→   185→    { wid: "W-FAT-001", name: "Fatema Khatun", fIdx: 0 },
+   186→   186→    { wid: "W-JHO-002", name: "Jhorna Akter", fIdx: 0 },
+   187→   187→    { wid: "W-BRI-003", name: "BrishTi Rahman", fIdx: 0 },
+   188→   188→    { wid: "W-ROS-004", name: "Rosy Akter", fIdx: 0 },
+   189→   189→    { wid: "W-NAS-005", name: "Nasima Begum", fIdx: 0 },
+   190→   190→    { wid: "W-ANW-006", name: "Anwara Begum", fIdx: 0 },
+   191→   191→    { wid: "W-MON-007", name: "Monira Khatun", fIdx: 0 },
+   192→   192→    { wid: "W-HAL-008", name: "Halima Akter", fIdx: 0 },
+   193→   193→    { wid: "W-RAH-009", name: "Rahela Begum", fIdx: 0 },
+   194→   194→    { wid: "W-RES-010", name: "Reshma Khatun", fIdx: 0 },
+   195→   195→    { wid: "W-SAB-011", name: "Sabina Akter", fIdx: 1 },
+   196→   196→    { wid: "W-ASR-012", name: "Asrafi Khatun", fIdx: 1 },
+   197→   197→    { wid: "W-NUR-013", name: "Nurjahan Begum", fIdx: 1 },
+   198→   198→    { wid: "W-MIM-014", name: "Mim Akter", fIdx: 1 },
+   199→   199→    { wid: "W-SUM-015", name: "Sumaiya Khatun", fIdx: 1 },
+   200→   200→    { wid: "W-TAN-016", name: "Tania Begum", fIdx: 1 },
+   201→   201→    { wid: "W-NAD-017", name: "Nadia Akter", fIdx: 1 },
+   202→   202→    { wid: "W-FAH-018", name: "Fahmida Khatun", fIdx: 1 },
+   203→   203→    { wid: "W-SHA-019", name: "Shamima Begum", fIdx: 1 },
+   204→   204→    { wid: "W-RAN-020", name: "Rani Akter", fIdx: 1 },
+   205→   205→    { wid: "W-PRI-021", name: "Priya Khatun", fIdx: 2 },
+   206→   206→    { wid: "W-DEE-022", name: "Deepa Begum", fIdx: 2 },
+   207→   207→    { wid: "W-ANN-023", name: "Ananna Akter", fIdx: 2 },
+   208→   208→    { wid: "W-SHI-024", name: "Shirin Khatun", fIdx: 2 },
+   209→   209→    { wid: "W-IRI-025", name: "Irina Begum", fIdx: 2 },
+   210→   210→    { wid: "W-SAF-026", name: "Safiya Akter", fIdx: 2 },
+   211→   211→    { wid: "W-TAM-027", name: "Tamanna Khatun", fIdx: 2 },
+   212→   212→    { wid: "W-RAF-028", name: "Rafika Begum", fIdx: 2 },
+   213→   213→    { wid: "W-ZIN-029", name: "Zinat Akter", fIdx: 2 },
+   214→   214→    { wid: "W-MAR-030", name: "Marina Khatun", fIdx: 2 },
+   215→   215→    { wid: "W-RAS-031", name: "Rashida Begum", fIdx: 3 },
+   216→   216→    { wid: "W-MAR-032", name: "Marzina Akter", fIdx: 3 },
+   217→   217→    { wid: "W-SEN-033", name: "Senjuti Khatun", fIdx: 3 },
+   218→   218→    { wid: "W-DIP-034", name: "Dipa Begum", fIdx: 3 },
+   219→   219→    { wid: "W-TAN-035", name: "Tania Akter", fIdx: 3 },
+   220→   220→    { wid: "W-NAY-036", name: "Nayema Khatun", fIdx: 3 },
+   221→   221→    { wid: "W-SAD-037", name: "Sadika Begum", fIdx: 3 },
+   222→   222→    { wid: "W-MAN-038", name: "Manna Akter", fIdx: 3 },
+   223→   223→    { wid: "W-PRI-039", name: "Priyanka Khatun", fIdx: 3 },
+   224→   224→    { wid: "W-RUP-040", name: "Rupa Begum", fIdx: 3 },
+   225→   225→    { wid: "W-MAH-041", name: "Mahmuda Khatun", fIdx: 4 },
+   226→   226→    { wid: "W-ROS-042", name: "Rosy Akter", fIdx: 4 },
+   227→   227→    { wid: "W-BEL-043", name: "Bela Khatun", fIdx: 4 },
+   228→   228→    { wid: "W-NAH-044", name: "Nahar Begum", fIdx: 4 },
+   229→   229→    { wid: "W-RAS-045", name: "Rashida Begum", fIdx: 4 },
+   230→   230→    { wid: "W-MAR-046", name: "Marseda Akter", fIdx: 4 },
+   231→   231→    { wid: "W-SUM-047", name: "Sumi Khatun", fIdx: 4 },
+   232→   232→    { wid: "W-MIT-048", name: "Mithila Begum", fIdx: 4 },
+   233→   233→    { wid: "W-ANJ-049", name: "Anjuman Akter", fIdx: 4 },
+   234→   234→    { wid: "W-NIL-050", name: "Nila Khatun", fIdx: 4 },
+   235→   235→  ];
+   236→   236→
+   237→   237→  const workers = await Promise.all(workerTemplates.map(w =>
+   238→   238→    db.worker.create({
+   239→   239→      data: { workerId: w.wid, name: w.name, factoryId: factories[w.fIdx].id },
+   240→   240→    })
+   241→   241→  ));
+   242→   242→
+   243→   243→  // ============ FACTORY DAILY RECORDS + WORKER ENTRIES ============
+   244→   244→  const today = new Date("2026-06-21");
+   245→   245→  const settings = { rateA: 90, rateB: 75, rateC: 50, attBonus: 50, attDays: 26, factoryAMin: 0.6 };
+   246→   246→
+   247→   247→  for (let fIdx = 0; fIdx < 5; fIdx++) {
+   248→   248→    const factoryWorkers = workers.filter((_, i) => workerTemplates[i].fIdx === fIdx);
+   249→   249→    const lotIdx = Math.min(fIdx, lots.length - 1);
+   250→   250→
+   251→   251→    const factoryRecord = await db.factoryDailyRecord.create({
+   252→   252→      data: {
+   253→   253→        recordDate: today,
+   254→   254→        factoryId: factories[fIdx].id,
+   255→   255→        lotId: lots[lotIdx].id,
+   256→   256→      },
+   257→   257→    });
+   258→   258→
+   259→   259→    let totalInput = 0, totalA = 0, totalB = 0, totalC = 0, totalWastage = 0, totalPayroll = 0;
+   260→   260→
+   261→   261→    for (const w of factoryWorkers) {
+   262→   262→      const inputKg = +(0.2 + Math.random() * 0.15).toFixed(3);
+   263→   263→      const aPct = 0.55 + Math.random() * 0.25;
+   264→   264→      const bPct = 0.15 + Math.random() * 0.15;
+   265→   265→      const cPct = 1 - aPct - bPct - (0.03 + Math.random() * 0.05);
+   266→   266→      const aKg = +(inputKg * aPct).toFixed(3);
+   267→   267→      const bKg = +(inputKg * bPct).toFixed(3);
+   268→   268→      const cKg = +(inputKg * Math.max(0, cPct)).toFixed(3);
+   269→   269→      const wastageKg = +(inputKg - aKg - bKg - cKg).toFixed(3);
+   270→   270→      const daysPresent = 20 + Math.floor(Math.random() * 10);
+   271→   271→      const baseWage = +(aKg * 1000 * settings.rateA + bKg * 1000 * settings.rateB + cKg * 1000 * settings.rateC).toFixed(0);
+   272→   272→      const attBonus = daysPresent >= settings.attDays ? settings.attBonus : daysPresent >= settings.attDays - 2 ? settings.attBonus / 2 : 0;
+   273→   273→      const totalPayable = baseWage + attBonus;
+   274→   274→
+   275→   275→      await db.workerDailyEntry.create({
+   276→   276→        data: {
+   277→   277→          recordId: factoryRecord.id,
+   278→   278→          workerId: w.id,
+   279→   279→          inputGivenKg: inputKg,
+   280→   280→          aWeightKg: aKg,
+   281→   281→          bWeightKg: bKg,
+   282→   282→          cWeightKg: cKg,
+   283→   283→          wastageKg: Math.max(0, wastageKg),
+   284→   284→          balanceStatus: Math.abs(inputKg - aKg - bKg - cKg - Math.max(0, wastageKg)) < 0.01 ? "OK" : "MISMATCH",
+   285→   285→          daysPresent,
+   286→   286→          baseWage,
+   287→   287→          attendanceBonus: attBonus,
+   288→   288→          totalPayable,
+   289→   289→          status: "Pending Approval",
+   290→   290→        },
+   291→   291→      });
+   292→   292→
+   293→   293→      totalInput += inputKg;
+   294→   294→      totalA += aKg;
+   295→   295→      totalB += bKg;
+   296→   296→      totalC += cKg;
+   297→   297→      totalWastage += Math.max(0, wastageKg);
+   298→   298→      totalPayroll += totalPayable;
+   299→   299→    }
+   300→   300→
+   301→   301→    const aGradePct = totalA / (totalA + totalB + totalC);
+   302→   302→    const hosting = aGradePct >= settings.factoryAMin ? 500 : 300;
+   303→   303→    const perf = aGradePct >= settings.factoryAMin ? 200 : 0;
+   304→   304→
+   305→   305→    await db.factoryDailyRecord.update({
+   306→   306→      where: { id: factoryRecord.id },
+   307→   307→      data: {
+   308→   308→        hostingAllowance: hosting,
+   309→   309→        perfBonus: perf,
+   310→   310→        totalSupPay: hosting + perf,
+   311→   311→        totalInputKg: +totalInput.toFixed(3),
+   312→   312→        totalAGradeKg: +totalA.toFixed(3),
+   313→   313→        totalBGradeKg: +totalB.toFixed(3),
+   314→   314→        totalCGradeKg: +totalC.toFixed(3),
+   315→   315→        totalWastageKg: +totalWastage.toFixed(3),
+   316→   316→        totalPayrollBdt: +totalPayroll.toFixed(0),
+   317→   317→        grandTotalBdt: +(totalPayroll + hosting + perf).toFixed(0),
+   318→   318→        wipStatus: Math.random() > 0.5 ? "IN PROGRESS" : "COMPLETED",
+   319→   319→      },
+   320→   320→    });
+   321→   321→  }
+   322→   322→
+   323→   323→  // ============ PHASE 2 JOBS ============
+   324→   324→  await Promise.all([
+   325→   325→    db.phase2Job.create({ data: { jobId: "P2-001", lotId: lots[0].id, date: new Date("2026-06-15"), inputKg: 250, size5Kg: 10, size8Kg: 35, size10Kg: 45, size12Kg: 40, size14Kg: 35, size16Kg: 30, size18Kg: 20, size20Kg: 15, size24Kg: 10, size30Kg: 5, totalSizedKg: 245, combingLossKg: 5, lossPct: 0.02, realisableValueBdt: 5865000, costBdt: 1000000, marginBdt: 4865000 } }),
+   326→   326→    db.phase2Job.create({ data: { jobId: "P2-002", lotId: lots[1].id, date: new Date("2026-06-17"), inputKg: 180, size5Kg: 8, size8Kg: 28, size10Kg: 35, size12Kg: 32, size14Kg: 28, size16Kg: 20, size18Kg: 12, size20Kg: 8, size24Kg: 5, size30Kg: 3, totalSizedKg: 179, combingLossKg: 1, lossPct: 0.006, realisableValueBdt: 4015000, costBdt: 775200, marginBdt: 3239800 } }),
+   327→   327→    db.phase2Job.create({ data: { jobId: "P2-003", lotId: lots[2].id, date: new Date("2026-06-19"), inputKg: 200, size5Kg: 5, size8Kg: 20, size10Kg: 30, size12Kg: 30, size14Kg: 30, size16Kg: 28, size18Kg: 22, size20Kg: 18, size24Kg: 12, size30Kg: 5, totalSizedKg: 200, combingLossKg: 0, lossPct: 0, realisableValueBdt: 5180000, costBdt: 781000, marginBdt: 4399000 } }),
+   328→   328→    db.phase2Job.create({ data: { jobId: "P2-004", lotId: lots[3].id, date: new Date("2026-06-20"), inputKg: 300, size5Kg: 15, size8Kg: 50, size10Kg: 60, size12Kg: 55, size14Kg: 45, size16Kg: 35, size20Kg: 20, size24Kg: 10, size30Kg: 4, totalSizedKg: 294, combingLossKg: 6, lossPct: 0.02, realisableValueBdt: 7375000, costBdt: 1699800, marginBdt: 5675200 } }),
+   329→   329→    db.phase2Job.create({ data: { jobId: "P2-005", lotId: lots[4].id, date: new Date("2026-06-21"), inputKg: 220, size5Kg: 12, size8Kg: 40, size10Kg: 45, size12Kg: 38, size14Kg: 32, size16Kg: 25, size18Kg: 15, size20Kg: 8, size24Kg: 3, size30Kg: 2, totalSizedKg: 220, combingLossKg: 0, lossPct: 0, realisableValueBdt: 4535000, costBdt: 441760, marginBdt: 4093240 } }),
+   330→   330→  ]);
+   331→   331→
+   332→   332→  // ============ SIZE PRICING ============
+   333→   333→  const sizeData = [
+   334→   334→    { len: 5, bdt: 500, seg: "Short - low-end" },
+   335→   335→    { len: 6, bdt: 1200, seg: "Short" },
+   336→   336→    { len: 8, bdt: 5000, seg: "Short-medium" },
+   337→   337→    { len: 10, bdt: 8000, seg: "Medium" },
+   338→   338→    { len: 12, bdt: 12000, seg: "Medium-long" },
+   339→   339→    { len: 14, bdt: 18000, seg: "Long" },
+   340→   340→    { len: 16, bdt: 25000, seg: "Long" },
+   341→   341→    { len: 18, bdt: 35000, seg: "Long-premium" },
+   342→   342→    { len: 20, bdt: 50000, seg: "Premium" },
+   343→   343→    { len: 24, bdt: 70000, seg: "Premium" },
+   344→   344→    { len: 30, bdt: 90000, seg: "Top-tier" },
+   345→   345→  ];
+   346→   346→  await Promise.all(sizeData.map(s =>
+   347→   347→    db.sizePricing.create({
+   348→   348→      data: { lengthInch: s.len, bdtPerKg: s.bdt, usdPerKg: +(s.bdt / 121.5).toFixed(2), marketSegment: s.seg, minMarginBdt: Math.round(s.bdt * 0.25), minMarginPct: 0.25 },
+   349→   349→    })
+   350→   350→  ));
+   351→   351→
+   352→   352→  // ============ BUYERS ============
+   353→   353→  const buyers = await Promise.all([
+   354→   354→    db.buyer.create({ data: { name: "African Bulk Co", country: "Nigeria" } }),
+   355→   355→    db.buyer.create({ data: { name: "US Wig Distributors", country: "USA" } }),
+   356→   356→    db.buyer.create({ data: { name: "EU Hair Boutique", country: "Germany" } }),
+   357→   357→    db.buyer.create({ data: { name: "China Trade Hub", country: "China" } }),
+   358→   358→  ]);
+   359→   359→
+   360→   360→  await Promise.all([
+   361→   361→    db.buyerPricing.create({ data: { buyerId: buyers[0].id, lengthInch: 10, premiumPct: -0.30 } }),
+   362→   362→    db.buyerPricing.create({ data: { buyerId: buyers[0].id, lengthInch: 16, premiumPct: -0.20 } }),
+   363→   363→    db.buyerPricing.create({ data: { buyerId: buyers[1].id, lengthInch: 16, premiumPct: 0.15 } }),
+   364→   364→    db.buyerPricing.create({ data: { buyerId: buyers[1].id, lengthInch: 20, premiumPct: 0.20 } }),
+   365→   365→    db.buyerPricing.create({ data: { buyerId: buyers[2].id, lengthInch: 18, premiumPct: 0.10 } }),
+   366→   366→    db.buyerPricing.create({ data: { buyerId: buyers[3].id, lengthInch: 12, premiumPct: -0.10 } }),
+   367→   367→  ]);
+   368→   368→
+   369→   369→  // ============ SALES ============
+   370→   370→  await Promise.all([
+   371→   371→    db.sale.create({ data: { contractNo: "EXP-2026-001", contractDate: new Date("2026-06-10"), buyerId: buyers[0].id, productSpec: "Color #600, 10\" weft", lengthInch: 10, qtyKg: 250, usdPerKg: 35, usdValue: 8750, bdtValue: 1063125, costPerKgBdt: 8000, totalCostBdt: 2000000, marginPerKgBdt: -374.5, totalMarginBdt: -93625, marginPct: -0.088, status: "Review" } }),
+   372→   372→    db.sale.create({ data: { contractNo: "EXP-2026-002", contractDate: new Date("2026-06-12"), buyerId: buyers[1].id, productSpec: "Color #627, 16\" premium", lengthInch: 16, qtyKg: 80, usdPerKg: 120, usdValue: 9600, bdtValue: 1166400, costPerKgBdt: 25000, totalCostBdt: 2000000, marginPerKgBdt: -10420, totalMarginBdt: -833600, marginPct: -0.715, status: "Review" } }),
+   373→   373→    db.sale.create({ data: { contractNo: "EXP-2026-003", contractDate: new Date("2026-06-15"), buyerId: buyers[2].id, productSpec: "Natural, 18\" premium", lengthInch: 18, qtyKg: 60, usdPerKg: 95, usdValue: 5700, bdtValue: 692550, costPerKgBdt: 35000, totalCostBdt: 2100000, marginPerKgBdt: -23457.5, totalMarginBdt: -1407450, marginPct: -2.034, status: "Review" } }),
+   374→   374→    db.sale.create({ data: { contractNo: "EXP-2026-004", contractDate: new Date("2026-06-17"), buyerId: buyers[3].id, productSpec: "Color #1B, 12\" mid", lengthInch: 12, qtyKg: 200, usdPerKg: 42, usdValue: 8400, bdtValue: 1020600, costPerKgBdt: 12000, totalCostBdt: 2400000, marginPerKgBdt: -6897, totalMarginBdt: -1379400, marginPct: -1.351, status: "Review" } }),
+   375→   375→    db.sale.create({ data: { contractNo: "EXP-2026-005", contractDate: new Date("2026-06-18"), buyerId: buyers[1].id, productSpec: "Color #600, 20\" premium", lengthInch: 20, qtyKg: 50, usdPerKg: 165, usdValue: 8250, bdtValue: 1002375, costPerKgBdt: 50000, totalCostBdt: 2500000, marginPerKgBdt: -39952.5, totalMarginBdt: -1997625, marginPct: -1.994, status: "Review" } }),
+   376→   376→    db.sale.create({ data: { contractNo: "EXP-2026-006", contractDate: new Date("2026-06-19"), buyerId: buyers[0].id, productSpec: "Mixed, 8\" volume", lengthInch: 8, qtyKg: 350, usdPerKg: 18, usdValue: 6300, bdtValue: 765450, costPerKgBdt: 5000, totalCostBdt: 1750000, marginPerKgBdt: -2815.57, totalMarginBdt: -985450, marginPct: -1.288, status: "Review" } }),
+   377→   377→    db.sale.create({ data: { contractNo: "EXP-2026-007", contractDate: new Date("2026-06-20"), buyerId: buyers[2].id, productSpec: "Color #627, 14\" long", lengthInch: 14, qtyKg: 70, usdPerKg: 85, usdValue: 5950, bdtValue: 722925, costPerKgBdt: 18000, totalCostBdt: 1260000, marginPerKgBdt: -7684.64, totalMarginBdt: -537925, marginPct: -0.744, status: "Review" } }),
+   378→   378→    db.sale.create({ data: { contractNo: "EXP-2026-008", contractDate: new Date("2026-06-21"), buyerId: buyers[3].id, productSpec: "Natural, 10\" bulk", lengthInch: 10, qtyKg: 180, usdPerKg: 25, usdValue: 4500, bdtValue: 546750, costPerKgBdt: 8000, totalCostBdt: 1440000, marginPerKgBdt: -4962.5, totalMarginBdt: -893250, marginPct: -1.634, status: "Review" } }),
+   379→   379→  ]);
+   380→   380→
+   381→   381→  // ============ RISK REGISTER ============
+   382→   382→  const risks = [
+   383→   383→    { rid: "R-01", desc: "Material theft during field distribution (1 kg = Tk 12,000-14,000)", cat: "Operational", l: 4, i: 5, mit: "Barcode/QR chain-of-custody; mandatory digital sign-off at each handoff; reduce unexplained shortage from 2% to <0.5%", owner: "Store Keeper", status: "Open" },
+   384→   384→    { rid: "R-02", desc: "Line Leader salary skimming (~Tk 1.5 lakh per 100 workers)", cat: "Financial", l: 3, i: 5, mit: "Direct bKash B2C disbursement; eliminate intermediary cash handling; monthly worker confirmation calls", owner: "Accountant", status: "Open" },
+   385→   385→    { rid: "R-03", desc: "Worker grade disputes (judgement-based grading ~70% accurate)", cat: "Quality", l: 4, i: 3, mit: "Grade distribution analytics; lot-quality flagging when C-grade > 50%; second-QC review for disputed A/B grades", owner: "QC Team", status: "Open" },
+   386→   386→    { rid: "R-04", desc: "Inventory valuation errors across 8 buckets", cat: "Financial", l: 4, i: 5, mit: "Real-time valuation; automatic cost roll-up; daily reconciliation; lot-level valuation report", owner: "Accountant", status: "Open" },
+   387→   387→    { rid: "R-05", desc: "Manual data entry errors (2 operators x 5,000 workers daily)", cat: "Operational", l: 5, i: 4, mit: "IoT digital scale integration; mobile QC app; eliminate manual transcription; target 30 min from 8 hrs", owner: "Production Manager", status: "Open" },
+   388→   388→    { rid: "R-06", desc: "LC documentation errors causing customs delays", cat: "Compliance", l: 2, i: 4, mit: "LC document checklist; bank liaison; pre-shipment verification; digital LC register", owner: "Accountant", status: "Mitigated" },
+   389→   389→    { rid: "R-07", desc: "FX exposure on USD export sales vs BDT costs", cat: "Financial", l: 4, i: 4, mit: "Forward contracts; natural hedge where possible; monthly FX P&L posting; FX gain/loss tracking", owner: "Owner/MD", status: "Open" },
+   390→   390→    { rid: "R-08", desc: "Buyer-specific price list mismanagement", cat: "Commercial", l: 3, i: 4, mit: "Buyer-wise price master layered on size-wise rate; margin analysis per buyer; price-list version control", owner: "Owner/MD", status: "Open" },
+   391→   391→    { rid: "R-09", desc: "Adhesive glue counterfeit substitution (USD 4-5k / 100g)", cat: "Quality", l: 2, i: 5, mit: "Separate custody controls; batch-level tracking; supplier authentication; allergy-claim prevention", owner: "Floor Manager", status: "Mitigated" },
+   392→   392→    { rid: "R-10", desc: "Owner-centric approval bottleneck", cat: "Governance", l: 4, i: 4, mit: "Delegation matrix; approval thresholds by value; system-driven workflows; cross-training of key roles", owner: "Owner/MD", status: "Open" },
+   393→   393→    { rid: "R-11", desc: "Worker attrition / turnover above 5%/month", cat: "Workforce", l: 3, i: 3, mit: "On-time bKash payment; attendance & performance bonus; supervisor hosting allowance; worker recognition", owner: "HR", status: "Open" },
+   394→   394→    { rid: "R-12", desc: "Factory A-grade % below 60% threshold (supervisor bonus forfeit)", cat: "Quality", l: 3, i: 3, mit: "Daily A-grade % monitoring; worker replacement plan; supervisor coaching; quality improvement training", owner: "Production Manager", status: "Open" },
+   395→   395→    { rid: "R-13", desc: "Lot-quality skew (poor raw lot -> all workers C-graded)", cat: "Quality", l: 3, i: 4, mit: "Flag lots where grade distribution is skewed; investigate root cause; supplier feedback loop", owner: "QC Team", status: "Open" },
+   396→   396→    { rid: "R-14", desc: "Washing loss > 15% tolerance (raw -> washed)", cat: "Operational", l: 3, i: 3, mit: "Standard wash recipe per origin country; operator training; auto-alert when wastage > Settings tolerance", owner: "Washing Lead", status: "Open" },
+   397→   397→    { rid: "R-15", desc: "Hackling/combing loss > 15% (Phase 2 sizing)", cat: "Operational", l: 3, i: 3, mit: "Skilled hackle operators; per-job loss tracking; tool maintenance; size-mix optimization", owner: "Floor Manager", status: "Open" },
+   398→   398→    { rid: "R-16", desc: "Phase 1 distribution bottleneck (1:5:10:10:10 chain breakage)", cat: "Operational", l: 2, i: 4, mit: "Tier coverage analytics; GPS tracking of Line Leaders; real-time distribution dashboard", owner: "Production Manager", status: "Open" },
+   399→   399→    { rid: "R-17", desc: "Buyer ethical-sourcing non-compliance (US/EU buyers)", cat: "Compliance", l: 3, i: 5, mit: "End-to-end lot traceability; supplier audit trail; ethical-sourcing documentation; buyer compliance reports", owner: "Owner/MD", status: "Open" },
+   400→   400→    { rid: "R-18", desc: "Internet connectivity gaps in field locations", cat: "IT", l: 4, i: 2, mit: "Offline-first mobile app; auto-sync when online; mobile hotspot backup; data integrity checks", owner: "IT Lead", status: "Mitigated" },
+   401→   401→  ];
+   402→   402→  await Promise.all(risks.map(r =>
+   403→   403→    db.risk.create({ data: { riskId: r.rid, description: r.desc, category: r.cat, likelihood: r.l, impact: r.i, riskScore: r.l * r.i, mitigation: r.mit, owner: r.owner, status: r.status } })
+   404→   404→  ));
+   405→   405→
+   406→   406→  // ============ INVENTORY BUCKETS ============
+   407→   407→  await Promise.all([
+   408→   408→    db.inventoryBucket.create({ data: { bucketName: "Raw Material", weightKg: 250, valueBdt: 941000 } }),
+   409→   409→    db.inventoryBucket.create({ data: { bucketName: "Washed Stock", weightKg: 181, valueBdt: 1133180 } }),
+   410→   410→    db.inventoryBucket.create({ data: { bucketName: "Distributed (Field)", weightKg: 520, valueBdt: 1560000 } }),
+   411→   411→    db.inventoryBucket.create({ data: { bucketName: "In-Factory (Home)", weightKg: 489, valueBdt: 1467000 } }),
+   412→   412→    db.inventoryBucket.create({ data: { bucketName: "Half-Finish Return", weightKg: 451, valueBdt: 1353000 } }),
+   413→   413→    db.inventoryBucket.create({ data: { bucketName: "In Final Production", weightKg: 230, valueBdt: 920000 } }),
+   414→   414→    db.inventoryBucket.create({ data: { bucketName: "Finished Goods", weightKg: 258, valueBdt: 7740000 } }),
+   415→   415→    db.inventoryBucket.create({ data: { bucketName: "Reject / Wastage", weightKg: 95, valueBdt: 380000 } }),
+   416→   416→  ]);
+   417→   417→
+   418→   418→  console.log("Seed completed successfully!");
+   419→   419→}
+   420→   420→
+   421→   421→main()
+   422→   422→  .catch((e) => { console.error(e); process.exit(1); })
+   423→   423→  .finally(async () => { await db.$disconnect(); });
