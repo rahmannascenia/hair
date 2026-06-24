@@ -1,0 +1,545 @@
+Let me systematically read through the entire project. I'll start by exploring the structure and reading key files in parallel.
+Now let me read all the key source files in parallel. I'll start with the extracted PDF text, the README, Prisma schema, and the transcription.
+Now let me read the research PDF, CS README, Prisma schema, and main components in parallel.
+The research PDF is very detailed (2158 lines). Let me launch parallel agents to read the remaining source materials comprehensively, then I'll synthesize everything.
+Now let me read the Prisma schema, CS README, and key project files in parallel.
+Now let me read all the CS source files and current Next.js components in parallel to understand what exists vs. what's missing.
+Now let me read the current page and key components to understand what exists in the web app.
+Let me read a few more key components to understand the current state of the web app.
+Now I have read **everything** — both PDFs (transcription + research-based), all CS source files (21-sheet Excel ERP with 1400+ formulas), the full Prisma schema (19 models), all 15 ERP components, all API routes, and the Zustand store. Here is the comprehensive analysis of new functionality ideas:
+
+---
+
+# 🏭 Barendra International ERP — New Functionality Ideas for Complete Visibility
+
+## Category 1: 🔍 LOT-LEVEL GRANULAR TRACKING (The Backbone)
+
+### 1.1 Lot Journey Tracker (Single-Lot 360° View)
+**What it does:** Enter a lot number → see a visual **timeline/pipeline** showing where the lot is RIGHT NOW, with every transaction it went through.
+
+**Data shown per lot:**
+- **Current stage** in the 7-state lifecycle (Created → Washing → Distributed → In-Factory → Half-Finish Returned → In Final Production → Finished)
+- **Total days elapsed** since creation (flag if >45 days — KPI target)
+- **Weight at each stage:** Raw kg → Washed kg → Distributed kg → Returned kg → Finished kg (with % loss at each stage)
+- **Cumulative wastage** across all stages (kg and %)
+- **Current custodian** — who has this lot right now? (Supplier → Warehouse → Washing Plant → PM → Head Leader → Line Leader → Supervisor → Worker → Back to QC → Dhaka Factory)
+- **Valuation at current stage** — landed cost + stage uplifts (Raw=0, Washed=+200, Distributed=+350, In-Factory=+600, Half-Finish=+1500, Final=+4500 BDT/kg)
+- **Realisable value** — if sized, Σ(size_kg × size_rate) across all size categories
+
+**Visual:** A horizontal stepper/pipeline with dots for each stage, colored green (completed), gold (current), gray (pending). Clicking a stage shows the detailed records at that stage.
+
+### 1.2 Lot Traceability Drill-Down
+**What it does:** From any lot, drill into every person who touched it.
+
+- **Which washing operator** washed this lot? (WashLog.operator, wastage %, date)
+- **Which Head Leader** received it? (Phase1Distribution where fromRole="PM", toName)
+- **Which Line Leaders** distributed it? (Phase1Distribution where fromRole="Head Leader")
+- **Which factories/supervisors** processed it? (FactoryDailyRecord filtered by lotId → shows factory name, supervisor, dates)
+- **Which workers** processed it? (WorkerDailyEntry → shows worker name, date, A/B/C grades, output, wastage, pay)
+- **Phase 2 sizing results** (Phase2Job → size distribution, margin)
+- **Sales contracts** fulfilled from this lot (Sale linked to lot)
+
+**Impact:** "Enter LOT-20260412-01 → see that 47 workers across 5 factories processed it, with 62% A-grade, 12.3% total wastage, and it yielded 180 kg of finished goods worth ৳22.5 lakh."
+
+### 1.3 Lot Balance Reconciliation
+**What it does:** Cross-check that input = output + wastage at EVERY transfer point for a lot.
+
+- Procurement raw weight vs. Wash input weight
+- Wash input vs. Wash output (washing loss)
+- Wash output vs. Total distributed to Head Leaders
+- Distributed to factories vs. Returned by factories
+- Returned vs. Phase 2 input
+- Phase 2 input vs. Total sized + combing loss
+- **Alert:** Any discrepancy flagged as "INVESTIGATE" with kg variance
+
+### 1.4 Lot Quality Inheritance Analysis
+**What it does:** Flag lots where C-grade concentration is >50% (per business rule R18 — lot quality affects all workers).
+
+- Show A/B/C % per lot across all workers/factories
+- If C% > 50%, flag: *"This lot's raw material quality may be causing low grades — workers may not be at fault"*
+- Compare grade distribution across lots from the same supplier/country
+
+---
+
+## Category 2: 👷 WORKER-LEVEL VISIBILITY
+
+### 2.1 Worker Profile Card (Worker ID → 360° View)
+**What it does:** Enter a worker ID → see everything about that worker.
+
+**Data shown:**
+- **Basic info:** Name, Factory, Supervisor, Line Leader, Group Head, bKash number, Joining date, Active status
+- **Current month's performance:** Days present, Grade distribution (A/B/C days), Total output (A+B+C kg), Total pay, Attendance bonus eligibility, Performance bonus eligibility
+- **Quality trend:** Last 30 days — daily A/B/C grades as a color-coded bar (green=A, gold=B, red=C) — instantly see patterns
+- **Average daily output** (grams) — compare against factory average
+- **Earnings trend:** Monthly earnings over last 6 months (bar chart)
+- **Attendance streak:** Current consecutive days present / 30-day target for bonus
+- **Auto-C grade count:** How many times output <50g triggered automatic C grade
+- **Lots worked on:** List of all lot numbers this worker processed, with date, input kg, output grades
+
+**Impact:** "Worker W-003 → works at F-01 Fatema, 28 days present, 65% A-grade, avg 220g/day, earned ৳2,450 this month, eligible for attendance bonus, processed LOT-20260412-01 and LOT-20260503-03."
+
+### 2.2 Worker Performance Leaderboard
+**What it does:** Rank workers within a factory, across a Line Leader's territory, or company-wide.
+
+- Sortable columns: A-grade %, Total output (kg), Total pay, Attendance rate, Consistency score
+- Filter by: Factory, Line Leader, Group Head, Date range, Grade threshold
+- Highlight top 10 and bottom 10 performers
+- Show which workers are at risk of termination (continuous C-grade, per business rule)
+
+### 2.3 Worker Grade Dispute Tracker
+**What it does:** Since QC accuracy is ~70%, allow workers/supervisors to flag disputed grades.
+
+- **Flag button** on any daily entry: "Dispute Grade"
+- **Reason field:** "Lot was poor quality", "Weight was correct", "Was sick that day", etc.
+- **Review queue** for Head Leader / QC manager to review disputes
+- **Resolution:** Upheld / Overturned with updated grade
+- **Dispute rate per QC inspector** — if one QC has high overturn rate, flag for retraining
+
+### 2.4 Worker Attendance Calendar (Heatmap)
+**What it does:** Visual calendar for each worker showing present (green), absent (red), holiday (gray).
+
+- Monthly view for the last 12 months
+- Hover over any day → see that day's grade, output, pay
+- Running attendance streak counter
+- "At risk" workers highlighted — those who will lose attendance bonus if absent 1 more day
+
+---
+
+## Category 3: 🏠 FACTORY/SUPERVISOR-LEVEL VISIBILITY
+
+### 3.1 Factory Daily Scorecard
+**What it does:** A single-day view for each factory showing everything that happened today.
+
+- **Summary tiles:** Total workers present, Total input given, Total graded output (A/B/C), Wastage %, Grand total payroll, A-grade % (with threshold indicator)
+- **Per-worker table:** Each worker's input, A/B/C output, balance check, pay
+- **Supervisor pay calculation:** Hosting allowance + Performance bonus (with eligibility criteria shown)
+- **WIP status:** Material received vs. completed vs. remaining (progress bar)
+- **Date navigation:** ← Previous day | Today | Next day →
+- **Comparison vs. yesterday:** "Output up 12%", "Wastage down 3%"
+
+### 3.2 Factory Performance Dashboard (30-Day Rolling)
+**What it does:** Rolling 30-day view per factory.
+
+- Daily output trend (line chart)
+- A/B/C grade % trend (stacked area chart)
+- Wastage trend (bar chart with tolerance line at 15%)
+- Cost/kg trend vs. target (320 BDT/kg)
+- Worker attendance trend
+- "At risk" alerts: A-grade % dropping below 60%, cost/kg above target, worker turnover
+
+### 3.3 Supervisor P&L Statement
+**What it does:** Per supervisor, show a mini profit/loss — input material value vs. output graded value vs. labor cost.
+
+- Input material cost = input_kg × landed_cost_per_kg
+- Output value by grade = A_kg × rate_A + B_kg × rate_B + C_kg × rate_C
+- Labor cost = total worker wages + supervisor allowance + fuel + transport
+- **Net margin** = Output value - Input cost - Labor cost
+- Per the business document: "Supervisors generating profit receive production bonus; those generating consistent loss may be terminated"
+
+### 3.4 Multi-Factory Comparison View
+**What it does:** Side-by-side comparison of all factories on key metrics.
+
+- Table: Factory | Workers | Input | A% | B% | C% | Wastage% | Cost/kg | Output | Payroll | Margin
+- Sortable by any column
+- Best/worst factory highlighted per metric
+- Filter by: Line Leader, Group Head, Date range
+
+---
+
+## Category 4: 📊 HIERARCHY-LEVEL VISIBILITY (Line Leader → Group Head → PM → Owner)
+
+### 4.1 Line Leader Territory Dashboard
+**What it does:** For a Line Leader, see the aggregate across all 10 factories.
+
+- **Summary:** Total factories, Total workers, Total input distributed, Total output returned, WIP remaining, A/B/C % across territory
+- **Factory-level breakdown:** Table of all factories under this LL with key metrics
+- **Today's route:** Which factories visited today, what was collected, what's pending
+- **bKash disbursement summary:** Total payroll for territory, per-factory breakdown
+- **Shortage tracking:** Which factories have weight discrepancy (input ≠ output + wastage)
+- **Material in transit:** What was distributed today that hasn't been returned yet
+
+### 4.2 Group Head (Head Leader) Territory Dashboard
+**What it does:** For a Head Leader, see aggregate across all Line Leaders and factories.
+
+- **Summary:** Total LLs, Total factories, Total workers, Total production, A/B/C %, WIP, Payroll
+- **Line Leader comparison table:** Each LL's factories, workers, output, grade %, cost/kg
+- **Alerts:** Any LL with A-grade < 60%, cost/kg > target, high shortage
+- **Distribution tracking:** What material was received from PM, how much distributed to LLs
+
+### 4.3 Owner's Command Center (Executive Dashboard)
+**What it does:** The owner's "single screen" showing everything critical — the #1 priority from the research document.
+
+- **Real-time stock valuation** across all 8 buckets (the owner's most critical need)
+- **Today's production snapshot:** Total output, A-grade %, active factories, daily payroll
+- **Lot pipeline:** How many lots in each stage (washing/distributed/in-factory/finished)
+- **Financial position:** Export revenue this month, FX position, top/bottom buyer margins
+- **Alerts & exceptions:** Lots with >15% wastage, factories with A% < 60%, suppliers with quality issues, shortfalls > threshold
+- **Pending approvals:** Salary sheets awaiting sign-off, purchase orders pending, exception reports
+- **Trend sparklines:** Last 7 days for key metrics (output, grade %, cost/kg)
+
+---
+
+## Category 5: 📅 DAY-WISE RECORDING & REPORTING (The User's Key Request)
+
+### 5.1 Daily Production Report (Auto-Generated)
+**What it does:** At the end of each day, generate a comprehensive report.
+
+- **By factory:** Each factory's input, output by grade, wastage, balance check, WIP, payroll
+- **By Line Leader:** Aggregate of all factories under each LL
+- **By Group Head:** Aggregate of all LLs under each GH
+- **Company totals:** Grand total across everything
+- **Comparison:** vs. yesterday, vs. same day last week, vs. 30-day average
+- **Export:** PDF and CSV download
+- **Schedule:** Auto-generate at 6 PM daily (cron job)
+
+### 5.2 Daily Quality Report
+- **By factory:** A/B/C grade % per factory today
+- **Workers graded C today** (list with reason: <50g output OR quality failure)
+- **Discrepancy summary:** Which factories have input ≠ output + wastage
+- **QC inspector stats:** How many workers each QC graded, grade distribution
+- **Lot quality skew:** Which lots have >50% C-grade today
+
+### 5.3 Daily Wastage Analysis
+- **Per factory:** Input kg, Output kg (A+B+C), Wastage kg, Wastage %
+- **Flag if >15%** (wash tolerance) or >15% (hackling tolerance) per Settings
+- **Cumulative wastage by lot:** Running total wastage across all days
+- **By worker:** Top 10 workers with highest wastage rate
+- **By lot:** Which lots are losing the most material
+
+### 5.4 Daily Financial Summary
+- **Total payroll disbursed today** (by factory, by Line Leader territory)
+- **Material consumption cost** (input_kg × landed_cost_per_kg across all factories)
+- **Per-factory P&L** for today
+- **Running monthly totals** (vs. budget if applicable)
+
+### 5.5 Day-over-Day Trend Dashboard
+- Select any date range (7 days, 30 days, custom)
+- See trends for: total output, A-grade %, cost/kg, wastage %, attendance, payroll
+- Sparkline charts for each metric
+- Anomaly detection: flag days where any metric deviates >2 standard deviations from the mean
+
+---
+
+## Category 6: 🔐 ROLE-WISE INTERFACE & AUTHENTICATION
+
+### 6.1 Role-Based Login System
+**Roles** (from the organizational hierarchy):
+- **Owner / Managing Director** — Full access to everything + approval workflows + command center
+- **Production Manager (PM)** — Distribution, washing, lot tracking, factory oversight (NOT salary approval, NOT financial reports)
+- **Group Head (Head Leader)** — Only their territory's factories, LLs, workers, daily records (read-only on pricing/financials)
+- **Line Leader** — Only their factories' daily records, worker lists, WIP tracking (no pricing, no financials)
+- **Factory Supervisor** — Only their factory's daily records and worker list (can enter daily production data)
+- **QC Inspector** — Can view all factories (for grading), enter grades, can't see payroll or financials
+- **Accountant** — Payroll, procurement, sales, FX, financial reports (can't modify production data)
+- **Admin / HR** — Worker management, factory management, org structure, attendance
+
+### 6.2 Role-Specific Home Pages
+Each role sees a **different default dashboard** when they log in:
+
+- **Owner:** Command Center (Category 4.3) — everything at a glance
+- **PM:** Today's production plan, distribution status, washing queue, factory alerts
+- **Head Leader:** Territory dashboard, today's collection summary, LL performance, approval queue for daily records
+- **Line Leader:** Today's route (factories to visit), material to distribute, collections summary, WIP by factory
+- **Supervisor:** Today's worker list, input received, enter worker output, return summary
+- **QC:** Grade entry queue (list of factories whose workers need grading today), grade distribution stats
+- **Accountant:** Pending salary sheets, FX position, monthly financial close checklist
+
+### 6.3 Approval Workflow Engine
+- **Salary sheet approval:** Supervisor submits → Head Leader reviews → PM reviews → Owner approves → bKash disbursement
+- **Purchase approval:** New supplier/PO → PM recommends → Owner approves
+- **Exception approval:** Shortage/reject > threshold → flagged → PM/Owner approves write-off
+- **Lot status transitions:** Certain transitions (e.g., lot to "Finished") require PM approval
+
+### 6.4 Audit Trail
+- **Every data change** logged: who changed what, when, old value, new value
+- **Viewable per record:** "Show history" button on any lot, daily record, sale, etc.
+- **Role-based:** Only Owner/Accountant can see full audit trail; others see their own changes only
+
+---
+
+## Category 7: 📱 MOBILE-FIRST RESPONSIVE UI/UX
+
+### 7.1 Mobile-Optimized Data Entry Forms
+**The current forms are desktop-centric. For field use:**
+
+- **Large touch targets** (min 44px) for all buttons and inputs
+- **Smart defaults:** Auto-fill date=today, auto-select lot for factory based on factory's current lot
+- **Batch entry mode:** Enter 10 workers' data in a single scrollable form without page reloads
+- **Offline-capable forms** (PWA): Line Leaders can enter data offline, sync when back online
+- **Camera integration:** Scan lot number barcode/QR, scan worker ID card
+- **Quick actions:** "Mark all present" button for attendance, "Copy yesterday's assignment" for distribution
+
+### 7.2 Mobile Dashboard (Bottom Tab Navigation)
+Replace sidebar with bottom tab bar on mobile:
+- **Home** (today's summary)
+- **Workers** (my workers / my factory's workers)
+- **Entry** (today's production entry)
+- **Reports** (my territory reports)
+- **Profile** (my info, settings)
+
+### 7.3 Progressive Disclosure on Mobile
+- **Card-based layout** instead of wide tables
+- **Swipeable cards** for worker daily entries
+- **Expandable details** — tap to see more
+- **Pull-to-refresh** on all data views
+- **Infinite scroll** or "Load More" instead of pagination
+
+### 7.4 Responsive Data Tables
+- **Priority columns:** Show only 3-4 critical columns on mobile, with "→ See More" expansion
+- **Sticky first column** (name/ID) during horizontal scroll
+- **Summary cards** above table showing key aggregates
+- **Chart → simple stat on mobile:** Replace complex charts with single KPI values on small screens
+
+---
+
+## Category 8: 🎯 QUALITY CONTROL ENHANCEMENTS
+
+### 8.1 Grade Distribution Analytics
+- **Per lot:** A/B/C % with histogram
+- **Per factory:** Rolling 30-day A/B/C % trend
+- **Per Line Leader:** A/B/C % across all factories
+- **Per QC inspector:** Grade distribution — are some QCs stricter than others?
+- **Per supplier/country:** Grade % of lots from each source (some suppliers consistently produce better raw material)
+
+### 8.2 Grade Quality Scoring (Beyond A/B/C)
+- **Within A-grade:** A+, A, A- based on consistency (if always A, they're A+)
+- **Worker quality score:** Composite score = (A% × 3 + B% × 2 + C% × 1) / total days
+- **Factory quality score:** Weighted average of all workers' scores
+- **Trend indicator:** ↑ Improving, → Stable, ↓ Declining
+
+### 8.3 Reject & Shortage Investigation Module
+- **Separate tracking** for Reject (quality failure) vs. Shortage (unaccounted loss) — currently mixed
+- **Reject recovery tracking:** Can rejected material be re-processed? What's the recovery rate?
+- **Shortage hotspots:** Which factories/LLs/supervisors have the highest shortage rates?
+- **Investigation workflow:** Flag → Assign investigator → Findings → Resolution → Close
+- **Theft risk scoring:** High shortage + low QC grade + high turnover = elevated theft risk
+
+### 8.4 QC Accuracy Tracking
+- **Re-grading system:** Random sample of 10% of workers re-graded by a second QC
+- **Discrepancy rate per QC:** If QC-1 grades A but QC-2 grades B, that's a discrepancy
+- **QC training needs:** QCs with >30% discrepancy rate flagged for retraining
+
+---
+
+## Category 9: 💰 FINANCIAL VISIBILITY
+
+### 9.1 Real-Time Inventory Valuation Dashboard
+**The owner's #1 requirement** — currently missing (InventoryBucket is manually maintained, not auto-calculated).
+
+- **8-bucket view** with live weight and value per bucket
+- **Auto-calculated from transactions:**
+  - Raw Material = Sum of procurement lots not yet washed
+  - Washed = Wash output not yet distributed
+  - Distributed = Phase1 distributions minus factory input used
+  - In-Factory = Factory input minus factory output returned
+  - Half-Finish = Returned minus Phase 2 input
+  - In Final Production = Phase 2 input minus Phase 2 output
+  - Finished Goods = Phase 2 output minus sold
+  - Reject/Wastage = Sum of all wastage across all stages
+- **Total company inventory value** (BDT and USD)
+- **% in each bucket** with visual donut chart
+- **Drill-down** from each bucket to the specific lots within it
+
+### 9.2 FX Exposure Dashboard
+- **Open LCs** with USD amounts, BDT equivalent at booked vs. current rate
+- **FX gain/loss per LC** (realised + unrealised)
+- **Total FX position:** Net USD exposure, net BDT equivalent
+- **Export receivables** in USD with expected realization dates
+- **Historical FX trend** chart (if multiple rates used over time)
+
+### 9.3 Buyer-Wise Profitability Analysis
+- **Per buyer:** Total sales, total cost, margin %, average payment terms
+- **Per buyer per size:** Which sizes are most profitable for each buyer?
+- **Buyer concentration risk:** Top 3 buyers = what % of revenue? (diversification alert)
+- **Pending contracts:** Orders received but not yet fulfilled, with lot allocation status
+
+### 9.4 Cost-Per-Kg Breakdown (Drillable)
+- **Per factory:** Workers + Supervisor + Fuel + Transport + Overhead → Cost/kg
+- **Per lot:** Landed cost + Wash cost + Phase 1 cost + Phase 2 cost → Total cost/kg
+- **Per size:** Size-wise realisable value minus blended cost → Margin per size
+- **Trend:** Cost/kg over last 30/60/90 days per factory and company-wide
+
+### 9.5 Salary Sheet Approval & Disbursement Tracker
+- **Monthly salary sheet** auto-generated from daily records
+- **Review workflow:** Head Leader → PM → Owner (3-level approval)
+- **Per-territory breakdown:** Each LL's total, each GH's total
+- **bKash disbursement status:** Pending → Processing → Completed → Confirmed
+- **Comparison:** This month vs. last month payroll
+- **Anomaly flags:** Workers with unusual pay (too high, too low, first time, etc.)
+
+---
+
+## Category 10: 📈 ADVANCED ANALYTICS & REPORTING
+
+### 10.1 Production Velocity Analytics
+- **Lot cycle time:** Days from creation to each stage (creation→washed, washed→distributed, distributed→returned, returned→finished)
+- **Average cycle time** by lot, by supplier/country, by color
+- **Bottleneck identification:** Which stage takes the longest on average?
+- **Lot aging report:** Lots older than 30/45/60 days — are they stuck?
+
+### 10.2 Supplier Performance Scorecard
+- **Quality of lots** received from each supplier (grade distribution of lots from that source)
+- **Delivery reliability:** On-time vs. delayed LCs
+- **Price trend:** USD/kg over time per supplier
+- **Wastage rate** of lots from each supplier (some suppliers' hair loses more weight in washing)
+- **Recommendation:** "Supplier X from India consistently yields 8% higher A-grade vs. average"
+
+### 10.3 Size-Wise Demand vs. Supply Analysis
+- **Available inventory by size** (from Phase 2 sizing data)
+- **Pending orders by size** (from sales contracts)
+- **Gap analysis:** Which sizes are in shortage vs. surplus?
+- **Production planning suggestion:** "To fulfill 50 kg of 18-inch orders, need approximately 120 kg of raw input"
+
+### 10.4 Predictive Warnings (Rule-Based)
+- **Worker churn prediction:** Attendance dropping + grade dropping = likely to quit
+- **Factory risk:** A-grade % declining 3 consecutive days → alert
+- **Lot quality risk:** If first 5 workers on a new lot all get C-grade → "Flag lot quality"
+- **Cash flow warning:** If payroll + pending procurement > available funds
+- **Inventory stockout:** If finished goods for a size category < pending orders for that size
+
+### 10.5 Export-Import Pipeline Tracker
+- **LC lifecycle:** Open → Shipped → Cleared → Received → Paid → Closed (with date at each stage)
+- **SIT/BTC number tracking** (many-to-many with LCs and suppliers)
+- **Export shipment tracking:** Contract → Packed → Shipped → Delivered → Payment received
+- **Document checklist:** Invoice, Packing List, Certificate of Origin, LC documents — with upload capability
+- **Export incentive tracking:** Government export incentives receivable
+
+---
+
+## Category 11: ⚡ OPERATIONAL EFFICIENCY (Easy Data Input)
+
+### 11.1 Smart Daily Entry Form (Supervisor's Main Tool)
+- **Pre-populated:** Factory ID, Date (today), Lot (factory's current lot), All worker names
+- **Quick input mode:** Tab between weight fields (A-weight, B-weight, C-weight), auto-jump to next worker
+- **Auto-calculations shown live:** Balance check, total output, daily wage, status
+- **Validation:** Can't submit if any worker's balance ≠ OK
+- **"Copy from yesterday"** button for recurring assignments
+- **Voice input** (TTS): "Worker W-001, A 200 grams, B 50 grams" → auto-fill fields
+
+### 11.2 Barcode/QR Scanner Integration
+- **Print QR codes** for lot numbers, worker IDs, factory IDs
+- **Scan to:** Select lot in daily entry, identify worker, pull up lot details
+- **Physical material tagging:** Each packet tagged with QR linking to lot + worker
+
+### 11.3 Bulk Import/Export
+- **CSV import** for worker lists (bulk add 50 workers at once)
+- **CSV import** for daily records (from Excel if data entry done offline)
+- **Excel export** for every section (not just Payroll)
+- **PDF report generation** for official reports
+
+### 11.4 Notification & Alert System
+- **Push notifications** (PWA): "Factory F-03 has A-grade below 60%", "Lot LOT-005 washing wastage 18% — investigate"
+- **In-app notification bell** with unread count
+- **Escalation rules:** Factory alert → LL notification → GH notification → PM notification → Owner notification (if unresolved in 24 hours)
+- **Daily digest:** Morning summary email/SMS to PM/Owner with yesterday's numbers
+
+---
+
+## Category 12: 🗂️ MISSING MODULES (Models Exist, No UI)
+
+### 12.1 Settings Management UI
+**Current state:** 15+ configurable parameters in Settings model with NO UI editor.
+**Needed:** Full settings panel to edit: FX rate, Grade rates (A/B/C per kg), Wash tolerance, Hack tolerance, Cost/kg target, Factory A-min %, Supervisor min/max/extra pay, Performance threshold/bonus, Attendance days/bonus, Auto-C grams, Turnover target.
+
+### 12.2 Buyer Management Module
+**Current state:** Buyer model exists but has NO CRUD UI. Buyers only selectable in Sales.
+**Needed:** Full buyer CRUD (name, country, active status), Buyer-specific pricing table (premium % per size per buyer), Buyer contact info, Buyer order history, Buyer-wise margin analysis.
+
+### 12.3 Size Pricing Master UI
+**Current state:** SizePricing model exists, used server-side in Phase2 calculations, but NO editable UI.
+**Needed:** Table showing all 11 sizes (5"-30") with BDT/kg, USD/kg, market segment, min margin. Create/Edit/Delete. Changes immediately affect Phase 2 realisable value calculations.
+
+### 12.4 Risk Register Module
+**Current state:** Risk model exists with 11 fields (riskId, description, category, likelihood, impact, riskScore, mitigation, owner, status) but ZERO UI.
+**Needed:** Full risk CRUD table with risk matrix visualization (likelihood × impact heatmap), category filtering, open/closed status tracking, risk summary by category.
+
+### 12.5 LC/SIT/BTC Management Module
+**Current state:** LC numbers are free-text fields on Procurement. No dedicated LC tracking.
+**Needed:** Dedicated LC lifecycle tracker (LC number, SIT number, BTC number, supplier, amount USD, bank, status progression, document uploads, FX gain/loss per LC).
+
+### 12.6 Consumables & Adhesive Inventory
+**Current state:** Not tracked at all. Adhesive glue is USD 4,000-5,000 per 100g — critical material.
+**Needed:** Consumable inventory (shampoo, chemicals, dyes, packaging, adhesive), consumption tracking per lot/batch, reorder thresholds, supplier management.
+
+---
+
+## Category 13: 🔗 CROSS-CUTTING ENHANCEMENTS
+
+### 13.1 Global Search (Omni-Search)
+- **Search bar in header** that searches across: Lot numbers, Worker IDs, Factory IDs, Supplier names, Contract numbers, LC numbers
+- **Instant results** with type-ahead dropdown
+- **Click result** → navigate to the relevant section with that record pre-selected/highlighted
+
+### 13.2 Data Export Everywhere
+- Every table section should have an **Export** button (CSV/Excel)
+- Dashboard should have **Print/PDF** button
+- Reports should generate **downloadable PDFs**
+
+### 13.3 Pagination & Virtual Scrolling
+- Current: `limit=200` on all API calls, no frontend pagination
+- Needed: Proper pagination with page size selector, total count, page navigation
+- Or virtual scrolling for large datasets (workers list of 5,000+)
+
+### 13.4 Date Range Filtering (Universal)
+- **Every data section** should have a date range picker
+- Default: "Today" for daily sections, "This Month" for monthly sections, "All Time" for reference data
+- Allow comparison between two date ranges (e.g., "This month vs. Last month")
+
+### 13.5 Dark Mode Support
+- Already using next-themes capable setup
+- Navy (#1F3864) + Gold (#C9A227) theme needs dark variant
+- Especially important for factory floor use (reduces eye strain)
+
+### 13.6 Multi-Language Support (Bengali + English)
+- All 5,000 workers and 500 supervisors are Bengali-speaking
+- Field data entry should support Bengali labels
+- Reports generated in English for export/buyer-facing, Bengali for internal/worker-facing
+
+---
+
+## Summary: TOP 20 HIGHEST-IMPACT IDEAS (Prioritized)
+
+| # | Idea | Impact | Effort |
+|---|---|---|---|
+| 1 | **Lot Journey Tracker** (1.1) — Enter lot → see full lifecycle | 🔴 Critical | Medium |
+| 2 | **Worker Profile Card** (2.1) — Enter worker ID → see everything | 🔴 Critical | Medium |
+| 3 | **Role-Based Login** (6.1) — 8 roles with different access levels | 🔴 Critical | High |
+| 4 | **Role-Specific Home Pages** (6.2) — Each role sees relevant dashboard | 🔴 Critical | High |
+| 5 | **Daily Production Report** (5.1) — Day-wise auto-generated report | 🔴 Critical | Medium |
+| 6 | **Real-Time Inventory Valuation** (9.1) — Auto-calculated from transactions | 🔴 Critical | High |
+| 7 | **Settings Management UI** (12.1) — Edit 15+ config parameters | 🟡 High | Low |
+| 8 | **Buyer Management Module** (12.2) — Full buyer CRUD + pricing | 🟡 High | Medium |
+| 9 | **Size Pricing Master UI** (12.3) — Editable rate master | 🟡 High | Low |
+| 10 | **Risk Register Module** (12.4) — Full risk CRUD + matrix | 🟡 High | Low |
+| 11 | **Smart Daily Entry Form** (11.1) — Pre-populated, quick-tab, validation | 🟡 High | Medium |
+| 12 | **Factory Daily Scorecard** (3.1) — Single-day factory view | 🟡 High | Medium |
+| 13 | **Approval Workflow** (6.3) — Salary sheets, purchases, exceptions | 🟡 High | High |
+| 14 | **Global Omni-Search** (13.1) — Search everything from one bar | 🟡 High | Medium |
+| 15 | **Worker Performance Leaderboard** (2.2) — Rankings and comparisons | 🟢 Medium | Medium |
+| 16 | **Line Leader Territory Dashboard** (4.1) — 10-factory aggregate view | 🟢 Medium | Medium |
+| 17 | **Supplier Performance Scorecard** (10.2) — Quality, delivery, price | 🟢 Medium | Medium |
+| 18 | **Mobile-Optimized Entry** (7.1) — Touch targets, batch mode, offline | 🟢 Medium | High |
+| 19 | **Notification System** (11.4) — Alerts, escalation, daily digest | 🟢 Medium | High |
+| 20 | **Lot Traceability Drill-Down** (1.2) — Every person who touched a lot | 🟢 Medium | Medium |
+
+---
+That's the complete analysis. Here's a brief recap of what I did and the key takeaways:
+
+---
+
+## What I Read
+1. **Both PDFs** — The transcription document (18 pages) and the research-based document (34 pages) covering all 9 core business processes, organizational hierarchy, 25 business rules, 11 operational risks, and a 5-phase ERP roadmap.
+2. **All CS source files** — 14 C# files generating a 21-sheet Excel ERP with 1,400+ cross-sheet formulas, 6 charts, 26 KPIs, 7-section QC analysis, and WIP tracking at every hierarchy level.
+3. **Complete Prisma schema** — 19 models covering the full pipeline from Supplier → Procurement → Lot → Wash → Phase1 → Factory → Worker → Phase2 → Sales.
+4. **All 15 ERP components** — Audited every section for CRUD support, search/filter, responsive design, and gaps.
+5. **All API routes** — Backend capabilities, data flow, and missing endpoints.
+
+## Key Findings
+- **The Excel version had more analytics features** (7-section QC with hierarchy rollups, discrepancy cross-checks, 3-way matching) than the current web app
+- **5 models have NO UI at all:** Settings (15+ config params), Buyer (no CRUD), BuyerPricing (no CRUD), SizePricing (no edit UI), Risk (zero UI)
+- **No authentication or roles** — everyone sees everything
+- **No date filtering** anywhere except the backend daily-records endpoint
+- **Inventory is manually maintained**, not auto-calculated from transactions (the owner's #1 requirement)
+- **The business needs day-wise recording** at every hierarchy level, which the current system only partially supports
+
+The **13 categories, 60+ ideas, and top 20 priority list** above should give you a comprehensive roadmap for bringing complete visibility to the ERP. Let me know which ones you'd like to implement first!

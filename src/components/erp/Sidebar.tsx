@@ -21,6 +21,9 @@ import {
   Menu,
   Truck,
   Users,
+  Search,
+  Bell,
+  LogOut,
 } from 'lucide-react';
 import { useErpStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -28,12 +31,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import ThemeToggle from '@/components/ThemeToggle';
+import { toast } from 'sonner';
 
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'procurement', label: 'Procurement', icon: Package },
   { id: 'suppliers', label: 'Suppliers', icon: Truck },
   { id: 'lot-master', label: 'Lot Master', icon: FileText },
+  { id: 'lot-tracker', label: 'Lot Tracker', icon: FileText },
   { id: 'inventory', label: 'Inventory', icon: Warehouse },
   { id: 'washing-log', label: 'Washing Log', icon: Droplets },
   { id: 'phase1', label: 'Phase 1 Distribution', icon: GitBranch },
@@ -51,13 +57,19 @@ const navItems = [
 ];
 
 export default function Sidebar() {
-  const { activeSection, setActiveSection } = useErpStore();
+  const { activeSection, setActiveSection, user, setUser, setSearchOpen, setNotificationsOpen } = useErpStore();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleNav = (id: string) => {
     setActiveSection(id);
     setMobileOpen(false);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setActiveSection('dashboard');
+    toast.info('Logged out successfully.');
   };
 
   return (
@@ -96,9 +108,32 @@ export default function Sidebar() {
             <span className="text-white font-bold text-sm">BI</span>
           </div>
           {!collapsed && (
-            <div className="overflow-hidden">
+            <div className="overflow-hidden flex-1 min-w-0">
               <h1 className="text-white font-bold text-sm leading-tight truncate">Barendra International</h1>
               <p className="text-blue-200 text-xs truncate">ERP System</p>
+            </div>
+          )}
+          {!collapsed && (
+            <div className="flex items-center gap-0.5 flex-shrink-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-blue-300 hover:text-white hover:bg-blue-700/50"
+                onClick={() => setSearchOpen(true)}
+                title="Search (Ctrl+K)"
+              >
+                <Search className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-blue-300 hover:text-white hover:bg-blue-700/50"
+                onClick={() => setNotificationsOpen(true)}
+                title="Notifications"
+              >
+                <Bell className="h-3.5 w-3.5" />
+              </Button>
+              <ThemeToggle />
             </div>
           )}
         </div>
@@ -135,15 +170,38 @@ export default function Sidebar() {
 
         {/* Footer */}
         <div className="p-3 flex items-center justify-between">
-          {!collapsed && <span className="text-blue-300 text-xs">v1.0</span>}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-blue-300 hover:text-white hover:bg-blue-700/50 hidden md:flex h-8 w-8"
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} />
-          </Button>
+          {!collapsed && (
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: '#C9A227' }}>
+                {user?.displayName?.charAt(0) || '?'}
+              </div>
+              <div className="min-w-0">
+                <p className="text-blue-100 text-xs font-medium truncate">{user?.displayName || 'User'}</p>
+                <p className="text-blue-300 text-[10px] truncate">{user?.role || ''}</p>
+              </div>
+            </div>
+          )}
+          <div className="flex items-center gap-1">
+            {!collapsed && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-blue-300 hover:text-red-300 hover:bg-blue-700/50 h-8 w-8"
+                onClick={handleLogout}
+                title="Logout"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-blue-300 hover:text-white hover:bg-blue-700/50 hidden md:flex h-8 w-8"
+              onClick={() => setCollapsed(!collapsed)}
+            >
+              <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} />
+            </Button>
+          </div>
         </div>
       </aside>
     </>

@@ -64,3 +64,26 @@ Stage Summary:
 - Full end-to-end CRUD verified via API testing
 - Database correctly persists creates, updates, and deletes
 - Server compiles and runs without errors
+
+---
+Task ID: 3c
+Agent: Main
+Task: Comprehensive seed script with 500+ records across all database tables
+
+Work Log:
+- Added 5 new Prisma models to schema: LCManagement (linked to Procurement), Notification, AuditLog, GradeDispute, Consumable
+- Pushed schema changes with `prisma db push` (success, generated client)
+- Created /prisma/seed_full.ts — comprehensive seed script covering all 23 tables
+- Fixed array size mismatch (12 factories needed, had 10 names/locations/supervisors — extended to 12)
+- Ran seed script successfully: 1,285 total records created
+- Verified counts: HeadLeader(3), LineLeader(6), Factory(12), Worker(105), Supplier(20), Procurement(15), LCManagement(15), Lot(20), WashLog(15), Phase1Distribution(25), FactoryDailyRecord(96), WorkerDailyEntry(784), Phase2Job(10), Buyer(10), BuyerPricing(20), Sale(15), SizePricing(11), Risk(20), InventoryBucket(8), Consumable(20), Notification(15), AuditLog(30), GradeDispute(10)
+- Verified 344 Pending Approval entries (requirement: 20+)
+- Verified consumable stock alerts (Bleach Powder 12/20, Silicone Spray 4/5)
+
+Stage Summary:
+- 1,285 records seeded across 23 tables (2.5x the 500 minimum)
+- All foreign key relationships properly established
+- Realistic data: Bengali names, BD phone formats, hair colours, factory locations
+- Worker daily entries have realistic grade distributions with varying factory performance
+- Risk register covers all 5 categories with proper likelihood × impact scoring
+- Grade disputes include all statuses (Pending, UnderReview, Upheld, Overturned)

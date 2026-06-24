@@ -70,6 +70,7 @@ model Procurement {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   lots              Lot[]
+  lcManagement      LCManagement[]
 }
 
 // ==================== LOT MASTER ====================
@@ -319,6 +320,77 @@ model Risk {
   mitigation    String
   owner         String
   status        String @default("Open")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ==================== LC MANAGEMENT ====================
+model LCManagement {
+  id              String   @id @default(cuid())
+  lcNo            String   @unique
+  procurementId   String
+  procurement     Procurement @relation(fields: [procurementId], references: [id])
+  lcDate          DateTime
+  bankName        String
+  usdAmount       Float
+  bdtAmount       Float
+  fxRate          Float    @default(120.0)
+  status          String   @default("Open")
+  shipmentDate    DateTime?
+  clearanceDate   DateTime?
+  paymentDate     DateTime?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ==================== NOTIFICATIONS ====================
+model Notification {
+  id          String   @id @default(cuid())
+  title       String
+  message     String
+  type        String   @default("info")
+  category    String   @default("system")
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+// ==================== AUDIT LOGS ====================
+model AuditLog {
+  id          String   @id @default(cuid())
+  entity      String
+  entityId    String?
+  action      String
+  oldValues   String?
+  newValues   String?
+  performedBy String?
+  createdAt   DateTime @default(now())
+}
+
+// ==================== GRADE DISPUTES ====================
+model GradeDispute {
+  id              String   @id @default(cuid())
+  entryId         String
+  workerId        String?
+  reason          String
+  status          String   @default("Pending")
+  resolution      String?
+  resolvedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ==================== CONSUMABLES ====================
+model Consumable {
+  id            String   @id @default(cuid())
+  itemName      String
+  category      String
+  unit          String   @default("pcs")
+  stockQty      Float    @default(0)
+  reorderLevel  Float    @default(0)
+  costPerUnit   Float    @default(0)
+  supplierName  String?
+  lastOrderDate DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
