@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Pencil, Trash2, Plus } from 'lucide-react';
@@ -60,14 +61,14 @@ export default function InventorySection() {
     if (!form.bucketName) { toast.error('Bucket name required'); return; }
     try {
       if (editing) {
-        const res = await fetch('/api/inventory-buckets', {
+        const res = await erpFetch('/api/inventory-buckets', {
           method: 'PUT', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: editing.id, bucketName: form.bucketName, weightKg: parseFloat(form.weightKg) || 0, valueBdt: parseFloat(form.valueBdt) || 0 }),
         });
         if (res.ok) { toast.success('Updated'); setDialogOpen(false); fetchData(); }
         else toast.error('Failed');
       } else {
-        const res = await fetch('/api/inventory-buckets', {
+        const res = await erpFetch('/api/inventory-buckets', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ bucketName: form.bucketName, weightKg: parseFloat(form.weightKg) || 0, valueBdt: parseFloat(form.valueBdt) || 0 }),
         });
@@ -79,7 +80,7 @@ export default function InventorySection() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this inventory bucket?')) return;
-    const res = await fetch(`/api/inventory-buckets?id=${id}`, { method: 'DELETE' });
+    const res = await erpFetch(`/api/inventory-buckets?id=${id}`, { method: 'DELETE' });
     if (res.ok) { toast.success('Deleted'); fetchData(); }
     else toast.error('Failed');
   };

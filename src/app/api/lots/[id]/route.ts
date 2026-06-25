@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest, getChangedFields } from '@/lib/audit';
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'lot-master', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const lot = await db.lot.findUnique({
@@ -39,9 +46,19 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'lot-master', 'edit');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const body = await request.json();
+    const actor = getActorFromRequest(request);
+
+    const oldLot = await db.lot.findUnique({ where: { id } });
+    const oldPlain = oldLot ? JSON.parse(JSON.stringify(oldLot)) : {};
 
     const lot = await db.lot.update({
       where: { id },
@@ -60,6 +77,16 @@ export async function PUT(
       },
     });
 
+    const { oldValues, newValues } = getChangedFields(oldPlain, body);
+    await writeAuditLog({
+      entity: 'Lot',
+      entityId: id,
+      action: 'UPDATE',
+      oldValues,
+      newValues,
+      performedBy: actor,
+    });
+
     return NextResponse.json(lot);
   } catch (error) {
     console.error('Lot update error:', error);
@@ -68,11 +95,18 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'lot-master', 'delete');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
+    const actor = getActorFromRequest(request);
 
     // Check for related records
     const [washCount, distCount, recordCount, phase2Count] = await Promise.all([
@@ -90,7 +124,18 @@ export async function DELETE(
       );
     }
 
+    const oldLot = await db.lot.findUnique({ where: { id } });
+
     await db.lot.delete({ where: { id } });
+
+    await writeAuditLog({
+      entity: 'Lot',
+      entityId: id,
+      action: 'DELETE',
+      oldValues: oldLot ? JSON.parse(JSON.stringify(oldLot)) : undefined,
+      performedBy: actor,
+    });
+
     return NextResponse.json({ message: 'Lot deleted' });
   } catch (error) {
     console.error('Lot delete error:', error);

@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest, getChangedFields } from '@/lib/audit';
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'procurement', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const procurement = await db.procurement.findUnique({
@@ -32,9 +39,19 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'procurement', 'edit');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const body = await request.json();
+    const actor = getActorFromRequest(request);
+
+    const oldProcurement = await db.procurement.findUnique({ where: { id } });
+    const oldPlain = oldProcurement ? JSON.parse(JSON.stringify(oldProcurement)) : {};
 
     const procurement = await db.procurement.update({
       where: { id },
@@ -63,6 +80,16 @@ export async function PUT(
       include: { supplier: true, lots: true },
     });
 
+    const { oldValues, newValues } = getChangedFields(oldPlain, body);
+    await writeAuditLog({
+      entity: 'Procurement',
+      entityId: id,
+      action: 'UPDATE',
+      oldValues,
+      newValues,
+      performedBy: actor,
+    });
+
     return NextResponse.json(procurement);
   } catch (error) {
     console.error('Procurement update error:', error);
@@ -71,11 +98,18 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'procurement', 'delete');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
+    const actor = getActorFromRequest(request);
 
     // Check if procurement has related lots
     const lotsCount = await db.lot.count({ where: { procurementId: id } });
@@ -86,7 +120,18 @@ export async function DELETE(
       );
     }
 
+    const oldProcurement = await db.procurement.findUnique({ where: { id } });
+
     await db.procurement.delete({ where: { id } });
+
+    await writeAuditLog({
+      entity: 'Procurement',
+      entityId: id,
+      action: 'DELETE',
+      oldValues: oldProcurement ? JSON.parse(JSON.stringify(oldProcurement)) : undefined,
+      performedBy: actor,
+    });
+
     return NextResponse.json({ message: 'Procurement deleted' });
   } catch (error) {
     console.error('Procurement delete error:', error);

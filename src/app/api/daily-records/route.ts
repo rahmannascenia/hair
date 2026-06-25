@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'factory', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') ?? '1');
@@ -57,8 +64,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'factory', 'create');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const body = await request.json();
+    const actor = getActorFromRequest(request);
     const { entries, ...recordData } = body;
 
     const settings = await db.settings.findUnique({ where: { id: 'default' } });
@@ -143,6 +157,14 @@ export async function POST(request: NextRequest) {
         lot: true,
         entries: { include: { worker: true } },
       },
+    });
+
+    await writeAuditLog({
+      entity: 'FactoryDailyRecord',
+      entityId: record.id,
+      action: 'CREATE',
+      newValues: { ...recordData, totalInputKg, totalAGradeKg, totalBGradeKg, totalCGradeKg, totalWastageKg, grandTotalBdt, wipStatus },
+      performedBy: actor,
     });
 
     return NextResponse.json(record, { status: 201 });

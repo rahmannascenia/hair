@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Download, TrendingUp, Building2, Users, Banknote, BarChart3 } from 'lucide-react';
@@ -70,7 +71,7 @@ export default function PayrollSection() {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/payroll')
+    erpFetch('/api/payroll')
       .then(r => r.json())
       .then(res => {
         setFactories(res.factories || []);

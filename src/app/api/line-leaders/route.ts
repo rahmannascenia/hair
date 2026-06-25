@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'organization', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
@@ -38,8 +45,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'organization', 'create');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const body = await request.json();
+    const actor = getActorFromRequest(request);
 
     if (!body.name || !body.headLeaderId) {
       return NextResponse.json(
@@ -62,6 +76,14 @@ export async function POST(request: NextRequest) {
           select: { factories: true },
         },
       },
+    });
+
+    await writeAuditLog({
+      entity: 'LineLeader',
+      entityId: lineLeader.id,
+      action: 'CREATE',
+      newValues: body,
+      performedBy: actor,
     });
 
     return NextResponse.json(lineLeader, { status: 201 });

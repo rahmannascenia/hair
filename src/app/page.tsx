@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useErpStore } from '@/lib/store';
+import { initApiClient } from '@/lib/api-client';
 import LoginScreen from '@/components/erp/LoginScreen';
 import Sidebar from '@/components/erp/Sidebar';
 import GlobalSearchDialog from '@/components/erp/GlobalSearchDialog';
@@ -55,6 +57,12 @@ const sections: Record<string, React.ComponentType> = {
 
 export default function Home() {
   const { user, activeSection } = useErpStore();
+
+  // Initialize API client to inject auth headers
+  useEffect(() => {
+    initApiClient(() => useErpStore.getState().user);
+  }, []);
+
   if (!user) return <LoginScreen />;
   const ActiveComponent = sections[activeSection] || DashboardSection;
   return (

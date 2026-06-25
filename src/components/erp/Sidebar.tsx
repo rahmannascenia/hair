@@ -24,8 +24,18 @@ import {
   Search,
   Bell,
   LogOut,
+  ClipboardCheck,
+  ScrollText,
+  MessageSquare,
+  AlertOctagon,
+  UserCircle,
+  BarChart3,
+  Network,
+  CreditCard,
+  PackageCheck,
 } from 'lucide-react';
 import { useErpStore } from '@/lib/store';
+import { getSectionPermissions, type SectionKey } from '@/lib/permissions';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -39,7 +49,7 @@ const navItems = [
   { id: 'procurement', label: 'Procurement', icon: Package },
   { id: 'suppliers', label: 'Suppliers', icon: Truck },
   { id: 'lot-master', label: 'Lot Master', icon: FileText },
-  { id: 'lot-tracker', label: 'Lot Tracker', icon: FileText },
+  { id: 'lot-tracker', label: 'Lot Tracker', icon: PackageCheck },
   { id: 'inventory', label: 'Inventory', icon: Warehouse },
   { id: 'washing-log', label: 'Washing Log', icon: Droplets },
   { id: 'phase1', label: 'Phase 1 Distribution', icon: GitBranch },
@@ -53,11 +63,22 @@ const navItems = [
   { id: 'costing', label: 'Costing Analysis', icon: Calculator },
   { id: 'kpi', label: 'KPI Tracker', icon: Target },
   { id: 'risks', label: 'Risk Register', icon: AlertTriangle },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'lc-management', label: 'LC Management', icon: CreditCard },
+  { id: 'consumables', label: 'Consumables', icon: Package },
+  // Management sections
+  { id: 'approval-workflow', label: 'Approval Workflow', icon: ClipboardCheck, category: 'management' },
+  { id: 'audit-log', label: 'Audit Log', icon: ScrollText, category: 'management' },
+  { id: 'grade-dispute', label: 'Grade Disputes', icon: MessageSquare, category: 'management' },
+  { id: 'rejection-investigation', label: 'Rejection Investigation', icon: AlertOctagon, category: 'management' },
+  { id: 'worker-profile', label: 'Worker Profiles', icon: UserCircle, category: 'insights' },
+  { id: 'daily-reports', label: 'Daily Reports', icon: BarChart3, category: 'insights' },
+  { id: 'leaderboard', label: 'Leaderboard', icon: BarChart3, category: 'insights' },
+  { id: 'hierarchy', label: 'Hierarchy View', icon: Network, category: 'insights' },
+  { id: 'settings', label: 'Settings', icon: Settings, category: 'system' },
 ];
 
 export default function Sidebar() {
-  const { activeSection, setActiveSection, user, setUser, setSearchOpen, setNotificationsOpen } = useErpStore();
+  const { activeSection, setActiveSection, user, setUser, setSearchOpen, setNotificationsOpen, visibleSections } = useErpStore();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -71,6 +92,45 @@ export default function Sidebar() {
     setActiveSection('dashboard');
     toast.info('Logged out successfully.');
   };
+
+  // Filter nav items based on role permissions
+  const filteredNavItems = navItems.filter(item =>
+    visibleSections.includes(item.id as SectionKey)
+  );
+
+  // Separate main items and management items
+  const mainItems = filteredNavItems.filter(item => !item.category);
+  const managementItems = filteredNavItems.filter(item => item.category === 'management');
+  const insightItems = filteredNavItems.filter(item => item.category === 'insights');
+  const systemItems = filteredNavItems.filter(item => item.category === 'system');
+
+  const renderNavGroup = (items: typeof navItems, label?: string) => (
+    <div className="space-y-1">
+      {label && !collapsed && (
+        <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-blue-300/70">{label}</p>
+      )}
+      {items.map((item) => {
+        const Icon = item.icon;
+        const isActive = activeSection === item.id;
+        return (
+          <button
+            key={item.id}
+            onClick={() => handleNav(item.id)}
+            className={cn(
+              'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 cursor-pointer',
+              isActive
+                ? 'bg-white text-[#1F3864] font-semibold shadow-sm'
+                : 'text-blue-100 hover:bg-blue-700/50 hover:text-white'
+            )}
+            title={collapsed ? item.label : undefined}
+          >
+            <Icon className={cn('h-4 w-4 flex-shrink-0', isActive ? 'text-[#C9A227]' : '')} />
+            {!collapsed && <span className="truncate">{item.label}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
 
   return (
     <>
@@ -142,27 +202,26 @@ export default function Sidebar() {
 
         {/* Navigation */}
         <ScrollArea className="flex-1 py-2">
-          <nav className="px-2 space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeSection === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleNav(item.id)}
-                  className={cn(
-                    'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 cursor-pointer',
-                    isActive
-                      ? 'bg-white text-[#1F3864] font-semibold shadow-sm'
-                      : 'text-blue-100 hover:bg-blue-700/50 hover:text-white'
-                  )}
-                  title={collapsed ? item.label : undefined}
-                >
-                  <Icon className={cn('h-4 w-4 flex-shrink-0', isActive ? 'text-[#C9A227]' : '')} />
-                  {!collapsed && <span className="truncate">{item.label}</span>}
-                </button>
-              );
-            })}
+          <nav className="px-2 space-y-2">
+            {renderNavGroup(mainItems)}
+            {managementItems.length > 0 && (
+              <>
+                <Separator className="bg-blue-700/30 my-1" />
+                {renderNavGroup(managementItems, 'Management')}
+              </>
+            )}
+            {insightItems.length > 0 && (
+              <>
+                <Separator className="bg-blue-700/30 my-1" />
+                {renderNavGroup(insightItems, 'Insights')}
+              </>
+            )}
+            {systemItems.length > 0 && (
+              <>
+                <Separator className="bg-blue-700/30 my-1" />
+                {renderNavGroup(systemItems, 'System')}
+              </>
+            )}
           </nav>
         </ScrollArea>
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -99,7 +100,7 @@ export default function ProcurementSection() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch('/api/procurement?limit=200');
+      const res = await erpFetch('/api/procurement?limit=200');
       const json = await res.json();
       setData(json.data || []);
     } catch {
@@ -111,7 +112,7 @@ export default function ProcurementSection() {
 
   const fetchSuppliers = useCallback(async () => {
     try {
-      const res = await fetch('/api/suppliers?limit=200');
+      const res = await erpFetch('/api/suppliers?limit=200');
       const json = await res.json();
       setSuppliers(json.data || []);
     } catch {
@@ -231,7 +232,7 @@ export default function ProcurementSection() {
           body.landedCostPerKgBdt = 0;
         }
 
-        const res = await fetch(`/api/procurement/${editing.id}`, {
+        const res = await erpFetch(`/api/procurement/${editing.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -246,7 +247,7 @@ export default function ProcurementSection() {
           toast.error(err.error || 'Failed to update procurement');
         }
       } else {
-        const res = await fetch('/api/procurement', {
+        const res = await erpFetch('/api/procurement', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -270,7 +271,7 @@ export default function ProcurementSection() {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this procurement?')) return;
     try {
-      const res = await fetch(`/api/procurement/${id}`, { method: 'DELETE' });
+      const res = await erpFetch(`/api/procurement/${id}`, { method: 'DELETE' });
       if (res.ok) {
         toast.success('Procurement deleted successfully');
         fetchData();

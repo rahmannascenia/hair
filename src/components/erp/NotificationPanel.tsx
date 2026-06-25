@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useEffect, useState, useCallback } from 'react';
 import {
   Sheet,
@@ -28,7 +29,7 @@ export default function NotificationPanel() {
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/notifications');
+      const res = await erpFetch('/api/notifications');
       if (res.ok) {
         const data = await res.json();
         setNotifications(data);
@@ -46,7 +47,7 @@ export default function NotificationPanel() {
 
   const markAsRead = async (id: string, section?: string) => {
     try {
-      await fetch('/api/notifications', {
+      await erpFetch('/api/notifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),

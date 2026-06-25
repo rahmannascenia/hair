@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
@@ -102,7 +103,7 @@ export default function SalesSection() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch('/api/sales?limit=200');
+      const res = await erpFetch('/api/sales?limit=200');
       const json = await res.json();
       setData(json.data || []);
       setFx(json.fxExposure || null);
@@ -115,7 +116,7 @@ export default function SalesSection() {
 
   const fetchBuyers = useCallback(async () => {
     try {
-      const res = await fetch('/api/buyers');
+      const res = await erpFetch('/api/buyers');
       const json = await res.json();
       setBuyers(json.data || []);
     } catch {
@@ -175,7 +176,7 @@ export default function SalesSection() {
     setSubmitting(true);
     try {
       if (editing) {
-        const res = await fetch(`/api/sales/${editing.id}`, {
+        const res = await erpFetch(`/api/sales/${editing.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -183,7 +184,7 @@ export default function SalesSection() {
         if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Update failed'); }
         toast.success('Sale contract updated');
       } else {
-        const res = await fetch('/api/sales', {
+        const res = await erpFetch('/api/sales', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -204,7 +205,7 @@ export default function SalesSection() {
   const handleDelete = async (item: SaleItem) => {
     if (!confirm(`Delete contract "${item.contractNo}"?`)) return;
     try {
-      const res = await fetch(`/api/sales/${item.id}`, { method: 'DELETE' });
+      const res = await erpFetch(`/api/sales/${item.id}`, { method: 'DELETE' });
       if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Delete failed'); }
       toast.success('Sale contract deleted');
       await fetchData();

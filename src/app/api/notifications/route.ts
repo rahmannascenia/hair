@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { checkPermission } from '@/lib/audit';
 
 interface Notification {
   id: string;
@@ -52,11 +53,22 @@ const notifications: Notification[] = [
   },
 ];
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'dashboard', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
   return NextResponse.json(notifications);
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'dashboard', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const body = await request.json();
     const { id } = body;

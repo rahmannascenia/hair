@@ -1,7 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission } from '@/lib/audit';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'costing', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const settings = await db.settings.findUnique({ where: { id: 'default' } });
     const s = settings ?? {

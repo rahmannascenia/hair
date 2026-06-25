@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Search, Users, UserCog, Building2 } from 'lucide-react';
@@ -35,7 +36,7 @@ export default function OrganizationSection() {
   const fetchHeadLeaders = async () => {
     try {
       const url = search ? `/api/head-leaders?search=${encodeURIComponent(search)}` : '/api/head-leaders';
-      const res = await fetch(url);
+      const res = await erpFetch(url);
       const json = await res.json();
       setHeadLeaders(json.data || json || []);
     } catch {}
@@ -44,7 +45,7 @@ export default function OrganizationSection() {
   const fetchLineLeaders = async () => {
     try {
       const url = search ? `/api/line-leaders?search=${encodeURIComponent(search)}` : '/api/line-leaders';
-      const res = await fetch(url);
+      const res = await erpFetch(url);
       const json = await res.json();
       setLineLeaders(json.data || json || []);
     } catch {}
@@ -77,7 +78,7 @@ export default function OrganizationSection() {
     const url = editing ? `/api/head-leaders/${editing.id}` : '/api/head-leaders';
     const method = editing ? 'PUT' : 'POST';
     try {
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(hlForm) });
+      const res = await erpFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(hlForm) });
       if (res.ok) { toast.success(editing ? 'Updated' : 'Created'); setDialogOpen(false); fetchAll(); }
       else { const err = await res.json(); toast.error(err.error || 'Failed'); }
     } catch { toast.error('Failed'); }
@@ -86,7 +87,7 @@ export default function OrganizationSection() {
   const deleteHL = async (id: string) => {
     if (!confirm('Delete this Head Leader?')) return;
     try {
-      const res = await fetch(`/api/head-leaders/${id}`, { method: 'DELETE' });
+      const res = await erpFetch(`/api/head-leaders/${id}`, { method: 'DELETE' });
       if (res.ok) { toast.success('Deleted'); fetchAll(); }
       else { const err = await res.json(); toast.error(err.error || 'Failed'); }
     } catch { toast.error('Failed'); }
@@ -110,7 +111,7 @@ export default function OrganizationSection() {
     const url = editing ? `/api/line-leaders/${editing.id}` : '/api/line-leaders';
     const method = editing ? 'PUT' : 'POST';
     try {
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(llForm) });
+      const res = await erpFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(llForm) });
       if (res.ok) { toast.success(editing ? 'Updated' : 'Created'); setDialogOpen(false); fetchAll(); }
       else { const err = await res.json(); toast.error(err.error || 'Failed'); }
     } catch { toast.error('Failed'); }
@@ -119,7 +120,7 @@ export default function OrganizationSection() {
   const deleteLL = async (id: string) => {
     if (!confirm('Delete this Line Leader?')) return;
     try {
-      const res = await fetch(`/api/line-leaders/${id}`, { method: 'DELETE' });
+      const res = await erpFetch(`/api/line-leaders/${id}`, { method: 'DELETE' });
       if (res.ok) { toast.success('Deleted'); fetchAll(); }
       else { const err = await res.json(); toast.error(err.error || 'Failed'); }
     } catch { toast.error('Failed'); }

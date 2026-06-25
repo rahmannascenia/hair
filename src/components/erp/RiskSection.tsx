@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
@@ -125,7 +126,7 @@ export default function RiskSection() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch('/api/risks');
+      const res = await erpFetch('/api/risks');
       const json = await res.json();
       setData(json.data || []);
     } catch {
@@ -200,7 +201,7 @@ export default function RiskSection() {
     setSubmitting(true);
     try {
       if (editing) {
-        const res = await fetch(`/api/risks/${editing.id}`, {
+        const res = await erpFetch(`/api/risks/${editing.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -208,7 +209,7 @@ export default function RiskSection() {
         if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Update failed'); }
         toast.success('Risk updated');
       } else {
-        const res = await fetch('/api/risks', {
+        const res = await erpFetch('/api/risks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -229,7 +230,7 @@ export default function RiskSection() {
   const handleDelete = async (item: RiskItem) => {
     if (!confirm(`Delete risk "${item.riskId}" — ${item.description.slice(0, 40)}?`)) return;
     try {
-      const res = await fetch(`/api/risks/${item.id}`, { method: 'DELETE' });
+      const res = await erpFetch(`/api/risks/${item.id}`, { method: 'DELETE' });
       if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Delete failed'); }
       toast.success('Risk deleted');
       await fetchData();

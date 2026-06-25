@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -29,7 +30,7 @@ export default function DailyReportsSection() {
   const fetchRecords = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/daily-records?dateFrom=${date}&dateTo=${date}&limit=50`);
+      const res = await erpFetch(`/api/daily-records?dateFrom=${date}&dateTo=${date}&limit=50`);
       if (res.ok) { const d = await res.json(); setRecords(d.data || []); }
     } finally { setLoading(false); }
   }, [date]);

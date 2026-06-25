@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest, getChangedFields } from '@/lib/audit';
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'suppliers', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const supplier = await db.supplier.findUnique({
@@ -31,9 +38,19 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'suppliers', 'edit');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const body = await request.json();
+    const actor = getActorFromRequest(request);
+
+    const oldSupplier = await db.supplier.findUnique({ where: { id } });
+    const oldPlain = oldSupplier ? JSON.parse(JSON.stringify(oldSupplier)) : {};
 
     const supplier = await db.supplier.update({
       where: { id },
@@ -47,6 +64,16 @@ export async function PUT(
       },
     });
 
+    const { oldValues, newValues } = getChangedFields(oldPlain, body);
+    await writeAuditLog({
+      entity: 'Supplier',
+      entityId: id,
+      action: 'UPDATE',
+      oldValues,
+      newValues,
+      performedBy: actor,
+    });
+
     return NextResponse.json(supplier);
   } catch (error) {
     console.error('Supplier update error:', error);
@@ -55,11 +82,18 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'suppliers', 'delete');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
+    const actor = getActorFromRequest(request);
 
     const procurementCount = await db.procurement.count({
       where: { supplierId: id },
@@ -72,7 +106,18 @@ export async function DELETE(
       );
     }
 
+    const oldSupplier = await db.supplier.findUnique({ where: { id } });
+
     await db.supplier.delete({ where: { id } });
+
+    await writeAuditLog({
+      entity: 'Supplier',
+      entityId: id,
+      action: 'DELETE',
+      oldValues: oldSupplier ? JSON.parse(JSON.stringify(oldSupplier)) : undefined,
+      performedBy: actor,
+    });
+
     return NextResponse.json({ message: 'Supplier deleted' });
   } catch (error) {
     console.error('Supplier delete error:', error);

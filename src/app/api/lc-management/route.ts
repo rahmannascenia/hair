@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'lc-management', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
@@ -20,8 +27,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'lc-management', 'create');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const body = await request.json();
+    const actor = getActorFromRequest(request);
     const lc = await db.lCManagement.create({
       data: {
         lcNo: body.lcNo,
@@ -38,6 +52,13 @@ export async function POST(request: NextRequest) {
         notes: body.notes,
       },
       include: { procurement: { include: { supplier: true } } },
+    });
+    await writeAuditLog({
+      entity: 'LCManagement',
+      entityId: lc.id,
+      action: 'CREATE',
+      newValues: body,
+      performedBy: actor,
     });
     return NextResponse.json(lc, { status: 201 });
   } catch (error) {

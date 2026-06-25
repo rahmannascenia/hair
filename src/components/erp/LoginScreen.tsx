@@ -21,16 +21,11 @@ export default function LoginScreen() {
     try {
       const res = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: username.trim(), password }) });
       const data = await res.json();
-      if (res.ok && data.user) { setUser(data.user); setActiveSection('dashboard'); toast.success(`Welcome, ${data.user.name}!`); }
+      if (res.ok && data.user) { setUser(data.user); setActiveSection('dashboard'); toast.success(`Welcome, ${data.user.displayName}!`); }
       else toast.error('Invalid credentials');
     } catch { toast.error('Connection error'); }
     finally { setLoading(false); }
   };
-
-  const creds = [
-    ['owner','owner123'],['admin','admin123'],['pm','pm123'],['accountant','acc123'],
-    ['head1','head123'],['supervisor1','sup123'],['ll1','ll123'],['qc1','qc123'],['viewer','viewer123'],
-  ];
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(135deg, #1F3864 0%, #0f1f3a 100%)' }}>
@@ -49,9 +44,29 @@ export default function LoginScreen() {
             </Button>
           </form>
           <div className="mt-6 text-center">
-            <p className="text-xs text-muted-foreground mb-2">Demo Credentials</p>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-left max-w-xs mx-auto">
-              {creds.map(([u,p], i) => <React.Fragment key={i}><span className="text-muted-foreground">{u}</span><span className="font-mono" style={{ color: '#C9A227' }}>{p}</span></React.Fragment>)}
+            <p className="text-xs text-muted-foreground mb-2">Demo Credentials (9 roles with different access levels)</p>
+            <div className="overflow-x-auto max-h-48 overflow-y-auto">
+              <table className="text-xs w-full max-w-sm mx-auto">
+                <thead><tr className="text-left text-muted-foreground border-b"><th className="py-1 pr-3">Username</th><th className="py-1 pr-3">Password</th><th className="py-1">Role</th></tr></thead>
+                <tbody>
+                  {[['owner','owner123','Owner — Full access'],
+                    ['admin','admin123','Admin — Full except owner-only'],
+                    ['pm','pm123','PM — Production, no financials'],
+                    ['accountant','acc123','Accountant — Financials only'],
+                    ['head1','head123','Head Leader — Territory read'],
+                    ['supervisor1','sup123','Supervisor — Factory only'],
+                    ['ll1','ll123','Line Leader — Territory daily'],
+                    ['qc1','qc123','QC — Grading only'],
+                    ['viewer','viewer123','Viewer — Read-only']
+                  ].map(([u,p,r], i) => (
+                    <tr key={i} className="border-b border-border/50 hover:bg-muted/50 cursor-pointer" onClick={() => { setUsername(u as string); setPassword(p as string); }}>
+                      <td className="py-1 pr-3 font-mono" style={{ color: '#C9A227' }}>{u}</td>
+                      <td className="py-1 pr-3 font-mono text-muted-foreground">{p}</td>
+                      <td className="py-1 text-muted-foreground">{r}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </CardContent>

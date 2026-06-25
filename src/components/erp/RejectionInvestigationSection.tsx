@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -19,7 +20,7 @@ export default function RejectionInvestigationSection() {
 
   const fetchAnalytics = useCallback(async () => {
     try {
-      const res = await fetch('/api/analytics/rejection-investigation');
+      const res = await erpFetch('/api/analytics/rejection-investigation');
       if (res.ok) setData(await res.json());
     } finally { setLoading(false); }
   }, []);

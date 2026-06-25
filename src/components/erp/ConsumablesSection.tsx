@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,7 @@ export default function ConsumablesSection() {
   const [form, setForm] = useState(emptyForm);
 
   const fetchItems = useCallback(async () => {
-    try { const res = await fetch('/api/consumables'); if (res.ok) { const d = await res.json(); setItems(d.data || []); } } finally { setLoading(false); }
+    try { const res = await erpFetch('/api/consumables'); if (res.ok) { const d = await res.json(); setItems(d.data || []); } } finally { setLoading(false); }
   }, []);
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
@@ -34,7 +35,7 @@ export default function ConsumablesSection() {
 
   const handleSave = async () => {
     try {
-      await fetch('/api/consumables', {
+      await erpFetch('/api/consumables', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, stockQty: parseFloat(form.stockQty) || 0, reorderLevel: parseFloat(form.reorderLevel) || 0, costPerUnit: parseFloat(form.costPerUnit) || 0 }),
       });

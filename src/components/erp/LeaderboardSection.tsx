@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ export default function LeaderboardSection() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [wRes, rRes] = await Promise.all([fetch('/api/workers?limit=200'), fetch('/api/daily-records?limit=200')]);
+      const [wRes, rRes] = await Promise.all([erpFetch('/api/workers?limit=200'), erpFetch('/api/daily-records?limit=200')]);
       if (!wRes.ok || !rRes.ok) return;
       const wData = (await wRes.json()).data || [];
       const rData = (await rRes.json()).data || [];

@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
@@ -226,7 +227,7 @@ export default function FactorySection() {
 
   const fetchLineLeaders = useCallback(async () => {
     try {
-      const res = await fetch('/api/line-leaders');
+      const res = await erpFetch('/api/line-leaders');
       const json = await res.json();
       setLineLeaders(json.data || []);
     } catch {
@@ -236,7 +237,7 @@ export default function FactorySection() {
 
   const fetchLots = useCallback(async () => {
     try {
-      const res = await fetch('/api/lots?limit=200');
+      const res = await erpFetch('/api/lots?limit=200');
       const json = await res.json();
       setLots((json.data || []).filter((l: LotItem) => l.status === 'Active'));
     } catch {
@@ -246,7 +247,7 @@ export default function FactorySection() {
 
   const fetchPayroll = useCallback(async () => {
     try {
-      const res = await fetch('/api/payroll');
+      const res = await erpFetch('/api/payroll');
       const json = await res.json();
       setPayrollSummaries(json.factories || []);
     } catch {
@@ -259,7 +260,7 @@ export default function FactorySection() {
   const fetchFactories = useCallback(async () => {
     setFactoriesLoading(true);
     try {
-      const res = await fetch('/api/factories?limit=200');
+      const res = await erpFetch('/api/factories?limit=200');
       const json = await res.json();
       setFactories(json.data || []);
     } catch {
@@ -300,7 +301,7 @@ export default function FactorySection() {
     try {
       const url = factoryEditId ? `/api/factories/${factoryEditId}` : '/api/factories';
       const method = factoryEditId ? 'PUT' : 'POST';
-      const res = await fetch(url, {
+      const res = await erpFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(factoryForm),
@@ -324,7 +325,7 @@ export default function FactorySection() {
     if (!deleteFactoryId) return;
     setDeletingFactory(true);
     try {
-      const res = await fetch(`/api/factories/${deleteFactoryId}`, { method: 'DELETE' });
+      const res = await erpFetch(`/api/factories/${deleteFactoryId}`, { method: 'DELETE' });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || 'Delete failed');
@@ -345,7 +346,7 @@ export default function FactorySection() {
   const fetchWorkers = useCallback(async (factoryId: string) => {
     setWorkersLoading(true);
     try {
-      const res = await fetch(`/api/workers?factoryId=${factoryId}&limit=200`);
+      const res = await erpFetch(`/api/workers?factoryId=${factoryId}&limit=200`);
       const json = await res.json();
       setWorkers(json.data || []);
     } catch {
@@ -390,7 +391,7 @@ export default function FactorySection() {
     try {
       const url = workerEditId ? `/api/workers/${workerEditId}` : '/api/workers';
       const method = workerEditId ? 'PUT' : 'POST';
-      const res = await fetch(url, {
+      const res = await erpFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...workerForm, factoryId: workerFactoryId }),
@@ -413,7 +414,7 @@ export default function FactorySection() {
     if (!deleteWorkerId) return;
     setDeletingWorker(true);
     try {
-      const res = await fetch(`/api/workers/${deleteWorkerId}`, { method: 'DELETE' });
+      const res = await erpFetch(`/api/workers/${deleteWorkerId}`, { method: 'DELETE' });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || 'Delete failed');
@@ -434,7 +435,7 @@ export default function FactorySection() {
     if (!factoryCode) { setDailyRecords([]); return; }
     setDailyLoading(true);
     try {
-      const res = await fetch(`/api/daily-records?factoryId=${factoryCode}&limit=100`);
+      const res = await erpFetch(`/api/daily-records?factoryId=${factoryCode}&limit=100`);
       const json = await res.json();
       setDailyRecords(json.data || []);
     } catch {
@@ -458,7 +459,7 @@ export default function FactorySection() {
     setDailyLotSelected('');
     // Fetch active workers for this factory
     try {
-      const res = await fetch(`/api/workers?factoryId=${factory.id}&limit=200`);
+      const res = await erpFetch(`/api/workers?factoryId=${factory.id}&limit=200`);
       const json = await res.json();
       const wks = json.data || [];
       setWorkerEntries(wks.map((w: WorkerItem) => ({
@@ -507,7 +508,7 @@ export default function FactorySection() {
 
     setDailySaving(true);
     try {
-      const res = await fetch('/api/daily-records', {
+      const res = await erpFetch('/api/daily-records', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'approval-workflow', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
@@ -47,8 +54,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'approval-workflow', 'approve');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const body = await request.json();
+    const actor = getActorFromRequest(request);
     const { id, action, performedBy } = body;
     if (!id || !action) return NextResponse.json({ error: 'ID and action required' }, { status: 400 });
 
@@ -72,16 +86,14 @@ export async function PATCH(request: NextRequest) {
       include: { worker: true, record: true },
     });
 
-    // Write audit log
-    await db.auditLog.create({
-      data: {
-        entity: 'WorkerDailyEntry',
-        entityId: id,
-        action: 'UPDATE',
-        oldValues: JSON.stringify({ status: entry.status }),
-        newValues: JSON.stringify({ status: newStatus, action }),
-        performedBy: performedBy ?? 'system',
-      },
+    // Write audit log using the utility
+    await writeAuditLog({
+      entity: 'WorkerDailyEntry',
+      entityId: id,
+      action: 'UPDATE',
+      oldValues: { status: entry.status },
+      newValues: { status: newStatus, action },
+      performedBy: actor,
     });
 
     return NextResponse.json(updated);

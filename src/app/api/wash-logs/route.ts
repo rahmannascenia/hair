@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'washing-log', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') ?? '1');
@@ -35,8 +42,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'washing-log', 'create');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const body = await request.json();
+    const actor = getActorFromRequest(request);
     const input = body.inputKg;
     const output = body.outputKg;
     const wastageKg = input - output;
@@ -70,6 +84,14 @@ export async function POST(request: NextRequest) {
     await db.lot.update({
       where: { id: body.lotId },
       data: { washStatus: 'Done' },
+    });
+
+    await writeAuditLog({
+      entity: 'WashLog',
+      entityId: washLog.id,
+      action: 'CREATE',
+      newValues: body,
+      performedBy: actor,
     });
 
     return NextResponse.json(washLog, { status: 201 });

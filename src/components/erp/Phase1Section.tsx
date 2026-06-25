@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect, Fragment } from 'react';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
@@ -46,7 +47,7 @@ export default function Phase1Section() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/distributions?limit=200');
+      const res = await erpFetch('/api/distributions?limit=200');
       const json = await res.json();
       setData(json.data || []);
     } catch { toast.error('Failed to load'); }
@@ -55,7 +56,7 @@ export default function Phase1Section() {
 
   const fetchLots = async () => {
     try {
-      const res = await fetch('/api/lots?limit=200');
+      const res = await erpFetch('/api/lots?limit=200');
       const json = await res.json();
       setLots(json.data || []);
     } catch {}
@@ -88,7 +89,7 @@ export default function Phase1Section() {
     const url = editing ? `/api/distributions/${editing.id}` : '/api/distributions';
     const method = editing ? 'PUT' : 'POST';
     try {
-      const res = await fetch(url, {
+      const res = await erpFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -106,7 +107,7 @@ export default function Phase1Section() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this distribution record?')) return;
     try {
-      const res = await fetch(`/api/distributions/${id}`, { method: 'DELETE' });
+      const res = await erpFetch(`/api/distributions/${id}`, { method: 'DELETE' });
       if (res.ok) { toast.success('Deleted'); fetchData(); }
       else toast.error('Failed');
     } catch { toast.error('Request failed'); }

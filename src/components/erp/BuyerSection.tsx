@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,7 +27,7 @@ export default function BuyerSection() {
 
   const fetchBuyers = useCallback(async () => {
     try {
-      const res = await fetch('/api/buyers');
+      const res = await erpFetch('/api/buyers');
       if (res.ok) { const d = await res.json(); setBuyers(d.data || []); }
     } finally { setLoading(false); }
   }, []);
@@ -36,10 +37,10 @@ export default function BuyerSection() {
   const handleSave = async () => {
     try {
       if (editing) {
-        await fetch(`/api/buyers/${editing.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+        await erpFetch(`/api/buyers/${editing.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
         toast.success('Buyer updated');
       } else {
-        await fetch('/api/buyers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+        await erpFetch('/api/buyers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
         toast.success('Buyer created');
       }
       setDialogOpen(false); setEditing(null); setForm(emptyBuyer); fetchBuyers();
@@ -48,7 +49,7 @@ export default function BuyerSection() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/buyers/${id}`, { method: 'DELETE' });
+      const res = await erpFetch(`/api/buyers/${id}`, { method: 'DELETE' });
       if (!res.ok) { const d = await res.json(); toast.error(d.error); return; }
       toast.success('Buyer deleted'); fetchBuyers();
     } catch { toast.error('Delete failed'); }

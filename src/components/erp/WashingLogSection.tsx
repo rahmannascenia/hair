@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Search, Loader2 } from 'lucide-react';
@@ -50,7 +51,7 @@ export default function WashingLogSection() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/wash-logs?limit=200');
+      const res = await erpFetch('/api/wash-logs?limit=200');
       const json = await res.json();
       setData(json.data || []);
     } catch { toast.error('Failed to load wash logs'); }
@@ -59,7 +60,7 @@ export default function WashingLogSection() {
 
   const fetchLots = async () => {
     try {
-      const res = await fetch('/api/lots?limit=200');
+      const res = await erpFetch('/api/lots?limit=200');
       const json = await res.json();
       setLots(json.data || []);
     } catch {}
@@ -94,7 +95,7 @@ export default function WashingLogSection() {
     const url = editing ? `/api/wash-logs/${editing.id}` : '/api/wash-logs';
     const method = editing ? 'PUT' : 'POST';
     try {
-      const res = await fetch(url, {
+      const res = await erpFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -117,7 +118,7 @@ export default function WashingLogSection() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this wash log?')) return;
     try {
-      const res = await fetch(`/api/wash-logs/${id}`, { method: 'DELETE' });
+      const res = await erpFetch(`/api/wash-logs/${id}`, { method: 'DELETE' });
       if (res.ok) { toast.success('Deleted'); fetchData(); }
       else toast.error('Failed to delete');
     } catch { toast.error('Request failed'); }

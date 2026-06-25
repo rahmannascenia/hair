@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'risks', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
@@ -26,8 +33,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'risks', 'create');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const body = await request.json();
+    const actor = getActorFromRequest(request);
 
     const risk = await db.risk.create({
       data: {
@@ -41,6 +55,14 @@ export async function POST(request: NextRequest) {
         owner: body.owner,
         status: body.status ?? 'Open',
       },
+    });
+
+    await writeAuditLog({
+      entity: 'Risk',
+      entityId: risk.id,
+      action: 'CREATE',
+      newValues: body,
+      performedBy: actor,
     });
 
     return NextResponse.json(risk, { status: 201 });

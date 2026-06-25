@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest, getChangedFields } from '@/lib/audit';
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'organization', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const lineLeader = await db.lineLeader.findUnique({
@@ -32,9 +39,19 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'organization', 'edit');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const body = await request.json();
+    const actor = getActorFromRequest(request);
+
+    const oldLL = await db.lineLeader.findUnique({ where: { id } });
+    const oldPlain = oldLL ? JSON.parse(JSON.stringify(oldLL)) : {};
 
     const lineLeader = await db.lineLeader.update({
       where: { id },
@@ -53,6 +70,16 @@ export async function PUT(
       },
     });
 
+    const { oldValues, newValues } = getChangedFields(oldPlain, body);
+    await writeAuditLog({
+      entity: 'LineLeader',
+      entityId: id,
+      action: 'UPDATE',
+      oldValues,
+      newValues,
+      performedBy: actor,
+    });
+
     return NextResponse.json(lineLeader);
   } catch (error) {
     console.error('Line leader update error:', error);
@@ -61,11 +88,18 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'organization', 'delete');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
+    const actor = getActorFromRequest(request);
 
     const factoryCount = await db.factory.count({
       where: { lineLeaderId: id },
@@ -78,7 +112,18 @@ export async function DELETE(
       );
     }
 
+    const oldLL = await db.lineLeader.findUnique({ where: { id } });
+
     await db.lineLeader.delete({ where: { id } });
+
+    await writeAuditLog({
+      entity: 'LineLeader',
+      entityId: id,
+      action: 'DELETE',
+      oldValues: oldLL ? JSON.parse(JSON.stringify(oldLL)) : undefined,
+      performedBy: actor,
+    });
+
     return NextResponse.json({ message: 'Line leader deleted' });
   } catch (error) {
     console.error('Line leader delete error:', error);

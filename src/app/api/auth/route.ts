@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const USERS: Record<string, { password: string; role: string; displayName: string }> = {
-  owner:      { password: 'owner123',  role: 'Owner',      displayName: 'Owner' },
-  admin:      { password: 'admin123',  role: 'Admin',      displayName: 'Administrator' },
-  pm:         { password: 'pm123',     role: 'Project Manager', displayName: 'Project Manager' },
-  accountant: { password: 'acc123',    role: 'Accountant',  displayName: 'Accountant' },
-  head1:      { password: 'head123',   role: 'Head Leader',  displayName: 'Head Leader 1' },
-  supervisor1:{ password: 'sup123',    role: 'Supervisor',   displayName: 'Supervisor 1' },
-  ll1:        { password: 'll123',     role: 'Line Leader',  displayName: 'Line Leader 1' },
-  qc1:        { password: 'qc123',     role: 'QC Inspector', displayName: 'QC Inspector 1' },
-  viewer:     { password: 'viewer123', role: 'Viewer',      displayName: 'Viewer' },
+// Role mapping: username → { password, roleKey (for permissions), role (display), displayName }
+const USERS: Record<string, { password: string; roleKey: string; role: string; displayName: string }> = {
+  owner:       { password: 'owner123',  roleKey: 'owner',       role: 'Owner',           displayName: 'Owner' },
+  admin:       { password: 'admin123',  roleKey: 'admin',       role: 'Admin',           displayName: 'Administrator' },
+  pm:          { password: 'pm123',     roleKey: 'pm',          role: 'Project Manager', displayName: 'Project Manager' },
+  accountant:  { password: 'acc123',    roleKey: 'accountant',  role: 'Accountant',      displayName: 'Accountant' },
+  head1:       { password: 'head123',   roleKey: 'head1',       role: 'Head Leader',     displayName: 'Head Leader 1' },
+  supervisor1: { password: 'sup123',    roleKey: 'supervisor1', role: 'Supervisor',      displayName: 'Supervisor 1' },
+  ll1:         { password: 'll123',     roleKey: 'll1',         role: 'Line Leader',     displayName: 'Line Leader 1' },
+  qc1:         { password: 'qc123',     roleKey: 'qc1',         role: 'QC Inspector',    displayName: 'QC Inspector 1' },
+  viewer:      { password: 'viewer123', roleKey: 'viewer',      role: 'Viewer',          displayName: 'Viewer' },
 };
 
 export async function POST(request: NextRequest) {
@@ -26,9 +27,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
+    // Audit log the login
+    try {
+      const { db } = await import('@/lib/db');
+      await db.auditLog.create({
+        data: {
+          entity: 'Auth',
+          action: 'CREATE',
+          newValues: JSON.stringify({ event: 'LOGIN', username, roleKey: user.roleKey }),
+          performedBy: username,
+        },
+      });
+    } catch { /* audit failure shouldn't block login */ }
+
     return NextResponse.json({
       user: {
         username,
+        roleKey: user.roleKey,
         role: user.role,
         displayName: user.displayName,
       },

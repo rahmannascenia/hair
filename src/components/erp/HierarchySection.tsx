@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +19,7 @@ export default function HierarchySection() {
   const fetchData = useCallback(async () => {
     try {
       const [hlRes, llRes, fRes, wRes] = await Promise.all([
-        fetch('/api/head-leaders'), fetch('/api/line-leaders'), fetch('/api/factories'), fetch('/api/workers?limit=200'),
+        erpFetch('/api/head-leaders'), erpFetch('/api/line-leaders'), erpFetch('/api/factories'), erpFetch('/api/workers?limit=200'),
       ]);
       if (!hlRes.ok || !llRes.ok || !fRes.ok) return;
       const hls = (await hlRes.json()).data || [];

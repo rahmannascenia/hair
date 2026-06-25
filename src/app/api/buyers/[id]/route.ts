@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest, getChangedFields } from '@/lib/audit';
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'sales', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const buyer = await db.buyer.findUnique({
@@ -26,9 +33,20 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'sales', 'edit');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const body = await request.json();
+    const actor = getActorFromRequest(request);
+
+    const oldBuyer = await db.buyer.findUnique({ where: { id } });
+    const oldPlain = oldBuyer ? JSON.parse(JSON.stringify(oldBuyer)) : {};
+
     const buyer = await db.buyer.update({
       where: { id },
       data: {
@@ -41,6 +59,17 @@ export async function PUT(
         pricings: true,
       },
     });
+
+    const { oldValues, newValues } = getChangedFields(oldPlain, body);
+    await writeAuditLog({
+      entity: 'Buyer',
+      entityId: id,
+      action: 'UPDATE',
+      oldValues,
+      newValues,
+      performedBy: actor,
+    });
+
     return NextResponse.json(buyer);
   } catch (error) {
     console.error('Buyer PUT error:', error);
@@ -49,11 +78,19 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'sales', 'delete');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
+    const actor = getActorFromRequest(request);
+
     const saleCount = await db.sale.count({ where: { buyerId: id } });
     if (saleCount > 0) {
       return NextResponse.json(
@@ -61,8 +98,20 @@ export async function DELETE(
         { status: 400 }
       );
     }
+
+    const oldBuyer = await db.buyer.findUnique({ where: { id } });
+
     await db.buyerPricing.deleteMany({ where: { buyerId: id } });
     await db.buyer.delete({ where: { id } });
+
+    await writeAuditLog({
+      entity: 'Buyer',
+      entityId: id,
+      action: 'DELETE',
+      oldValues: oldBuyer ? JSON.parse(JSON.stringify(oldBuyer)) : undefined,
+      performedBy: actor,
+    });
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Buyer DELETE error:', error);

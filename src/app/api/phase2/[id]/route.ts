@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest, getChangedFields } from '@/lib/audit';
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'phase2', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const job = await db.phase2Job.findUnique({
@@ -27,9 +34,19 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'phase2', 'edit');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const body = await request.json();
+    const actor = getActorFromRequest(request);
+
+    const oldJob = await db.phase2Job.findUnique({ where: { id } });
+    const oldPlain = oldJob ? JSON.parse(JSON.stringify(oldJob)) : {};
 
     const job = await db.phase2Job.update({
       where: { id },
@@ -59,6 +76,16 @@ export async function PUT(
       include: { lot: true },
     });
 
+    const { oldValues, newValues } = getChangedFields(oldPlain, body);
+    await writeAuditLog({
+      entity: 'Phase2Job',
+      entityId: id,
+      action: 'UPDATE',
+      oldValues,
+      newValues,
+      performedBy: actor,
+    });
+
     return NextResponse.json(job);
   } catch (error) {
     console.error('Phase2 update error:', error);
@@ -67,12 +94,31 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'phase2', 'delete');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
+    const actor = getActorFromRequest(request);
+
+    const oldJob = await db.phase2Job.findUnique({ where: { id } });
+
     await db.phase2Job.delete({ where: { id } });
+
+    await writeAuditLog({
+      entity: 'Phase2Job',
+      entityId: id,
+      action: 'DELETE',
+      oldValues: oldJob ? JSON.parse(JSON.stringify(oldJob)) : undefined,
+      performedBy: actor,
+    });
+
     return NextResponse.json({ message: 'Phase 2 job deleted' });
   } catch (error) {
     console.error('Phase2 delete error:', error);

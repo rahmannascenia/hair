@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,7 +27,7 @@ export default function LotTrackerSection() {
 
   const fetchLots = useCallback(async () => {
     try {
-      const res = await fetch('/api/lots?limit=100');
+      const res = await erpFetch('/api/lots?limit=100');
       if (res.ok) { const d = await res.json(); const data = d.data || d || []; setLots(data); setFiltered(data); }
     } finally { setLoading(false); }
   }, []);
@@ -50,8 +51,8 @@ export default function LotTrackerSection() {
     setSelected(lot);
     try {
       const [wRes, dRes] = await Promise.all([
-        fetch(`/api/wash-logs?lotId=${lot.id}`),
-        fetch(`/api/distributions?lotId=${lot.id}`),
+        erpFetch(`/api/wash-logs?lotId=${lot.id}`),
+        erpFetch(`/api/distributions?lotId=${lot.id}`),
       ]);
       if (wRes.ok) { const d = await wRes.json(); setWashLogs(d.data || d || []); }
       if (dRes.ok) { const d = await dRes.json(); setDists(d.data || d || []); }

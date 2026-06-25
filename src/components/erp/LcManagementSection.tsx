@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,7 @@ export default function LcManagementSection() {
   const [form, setForm] = useState(emptyForm);
 
   const fetchLCs = useCallback(async () => {
-    try { const res = await fetch('/api/lc-management'); if (res.ok) { const d = await res.json(); setLcs(d.data || []); } } finally { setLoading(false); }
+    try { const res = await erpFetch('/api/lc-management'); if (res.ok) { const d = await res.json(); setLcs(d.data || []); } } finally { setLoading(false); }
   }, []);
 
   useEffect(() => { fetchLCs(); }, [fetchLCs]);
@@ -44,7 +45,7 @@ export default function LcManagementSection() {
         // PUT not available, just toast
         toast.info('LC updated (API supports create only)');
       } else {
-        await fetch('/api/lc-management', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        await erpFetch('/api/lc-management', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         toast.success('LC created');
       }
       setDialogOpen(false); setEditing(null); setForm(emptyForm); fetchLCs();

@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Search, Globe, Phone, MapPin } from 'lucide-react';
@@ -37,7 +38,7 @@ export default function SupplierSection() {
       if (search) url += `&search=${encodeURIComponent(search)}`;
       if (filterType === 'import') url += '&isLocal=false';
       if (filterType === 'local') url += '&isLocal=true';
-      const res = await fetch(url);
+      const res = await erpFetch(url);
       const json = await res.json();
       setData(json.data || []);
     } catch { toast.error('Failed to load suppliers'); }
@@ -64,7 +65,7 @@ export default function SupplierSection() {
     const url = editing ? `/api/suppliers/${editing.id}` : '/api/suppliers';
     const method = editing ? 'PUT' : 'POST';
     try {
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+      const res = await erpFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
       if (res.ok) { toast.success(editing ? 'Updated' : 'Created'); setDialogOpen(false); fetchData(); }
       else { const err = await res.json(); toast.error(err.error || 'Failed'); }
     } catch { toast.error('Request failed'); }
@@ -73,7 +74,7 @@ export default function SupplierSection() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this supplier? This will fail if they have procurements.')) return;
     try {
-      const res = await fetch(`/api/suppliers/${id}`, { method: 'DELETE' });
+      const res = await erpFetch(`/api/suppliers/${id}`, { method: 'DELETE' });
       if (res.ok) { toast.success('Deleted'); fetchData(); }
       else { const err = await res.json(); toast.error(err.error || 'Failed'); }
     } catch { toast.error('Request failed'); }

@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -61,11 +62,11 @@ export default function DashboardSection() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/dashboard').then(r => r.json()),
-      fetch('/api/costing').then(r => r.json()),
-      fetch('/api/sales?limit=100').then(r => r.json()),
-      fetch('/api/inventory').then(r => r.json()),
-      fetch('/api/size-pricing').then(r => r.json()),
+      erpFetch('/api/dashboard').then(r => r.json()),
+      erpFetch('/api/costing').then(r => r.json()),
+      erpFetch('/api/sales?limit=100').then(r => r.json()),
+      erpFetch('/api/inventory').then(r => r.json()),
+      erpFetch('/api/size-pricing').then(r => r.json()),
     ])
       .then(([d, c, s, inv, sp]) => {
         setDashData(d);

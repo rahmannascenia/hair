@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'sales', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') ?? '1');
@@ -60,8 +67,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'sales', 'create');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const body = await request.json();
+    const actor = getActorFromRequest(request);
     const settings = await db.settings.findUnique({ where: { id: 'default' } });
     const fxRate = settings?.fxUsdBdt ?? 120;
 
@@ -88,6 +102,14 @@ export async function POST(request: NextRequest) {
         usdValue, bdtValue, costPerKgBdt, totalCostBdt, marginPerKgBdt, totalMarginBdt, marginPct, status,
       },
       include: { buyer: true },
+    });
+
+    await writeAuditLog({
+      entity: 'Sale',
+      entityId: sale.id,
+      action: 'CREATE',
+      newValues: body,
+      performedBy: actor,
     });
 
     return NextResponse.json(sale, { status: 201 });

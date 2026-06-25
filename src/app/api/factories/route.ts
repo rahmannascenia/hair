@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'factory', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') ?? '1');
@@ -60,8 +67,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'factory', 'create');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const body = await request.json();
+    const actor = getActorFromRequest(request);
 
     const factory = await db.factory.create({
       data: {
@@ -80,6 +94,14 @@ export async function POST(request: NextRequest) {
         lineLeader: { include: { headLeader: true } },
         workers: true,
       },
+    });
+
+    await writeAuditLog({
+      entity: 'Factory',
+      entityId: factory.id,
+      action: 'CREATE',
+      newValues: body,
+      performedBy: actor,
     });
 
     return NextResponse.json(factory, { status: 201 });

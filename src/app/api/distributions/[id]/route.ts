@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest, getChangedFields } from '@/lib/audit';
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'phase1', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const dist = await db.phase1Distribution.findUnique({
@@ -23,11 +30,20 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'phase1', 'edit');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const body = await request.json();
+    const actor = getActorFromRequest(request);
     const existing = await db.phase1Distribution.findUnique({ where: { id } });
     if (!existing) return NextResponse.json({ error: 'Distribution not found' }, { status: 404 });
+
+    const oldPlain = JSON.parse(JSON.stringify(existing));
 
     // Adjust lot distributedKg if qtyKg or lotId changed
     if (existing.lotId && existing.qtyKg) {
@@ -63,6 +79,16 @@ export async function PUT(
       });
     }
 
+    const { oldValues, newValues } = getChangedFields(oldPlain, body);
+    await writeAuditLog({
+      entity: 'Phase1Distribution',
+      entityId: id,
+      action: 'UPDATE',
+      oldValues,
+      newValues,
+      performedBy: actor,
+    });
+
     return NextResponse.json(updated);
   } catch (error) {
     console.error('Distribution PUT error:', error);
@@ -71,13 +97,22 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'phase1', 'delete');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
+    const actor = getActorFromRequest(request);
     const existing = await db.phase1Distribution.findUnique({ where: { id } });
     if (!existing) return NextResponse.json({ error: 'Distribution not found' }, { status: 404 });
+
+    const oldPlain = JSON.parse(JSON.stringify(existing));
 
     // Subtract qtyKg from lot
     if (existing.lotId && existing.qtyKg) {
@@ -88,6 +123,15 @@ export async function DELETE(
     }
 
     await db.phase1Distribution.delete({ where: { id } });
+
+    await writeAuditLog({
+      entity: 'Phase1Distribution',
+      entityId: id,
+      action: 'DELETE',
+      oldValues: oldPlain,
+      performedBy: actor,
+    });
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Distribution DELETE error:', error);

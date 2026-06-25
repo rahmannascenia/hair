@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -26,7 +27,7 @@ export default function KpiSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/kpi')
+    erpFetch('/api/kpi')
       .then(r => r.json())
       .then(res => { setKpis(res.kpis || []); setLoading(false); })
       .catch(() => setLoading(false));

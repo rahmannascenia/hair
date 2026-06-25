@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest, getChangedFields } from '@/lib/audit';
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'factory', 'view');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const record = await db.factoryDailyRecord.findUnique({
@@ -38,10 +45,20 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'factory', 'edit');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
     const body = await request.json();
+    const actor = getActorFromRequest(request);
     const { entries, ...recordData } = body;
+
+    const oldRecord = await db.factoryDailyRecord.findUnique({ where: { id } });
+    const oldPlain = oldRecord ? JSON.parse(JSON.stringify(oldRecord)) : {};
 
     // If entries are provided, delete existing and recreate
     if (entries) {
@@ -91,6 +108,16 @@ export async function PUT(
       },
     });
 
+    const { oldValues, newValues } = getChangedFields(oldPlain, recordData);
+    await writeAuditLog({
+      entity: 'FactoryDailyRecord',
+      entityId: id,
+      action: 'UPDATE',
+      oldValues,
+      newValues,
+      performedBy: actor,
+    });
+
     return NextResponse.json(record);
   } catch (error) {
     console.error('Daily record update error:', error);
@@ -99,15 +126,32 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const role = request.headers.get('x-erp-role') || '';
+  const perm = checkPermission(role, 'factory', 'delete');
+  if (!perm.allowed) {
+    return NextResponse.json({ error: perm.error }, { status: 403 });
+  }
+
   try {
     const { id } = await params;
+    const actor = getActorFromRequest(request);
+
+    const oldRecord = await db.factoryDailyRecord.findUnique({ where: { id } });
 
     // Delete all entries first
     await db.workerDailyEntry.deleteMany({ where: { recordId: id } });
     await db.factoryDailyRecord.delete({ where: { id } });
+
+    await writeAuditLog({
+      entity: 'FactoryDailyRecord',
+      entityId: id,
+      action: 'DELETE',
+      oldValues: oldRecord ? JSON.parse(JSON.stringify(oldRecord)) : undefined,
+      performedBy: actor,
+    });
 
     return NextResponse.json({ message: 'Daily record deleted' });
   } catch (error) {

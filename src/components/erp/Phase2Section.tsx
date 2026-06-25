@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
@@ -42,7 +43,7 @@ export default function Phase2Section() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/phase2?limit=200');
+      const res = await erpFetch('/api/phase2?limit=200');
       const json = await res.json();
       setData(json.data || []);
     } catch { toast.error('Failed to load'); }
@@ -51,7 +52,7 @@ export default function Phase2Section() {
 
   const fetchLots = async () => {
     try {
-      const res = await fetch('/api/lots?limit=200');
+      const res = await erpFetch('/api/lots?limit=200');
       const json = await res.json();
       setLots(json.data || []);
     } catch {}
@@ -91,7 +92,7 @@ export default function Phase2Section() {
     const url = editing ? `/api/phase2/${editing.id}` : '/api/phase2';
     const method = editing ? 'PUT' : 'POST';
     try {
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const res = await erpFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       if (res.ok) { toast.success(editing ? 'Updated' : 'Created'); setDialogOpen(false); fetchData(); }
       else { const err = await res.json(); toast.error(err.error || 'Failed'); }
     } catch { toast.error('Request failed'); }
@@ -100,7 +101,7 @@ export default function Phase2Section() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this Phase 2 job?')) return;
     try {
-      const res = await fetch(`/api/phase2/${id}`, { method: 'DELETE' });
+      const res = await erpFetch(`/api/phase2/${id}`, { method: 'DELETE' });
       if (res.ok) { toast.success('Deleted'); fetchData(); }
       else toast.error('Failed');
     } catch { toast.error('Request failed'); }

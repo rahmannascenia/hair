@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,7 @@ export default function ApprovalWorkflowSection() {
     try {
       const params = new URLSearchParams();
       if (statusFilter !== 'All') params.set('status', statusFilter);
-      const res = await fetch(`/api/approval-workflow?${params}&limit=100`);
+      const res = await erpFetch(`/api/approval-workflow?${params}&limit=100`);
       if (res.ok) {
         const d = await res.json();
         setEntries(d.data || []);
@@ -60,10 +61,10 @@ export default function ApprovalWorkflowSection() {
   const display = factoryFilter === 'All' ? entries : entries.filter((e) => e.record?.factory?.name === factoryFilter);
 
   const getAvailableActions = (status: string) => {
-    const role = user?.role || '';
+    const role = user?.roleKey || '';
     switch (status) {
-      case 'Pending Approval': return role === 'line_leader' || role === 'admin' || role === 'owner' ? ['LL Review', 'Reject'] : [];
-      case 'LL Reviewed': return role === 'head_leader' || role === 'admin' || role === 'owner' ? ['HL Review', 'Reject'] : [];
+      case 'Pending Approval': return role === 'll1' || role === 'supervisor1' || role === 'admin' || role === 'owner' ? ['LL Review', 'Reject'] : [];
+      case 'LL Reviewed': return role === 'head1' || role === 'admin' || role === 'owner' ? ['HL Review', 'Reject'] : [];
       case 'HL Reviewed': return role === 'pm' || role === 'admin' || role === 'owner' ? ['PM Approve', 'Reject'] : [];
       case 'PM Approved': return role === 'owner' || role === 'admin' ? ['Final Approve', 'Reject'] : [];
       default: return [];
@@ -78,7 +79,7 @@ export default function ApprovalWorkflowSection() {
   const executeAction = async () => {
     if (!confirmAction) return;
     try {
-      await fetch('/api/approval-workflow', {
+      await erpFetch('/api/approval-workflow', {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: confirmAction.id, action: confirmAction.action, performedBy: user?.displayName || user?.username || 'system' }),
       });

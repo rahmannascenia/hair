@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
@@ -31,7 +32,7 @@ export default function SizePricingSection() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/size-pricing');
+      const res = await erpFetch('/api/size-pricing');
       const json = await res.json();
       setSizePricing(json.sizePricing || []);
       setBuyerPricing(json.buyerPricing || []);
@@ -41,7 +42,7 @@ export default function SizePricingSection() {
 
   const fetchBuyers = async () => {
     try {
-      const res = await fetch('/api/buyers');
+      const res = await erpFetch('/api/buyers');
       const json = await res.json();
       setBuyers(json.data || []);
     } catch {}
@@ -83,18 +84,18 @@ export default function SizePricingSection() {
         minMarginBdt: parseFloat(form.minMarginBdt) || 0, minMarginPct: parseFloat(form.minMarginPct) || 0,
       };
       const res = editing
-        ? await fetch('/api/size-pricing', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-        : await fetch('/api/size-pricing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        ? await erpFetch('/api/size-pricing', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        : await erpFetch('/api/size-pricing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       if (res.ok) { toast.success(editing ? 'Updated' : 'Created'); setDialogOpen(false); fetchData(); }
       else toast.error('Failed');
     } else {
       if (!form.buyerId || !form.lengthInch || !form.premiumPct) { toast.error('All fields required'); return; }
       if (editing) {
-        const res = await fetch('/api/size-pricing', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'buyer-pricing', id: editing.id, premiumPct: parseFloat(form.premiumPct) }) });
+        const res = await erpFetch('/api/size-pricing', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'buyer-pricing', id: editing.id, premiumPct: parseFloat(form.premiumPct) }) });
         if (res.ok) { toast.success('Updated'); setDialogOpen(false); fetchData(); }
         else toast.error('Failed');
       } else {
-        const res = await fetch('/api/size-pricing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'buyer-pricing', buyerId: form.buyerId, lengthInch: parseInt(form.lengthInch), premiumPct: parseFloat(form.premiumPct) }) });
+        const res = await erpFetch('/api/size-pricing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'buyer-pricing', buyerId: form.buyerId, lengthInch: parseInt(form.lengthInch), premiumPct: parseFloat(form.premiumPct) }) });
         if (res.ok) { toast.success('Created'); setDialogOpen(false); fetchData(); }
         else toast.error('Failed');
       }
@@ -103,14 +104,14 @@ export default function SizePricingSection() {
 
   const handleDeleteBase = async (lengthInch: number) => {
     if (!confirm(`Delete ${lengthInch}" pricing?`)) return;
-    const res = await fetch(`/api/size-pricing?lengthInch=${lengthInch}`, { method: 'DELETE' });
+    const res = await erpFetch(`/api/size-pricing?lengthInch=${lengthInch}`, { method: 'DELETE' });
     if (res.ok) { toast.success('Deleted'); fetchData(); }
     else toast.error('Failed');
   };
 
   const handleDeleteBuyer = async (id: string) => {
     if (!confirm('Delete this buyer pricing?')) return;
-    const res = await fetch(`/api/buyer-pricing/${id}`, { method: 'DELETE' });
+    const res = await erpFetch(`/api/buyer-pricing/${id}`, { method: 'DELETE' });
     if (res.ok) { toast.success('Deleted'); fetchData(); }
     else toast.error('Failed');
   };

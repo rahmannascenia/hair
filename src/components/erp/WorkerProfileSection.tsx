@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,7 +20,7 @@ export default function WorkerProfileSection() {
 
   const fetchWorkers = useCallback(async () => {
     try {
-      const res = await fetch('/api/workers?limit=200');
+      const res = await erpFetch('/api/workers?limit=200');
       if (res.ok) { const d = await res.json(); setWorkers(d.data || d || []); }
     } finally { setLoading(false); }
   }, []);
@@ -31,7 +32,7 @@ export default function WorkerProfileSection() {
   const selectWorker = async (w: Worker) => {
     setSelected(w);
     try {
-      const res = await fetch('/api/daily-records?limit=100');
+      const res = await erpFetch('/api/daily-records?limit=100');
       if (res.ok) {
         const d = await res.json();
         const records = d.data || [];

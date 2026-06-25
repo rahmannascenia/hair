@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -86,7 +87,7 @@ export default function LotMasterSection() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch('/api/lots?limit=200');
+      const res = await erpFetch('/api/lots?limit=200');
       const json = await res.json();
       setData(json.data || []);
     } catch {
@@ -98,7 +99,7 @@ export default function LotMasterSection() {
 
   const fetchProcurements = useCallback(async () => {
     try {
-      const res = await fetch('/api/procurement?limit=200');
+      const res = await erpFetch('/api/procurement?limit=200');
       const json = await res.json();
       setProcurements(json.data || []);
     } catch {
@@ -156,7 +157,7 @@ export default function LotMasterSection() {
       };
 
       if (editing) {
-        const res = await fetch(`/api/lots/${editing.id}`, {
+        const res = await erpFetch(`/api/lots/${editing.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -171,7 +172,7 @@ export default function LotMasterSection() {
           toast.error(err.error || 'Failed to update lot');
         }
       } else {
-        const res = await fetch('/api/lots', {
+        const res = await erpFetch('/api/lots', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -195,7 +196,7 @@ export default function LotMasterSection() {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this lot? This will fail if the lot has related records (wash logs, distributions, etc.).')) return;
     try {
-      const res = await fetch(`/api/lots/${id}`, { method: 'DELETE' });
+      const res = await erpFetch(`/api/lots/${id}`, { method: 'DELETE' });
       if (res.ok) {
         toast.success('Lot deleted successfully');
         fetchData();

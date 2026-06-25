@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useEffect, useState, Fragment } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -40,7 +41,7 @@ export default function QcSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/daily-records?limit=200')
+    erpFetch('/api/daily-records?limit=200')
       .then(r => r.json())
       .then(res => {
         setRecords(res.data || []);

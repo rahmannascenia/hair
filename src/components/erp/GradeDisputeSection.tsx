@@ -1,5 +1,6 @@
 'use client';
 
+import { erpFetch } from '@/lib/api-client';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -47,7 +48,7 @@ export default function GradeDisputeSection() {
   const handleFile = async () => {
     if (!form.workerId || !form.reason) { toast.error('Worker and reason required'); return; }
     try {
-      await fetch('/api/grade-dispute', {
+      await erpFetch('/api/grade-dispute', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ entryId: form.entryId, workerId: form.workerId, reason: form.reason }),
       });
@@ -57,7 +58,7 @@ export default function GradeDisputeSection() {
 
   const handleReview = async (id: string, status: string) => {
     try {
-      await fetch('/api/grade-dispute', {
+      await erpFetch('/api/grade-dispute', {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status, resolution: status === 'Upheld' ? 'Grade upheld after review' : 'Grade overturned, will be re-assessed' }),
       });
