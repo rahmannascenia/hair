@@ -142,7 +142,7 @@ export default function Sidebar() {
         </div>
         {!isCollapsed && (
           <div className="overflow-hidden flex-1 min-w-0">
-            <h1 className="text-white font-bold text-sm leading-tight truncate">Barendra International</h1>
+            <h1 className="text-white font-bold text-sm leading-tight truncate">Hairlan International</h1>
             <p className="text-blue-200 text-xs truncate">ERP System</p>
           </div>
         )}

@@ -32,7 +32,7 @@ export default function LoginScreen() {
       <Card className="w-full max-w-md shadow-2xl border-0">
         <CardHeader className="items-center text-center pb-2">
           <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#C9A227' }}><span className="text-white font-bold text-2xl">BI</span></div>
-          <CardTitle className="text-2xl" style={{ color: '#1F3864' }}>Barendra International</CardTitle>
+          <CardTitle className="text-2xl" style={{ color: '#1F3864' }}>Hairlan International</CardTitle>
           <p className="text-muted-foreground text-sm mt-1">ERP System</p>
         </CardHeader>
         <CardContent className="pt-4">

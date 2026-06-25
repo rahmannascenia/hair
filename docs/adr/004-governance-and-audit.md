@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-Transparency and accountability are essential for the operation of Barendra International. The system must maintain an immutable record of all changes and provide a clear path for approvals.
+Transparency and accountability are essential for the operation of Hairlan International. The system must maintain an immutable record of all changes and provide a clear path for approvals.
 
 ## Decision
 We have implemented the following governance mechanisms:

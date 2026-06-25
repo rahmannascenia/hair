@@ -1,5 +1,5 @@
 /**
- * Barendra International ERP — Audit Logging Utility
+ * Hairlan International ERP — Audit Logging Utility
  *
  * Every data change (CREATE, UPDATE, DELETE) is logged with:
  * - entity: The model/table name

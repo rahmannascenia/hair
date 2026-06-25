@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-The Barendra International ERP system requires a robust security model to ensure that users have access only to the data and actions necessary for their roles. The system serves multiple types of users, from factory supervisors to the company owner.
+The Hairlan International ERP system requires a robust security model to ensure that users have access only to the data and actions necessary for their roles. The system serves multiple types of users, from factory supervisors to the company owner.
 
 ## Decision
 We have implemented a central RBAC system in `src/lib/audit.ts` and `src/lib/permissions.ts`.

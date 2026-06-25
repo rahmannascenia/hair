@@ -202,7 +202,7 @@ export default function PayrollSection() {
               {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
             </div>
           ) : (
-            <ScrollArea className="max-h-[500px]">
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent" style={{ backgroundColor: '#F4F6FB' }}>
@@ -294,7 +294,7 @@ export default function PayrollSection() {
                   )}
                 </TableBody>
               </Table>
-            </ScrollArea>
+            </div>
           )}
         </CardContent>
       </Card>

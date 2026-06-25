@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using ClosedXML.Excel;
 
-namespace BarendraErpXL;
+namespace HairlanErpXL;
 
 internal static class DashboardSheet
 {

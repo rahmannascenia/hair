@@ -10,7 +10,7 @@
     10→    10→
     11→    11→---
     12→    12→
-    13→    13→# 🏭 Barendra International ERP — New Functionality Ideas for Complete Visibility
+    13→    13→# 🏭 Hairlan International ERP — New Functionality Ideas for Complete Visibility
     14→    14→
     15→    15→## Category 1: 🔍 LOT-LEVEL GRANULAR TRACKING (The Backbone)
     16→    16→

@@ -1,7 +1,7 @@
-# Test Report - Barendra International ERP
+# Test Report - Hairlan International ERP
 
 ## Overview
-This report summarizes the testing status and coverage for the Barendra International ERP system.
+This report summarizes the testing status and coverage for the Hairlan International ERP system.
 
 ## 1. Unit Testing
 - **Tooling:** Vitest, JSDOM

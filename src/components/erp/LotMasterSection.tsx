@@ -254,10 +254,9 @@ export default function LotMasterSection() {
               {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
             </div>
           ) : (
-            <ScrollArea className="max-h-[500px]">
-              <div className="min-w-[1100px]">
-                <Table>
-                  <TableHeader>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
                     <TableRow className="hover:bg-transparent">
                       <TableHead className="text-xs font-bold" style={{ color: NAVY }}>Lot No</TableHead>
                       <TableHead className="text-xs font-bold" style={{ color: NAVY }}>Procurement</TableHead>
@@ -345,8 +344,7 @@ export default function LotMasterSection() {
                     ))}
                   </TableBody>
                 </Table>
-              </div>
-            </ScrollArea>
+            </div>
           )}
         </CardContent>
       </Card>

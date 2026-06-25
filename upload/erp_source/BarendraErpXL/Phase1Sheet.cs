@@ -3,7 +3,7 @@ using System;
 using System.Globalization;
 using ClosedXML.Excel;
 
-namespace BarendraErpXL;
+namespace HairlanErpXL;
 
 internal static class Phase1Sheet
 {

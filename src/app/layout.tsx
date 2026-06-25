@@ -15,12 +15,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Barendra International ERP",
-  description: "Enterprise Resource Planning system for Barendra International - a human hair wig manufacturing company in Bangladesh. Manage procurement, production, quality control, payroll, sales, and export operations.",
-  keywords: ["ERP", "Barendra International", "human hair", "wig manufacturing", "Bangladesh", "export"],
-  authors: [{ name: "Barendra International" }],
+  title: "Hairlan International ERP",
+  description: "Enterprise Resource Planning system for Hairlan International - a human hair wig manufacturing company in Bangladesh. Manage procurement, production, quality control, payroll, sales, and export operations.",
+  keywords: ["ERP", "Hairlan International", "human hair", "wig manufacturing", "Bangladesh", "export"],
+  authors: [{ name: "Hairlan International" }],
   openGraph: {
-    title: "Barendra International ERP",
+    title: "Hairlan International ERP",
     description: "Human Hair Wig Manufacturing ERP System",
     type: "website",
   },

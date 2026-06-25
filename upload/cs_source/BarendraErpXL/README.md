@@ -1,4 +1,4 @@
-# Barendra International ERP Workbook Generator
+# Hairlan International ERP Workbook Generator
 
 ## Requirements
 - .NET 8 SDK (`dotnet --version` should show 8.x)
@@ -8,7 +8,7 @@
 
 ### Step 1: Restore NuGet packages
 ```bash
-cd BarendraErpXL
+cd HairlanErpXL
 dotnet restore
 ```
 
@@ -16,7 +16,7 @@ dotnet restore
 ```bash
 dotnet run
 ```
-This generates `/home/z/my-project/download/BarendraInternational_ERP.xlsx` with all 21 sheets and 6 charts.
+This generates `/home/z/my-project/download/HairlanInternational_ERP.xlsx` with all 21 sheets and 6 charts.
 
 ### Step 3: Fix formula caching (REQUIRED)
 ClosedXML stores formulas as shared strings, not real formula cells. This step converts them to real formulas with cached values so they display immediately in Excel/LibreOffice/Google Sheets.
@@ -26,7 +26,7 @@ python3 fix_formulas_v3.py
 ```
 
 ## Output
-- **File**: `BarendraInternational_ERP.xlsx` (~100 KB)
+- **File**: `HairlanInternational_ERP.xlsx` (~100 KB)
 - **Sheets**: 21 (Cover, Dashboard, Settings, Procurement, Lot Master, Inventory, Washing, Phase 1, QC, 5 Factory sheets, Payroll Summary, Phase 2, Size Pricing, Costing, Sales, KPI, Risk)
 - **Charts**: 6 (Grade Pie, Cost/kg Bar, Inventory Bar, Sales Pie, Size Line, Payroll Pie)
 - **Formulas**: ~1400 live cross-sheet formulas with cached values
