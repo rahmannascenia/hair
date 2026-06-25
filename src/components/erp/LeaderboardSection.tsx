@@ -77,7 +77,7 @@ export default function LeaderboardSection() {
           <h2 className="text-2xl font-bold">Leaderboard</h2>
         </div>
         <Select value={factoryFilter} onValueChange={setFactoryFilter}>
-          <SelectTrigger className="w-48"><SelectValue placeholder="Filter factory" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-48"><SelectValue placeholder="Filter factory" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Factories</SelectItem>
             {factories.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}

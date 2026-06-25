@@ -59,7 +59,7 @@ export default function ConsumablesSection() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{items.length}</p><p className="text-xs text-muted-foreground">Total Items</p></CardContent></Card>
         <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-red-600">{lowStockCount}</p><p className="text-xs text-muted-foreground">Low Stock</p></CardContent></Card>
         <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">৳{items.reduce((s, i) => s + i.stockQty * i.costPerUnit, 0).toLocaleString()}</p><p className="text-xs text-muted-foreground">Stock Value</p></CardContent></Card>
@@ -69,7 +69,7 @@ export default function ConsumablesSection() {
       <Card>
         <CardContent className="p-4">
           {loading ? <p className="text-muted-foreground py-8 text-center">Loading...</p> : (
-            <div className="overflow-x-auto max-h-96 overflow-y-auto">
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow><TableHead>Name</TableHead><TableHead>Category</TableHead><TableHead>Unit</TableHead><TableHead>Cost/Unit</TableHead><TableHead>Stock</TableHead><TableHead>Reorder Level</TableHead><TableHead>Supplier</TableHead><TableHead>Status</TableHead></TableRow>
@@ -108,7 +108,7 @@ export default function ConsumablesSection() {
               <SelectContent>{['Chemical', 'Packaging', 'Adhesive', 'Equipment'].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
             </Select>
             <Input placeholder="Unit" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input type="number" placeholder="Cost/Unit BDT" value={form.costPerUnit} onChange={(e) => setForm({ ...form, costPerUnit: e.target.value })} />
               <Input type="number" placeholder="Stock Qty" value={form.stockQty} onChange={(e) => setForm({ ...form, stockQty: e.target.value })} />
             </div>

@@ -95,7 +95,7 @@ export default function InventorySection() {
           <h2 className="text-2xl font-bold text-[#1F3864]">8-Bucket Inventory</h2>
           <p className="text-sm text-muted-foreground">Inventory tracking across 8 production stages</p>
         </div>
-        <Button onClick={openCreate} className="bg-[#1F3864] hover:bg-[#1F3864]/90">
+        <Button onClick={openCreate} className="w-full sm:w-auto bg-[#1F3864] hover:bg-[#1F3864]/90">
           <Plus className="h-4 w-4 mr-2" /> Add Bucket
         </Button>
       </div>
@@ -106,15 +106,15 @@ export default function InventorySection() {
           {loading ? (
             <div className="space-y-2">{[...Array(8)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-[#1F3864] text-white hover:bg-[#1F3864]">
                     <TableHead className="text-white">Bucket</TableHead>
                     <TableHead className="text-white text-right">Weight (kg)</TableHead>
                     <TableHead className="text-white text-right">Value (BDT)</TableHead>
-                    <TableHead className="text-white text-right">Unit Cost/kg</TableHead>
-                    <TableHead className="text-white">% of Total</TableHead>
+                    <TableHead className="text-white text-right hidden md:table-cell">Unit Cost/kg</TableHead>
+                    <TableHead className="text-white hidden sm:table-cell">% of Total</TableHead>
                     <TableHead className="text-white text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -124,8 +124,8 @@ export default function InventorySection() {
                       <TableCell className="font-medium">{b.name}</TableCell>
                       <TableCell className="text-right font-mono">{r(b.weightKg)}</TableCell>
                       <TableCell className="text-right font-mono">৳{r(b.valueBdt).toLocaleString()}</TableCell>
-                      <TableCell className="text-right font-mono">{b.weightKg > 0 ? `৳${r(b.valueBdt / b.weightKg)}` : '—'}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-right font-mono hidden md:table-cell">{b.weightKg > 0 ? `৳${r(b.valueBdt / b.weightKg)}` : '—'}</TableCell>
+                      <TableCell className="hidden sm:table-cell">
                         <div className="flex items-center gap-2">
                           <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
                             <div className="h-full bg-[#C9A227] rounded-full" style={{ width: `${Math.min(b.pctOfTotal, 100)}%` }} />
@@ -172,7 +172,7 @@ export default function InventorySection() {
 
       {/* Totals */}
       <Card className="bg-[#1F3864] text-white">
-        <CardContent className="p-4 grid grid-cols-3 gap-4 text-center">
+        <CardContent className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
           <div>
             <p className="text-xs opacity-80">Total Weight</p>
             <p className="text-xl font-bold">{r(totals.weightKg)} kg</p>
@@ -198,7 +198,7 @@ export default function InventorySection() {
               <Label>Bucket Name *</Label>
               <Input value={form.bucketName} onChange={(e) => setForm({ ...form, bucketName: e.target.value })} placeholder="e.g. Raw Material" disabled={!!editing} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>Weight (kg)</Label>
                 <Input type="number" step="0.01" value={form.weightKg} onChange={(e) => setForm({ ...form, weightKg: e.target.value })} />

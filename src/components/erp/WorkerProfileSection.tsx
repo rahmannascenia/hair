@@ -63,23 +63,23 @@ export default function WorkerProfileSection() {
         <h2 className="text-2xl font-bold">Worker Profile</h2>
       </div>
 
-      <div className="relative max-w-md">
+      <div className="relative w-full sm:max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input placeholder="Search by worker ID or name..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
         <Table>
-          <TableHeader><TableRow><TableHead>ID</TableHead><TableHead>Name</TableHead><TableHead>Factory</TableHead><TableHead>Supervisor</TableHead><TableHead>Line Leader</TableHead><TableHead>bKash</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>ID</TableHead><TableHead>Name</TableHead><TableHead>Factory</TableHead><TableHead className="hidden md:table-cell">Supervisor</TableHead><TableHead className="hidden sm:table-cell">Line Leader</TableHead><TableHead className="hidden md:table-cell">bKash</TableHead></TableRow></TableHeader>
           <TableBody>
             {filtered.map((w) => (
               <TableRow key={w.id} className="cursor-pointer hover:bg-muted/50" onClick={() => selectWorker(w)}>
                 <TableCell className="font-mono text-xs">{w.workerId}</TableCell>
                 <TableCell className="font-medium">{w.name}</TableCell>
                 <TableCell>{w.factory.name}</TableCell>
-                <TableCell>{w.factory.supervisorName}</TableCell>
-                <TableCell>{w.factory.lineLeader?.name || '-'}</TableCell>
-                <TableCell className="text-xs">{w.bKash || '-'}</TableCell>
+                <TableCell className="hidden md:table-cell">{w.factory.supervisorName}</TableCell>
+                <TableCell className="hidden sm:table-cell">{w.factory.lineLeader?.name || '-'}</TableCell>
+                <TableCell className="hidden md:table-cell text-xs">{w.bKash || '-'}</TableCell>
               </TableRow>
             ))}
             {filtered.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No workers found.</TableCell></TableRow>}
@@ -97,9 +97,9 @@ export default function WorkerProfileSection() {
               <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{avgOut} kg</p><p className="text-xs text-muted-foreground">Avg Output</p></CardContent></Card>
               <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">৳{entries.reduce((s, e) => s + e.totalPayable, 0).toLocaleString()}</p><p className="text-xs text-muted-foreground">Total Pay</p></CardContent></Card>
             </div>
-            <div className="overflow-x-auto max-h-96 overflow-y-auto">
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
               <Table>
-                <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Input</TableHead><TableHead className="text-emerald-600">A</TableHead><TableHead className="text-amber-600">B</TableHead><TableHead className="text-red-600">C</TableHead><TableHead>Wastage</TableHead><TableHead>Pay</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Input</TableHead><TableHead className="text-emerald-600">A</TableHead><TableHead className="text-amber-600 hidden sm:table-cell">B</TableHead><TableHead className="text-red-600 hidden md:table-cell">C</TableHead><TableHead className="hidden lg:table-cell">Wastage</TableHead><TableHead>Pay</TableHead><TableHead className="hidden md:table-cell">Status</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {entries.slice(0, 50).map((e) => {
                     const t = e.aWeightKg + e.bWeightKg + e.cWeightKg;
@@ -110,11 +110,11 @@ export default function WorkerProfileSection() {
                         <TableCell>{new Date(e.record.recordDate).toLocaleDateString()}</TableCell>
                         <TableCell>{e.inputGivenKg} kg</TableCell>
                         <TableCell className={`font-medium ${domA ? 'text-emerald-600' : ''}`}>{e.aWeightKg} kg</TableCell>
-                        <TableCell className={domB && !domA ? 'text-amber-600 font-medium' : ''}>{e.bWeightKg} kg</TableCell>
-                        <TableCell className={!domA && !domB ? 'text-red-600 font-medium' : ''}>{e.cWeightKg} kg</TableCell>
-                        <TableCell>{t > 0 ? Math.round((e.wastageKg / t) * 1000) / 10 : 0}%</TableCell>
+                        <TableCell className={domB && !domA ? 'text-amber-600 font-medium hidden sm:table-cell' : 'hidden sm:table-cell'}>{e.bWeightKg} kg</TableCell>
+                        <TableCell className={!domA && !domB ? 'text-red-600 font-medium hidden md:table-cell' : 'hidden md:table-cell'}>{e.cWeightKg} kg</TableCell>
+                        <TableCell className="hidden lg:table-cell">{t > 0 ? Math.round((e.wastageKg / t) * 1000) / 10 : 0}%</TableCell>
                         <TableCell>৳{Math.round(e.totalPayable)}</TableCell>
-                        <TableCell><Badge variant="outline" className="text-xs">{e.status}</Badge></TableCell>
+                        <TableCell className="hidden md:table-cell"><Badge variant="outline" className="text-xs">{e.status}</Badge></TableCell>
                       </TableRow>
                     );
                   })}

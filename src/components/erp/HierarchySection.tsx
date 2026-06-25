@@ -61,12 +61,12 @@ export default function HierarchySection() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center flex-wrap gap-3">
         <Network className="h-6 w-6" style={{ color: '#C9A227' }} />
         <h2 className="text-2xl font-bold">Organization Hierarchy</h2>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 max-h-[700px] overflow-y-auto">
         {data.map((hl) => (
           <Card key={hl.id}>
             <CardContent className="p-4">
@@ -83,7 +83,7 @@ export default function HierarchySection() {
               </button>
 
               {expanded.has(hl.id) && (
-                <div className="ml-8 mt-3 space-y-3 border-l-2 pl-4" style={{ borderColor: '#C9A227' }}>
+                <div className="ml-4 sm:ml-8 mt-3 space-y-3 border-l-2 pl-4" style={{ borderColor: '#C9A227' }}>
                   {hl.lineLeaders.map((ll) => (
                     <div key={ll.id}>
                       <button onClick={() => toggle(ll.id)} className="flex items-center gap-3 w-full text-left cursor-pointer">
@@ -99,7 +99,7 @@ export default function HierarchySection() {
                       </button>
 
                       {expanded.has(ll.id) && (
-                        <div className="ml-8 mt-2 space-y-2 border-l-2 pl-4" style={{ borderColor: '#ddd' }}>
+                        <div className="ml-4 sm:ml-8 mt-2 space-y-2 border-l-2 pl-4" style={{ borderColor: '#ddd' }}>
                           {ll.factories.map((f) => (
                             <div key={f.id} className="flex items-center gap-3 py-1">
                               <div className="w-7 h-7 rounded flex items-center justify-center bg-muted text-xs font-bold">F</div>

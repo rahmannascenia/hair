@@ -91,7 +91,7 @@ export default function SupplierSection() {
           <h2 className="text-2xl font-bold text-[#1F3864]">Supplier Management</h2>
           <p className="text-sm text-muted-foreground">Manage raw hair suppliers — import & local</p>
         </div>
-        <Button onClick={openCreate} className="bg-[#1F3864] hover:bg-[#1F3864]/90">
+        <Button onClick={openCreate} className="w-full sm:w-auto bg-[#1F3864] hover:bg-[#1F3864]/90">
           <Plus className="h-4 w-4 mr-2" /> Add Supplier
         </Button>
       </div>
@@ -125,7 +125,7 @@ export default function SupplierSection() {
           <Input placeholder="Search by name or country..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
         <Select value={filterType} onValueChange={setFilterType}>
-          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-40"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
             <SelectItem value="import">Import Only</SelectItem>
@@ -145,16 +145,16 @@ export default function SupplierSection() {
           {loading ? (
             <div className="space-y-2">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-[#1F3864] text-white hover:bg-[#1F3864]">
                     <TableHead className="text-white">Name</TableHead>
                     <TableHead className="text-white">Country</TableHead>
                     <TableHead className="text-white">Type</TableHead>
-                    <TableHead className="text-white">Contact</TableHead>
-                    <TableHead className="text-white">Phone</TableHead>
-                    <TableHead className="text-white text-center">Procurements</TableHead>
+                    <TableHead className="text-white hidden md:table-cell">Contact</TableHead>
+                    <TableHead className="text-white hidden lg:table-cell">Phone</TableHead>
+                    <TableHead className="text-white text-center hidden sm:table-cell">Procurements</TableHead>
                     <TableHead className="text-white">Status</TableHead>
                     <TableHead className="text-white text-right">Actions</TableHead>
                   </TableRow>
@@ -169,9 +169,9 @@ export default function SupplierSection() {
                           {s.isLocal ? 'Local' : 'Import'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm">{s.contact || '—'}</TableCell>
-                      <TableCell className="font-mono text-sm">{s.phone || '—'}</TableCell>
-                      <TableCell className="text-center">
+                      <TableCell className="text-sm hidden md:table-cell">{s.contact || '—'}</TableCell>
+                      <TableCell className="font-mono text-sm hidden lg:table-cell">{s.phone || '—'}</TableCell>
+                      <TableCell className="text-center hidden sm:table-cell">
                         <Badge variant="secondary">{s._count?.procurements || 0}</Badge>
                       </TableCell>
                       <TableCell>
@@ -217,7 +217,7 @@ export default function SupplierSection() {
               <Label>Country *</Label>
               <Input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} placeholder="e.g. India, Uzbekistan" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>Contact Person</Label>
                 <Input value={form.contact} onChange={(e) => setForm({ ...form, contact: e.target.value })} />

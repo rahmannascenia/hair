@@ -135,9 +135,9 @@ export default function SizePricingSection() {
 
         <TabsContent value="rate-master">
           <Card>
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between flex-wrap gap-3">
               <CardTitle className="text-lg">Base Rates by Length</CardTitle>
-              <Button onClick={openCreateBase} className="bg-[#1F3864] hover:bg-[#1F3864]/90" size="sm">
+              <Button onClick={openCreateBase} className="bg-[#1F3864] hover:bg-[#1F3864]/90 w-full sm:w-auto" size="sm">
                 <Plus className="h-4 w-4 mr-1" /> Add Size
               </Button>
             </CardHeader>
@@ -145,7 +145,7 @@ export default function SizePricingSection() {
               {loading ? (
                 <div className="space-y-2">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-[#1F3864] text-white hover:bg-[#1F3864]">
@@ -198,9 +198,9 @@ export default function SizePricingSection() {
 
         <TabsContent value="buyer-pricing">
           <Card>
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between flex-wrap gap-3">
               <CardTitle className="text-lg">Buyer-Specific Premiums</CardTitle>
-              <Button onClick={openCreateBuyer} className="bg-[#1F3864] hover:bg-[#1F3864]/90" size="sm">
+              <Button onClick={openCreateBuyer} className="bg-[#1F3864] hover:bg-[#1F3864]/90 w-full sm:w-auto" size="sm">
                 <Plus className="h-4 w-4 mr-1" /> Add Buyer Pricing
               </Button>
             </CardHeader>
@@ -208,7 +208,7 @@ export default function SizePricingSection() {
               {loading ? (
                 <div className="space-y-2">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-[#1F3864] text-white hover:bg-[#1F3864]">
@@ -270,7 +270,7 @@ export default function SizePricingSection() {
           <div className="grid gap-4 py-2">
             {dialogType === 'base' ? (
               <>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label>Length (inch) *</Label>
                     <Input type="number" value={form.lengthInch} onChange={(e) => setForm({ ...form, lengthInch: e.target.value })} disabled={!!editing} />
@@ -283,7 +283,7 @@ export default function SizePricingSection() {
                     </Select>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label>BDT/kg *</Label>
                     <Input type="number" step="0.01" value={form.bdtPerKg} onChange={(e) => setForm({ ...form, bdtPerKg: e.target.value })} />
@@ -293,7 +293,7 @@ export default function SizePricingSection() {
                     <Input type="number" step="0.01" value={form.usdPerKg} onChange={(e) => setForm({ ...form, usdPerKg: e.target.value })} />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label>Min Margin BDT</Label>
                     <Input type="number" step="0.01" value={form.minMarginBdt} onChange={(e) => setForm({ ...form, minMarginBdt: e.target.value })} />
@@ -313,7 +313,7 @@ export default function SizePricingSection() {
                     <SelectContent>{buyers.map((b) => <SelectItem key={b.id} value={b.id}>{b.name} ({b.country})</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label>Length (inch) *</Label>
                     <Input type="number" value={form.lengthInch} onChange={(e) => setForm({ ...form, lengthInch: e.target.value })} />

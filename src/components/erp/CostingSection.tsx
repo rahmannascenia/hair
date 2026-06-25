@@ -210,7 +210,7 @@ export default function CostingSection() {
           <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle className="text-base font-semibold" style={{ color: NAVY }}>Section B: Per-Worker Costing Sample</CardTitle>
             <Select value={selectedFactory} onValueChange={handleFactoryChange}>
-              <SelectTrigger className="w-[180px] h-8 text-xs">
+              <SelectTrigger className="w-full sm:w-[180px] h-8 text-xs">
                 <SelectValue placeholder="Select Factory" />
               </SelectTrigger>
               <SelectContent>

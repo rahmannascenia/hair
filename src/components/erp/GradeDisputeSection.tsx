@@ -93,19 +93,19 @@ export default function GradeDisputeSection() {
       <Card>
         <CardContent className="p-4">
           {loading ? <p className="text-muted-foreground py-8 text-center">Loading...</p> : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
               <Table>
                 <TableHeader>
-                  <TableRow><TableHead>Worker</TableHead><TableHead>Factory</TableHead><TableHead>Reason</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead><TableHead>Actions</TableHead></TableRow>
+                  <TableRow><TableHead>Worker</TableHead><TableHead className="hidden md:table-cell">Factory</TableHead><TableHead>Reason</TableHead><TableHead>Status</TableHead><TableHead className="hidden sm:table-cell">Date</TableHead><TableHead>Actions</TableHead></TableRow>
                 </TableHeader>
                 <TableBody>
                   {disputes.map((d) => (
                     <TableRow key={d.id}>
                       <TableCell className="font-medium">{d.worker?.name || d.workerId || '-'}</TableCell>
-                      <TableCell>{d.worker?.factory?.name || '-'}</TableCell>
+                      <TableCell className="hidden md:table-cell">{d.worker?.factory?.name || '-'}</TableCell>
                       <TableCell className="max-w-[200px] truncate text-sm">{d.reason}</TableCell>
                       <TableCell><Badge className={`text-xs ${statusColors[d.status] || ''}`}>{d.status}</Badge></TableCell>
-                      <TableCell className="text-xs">{new Date(d.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell className="hidden sm:table-cell text-xs">{new Date(d.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>
                         {d.status === 'Pending' && (
                           <div className="flex gap-1">

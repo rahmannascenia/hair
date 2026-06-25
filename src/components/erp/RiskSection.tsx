@@ -457,7 +457,7 @@ export default function RiskSection() {
             </div>
 
             {/* Likelihood & Impact */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="risk-likelihood">Likelihood (1-5) *</Label>
                 <Select value={formLikelihood} onValueChange={setFormLikelihood}>

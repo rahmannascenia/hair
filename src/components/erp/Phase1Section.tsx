@@ -138,12 +138,12 @@ export default function Phase1Section() {
           <h2 className="text-2xl font-bold text-[#1F3864]">Phase 1 Distribution</h2>
           <p className="text-sm text-muted-foreground">Material handoff tracking across the 5-tier hierarchy</p>
         </div>
-        <Button onClick={openCreate} className="bg-[#1F3864] hover:bg-[#1F3864]/90">
+        <Button onClick={openCreate} className="bg-[#1F3864] hover:bg-[#1F3864]/90 w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" /> Add Distribution
         </Button>
       </div>
 
-      <div className="relative max-w-sm">
+      <div className="relative w-full sm:w-64">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input placeholder="Search by handoff ID, name, lot..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
@@ -159,7 +159,7 @@ export default function Phase1Section() {
           {loading ? (
             <div className="space-y-2">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-[#1F3864] text-white hover:bg-[#1F3864]">
@@ -238,7 +238,7 @@ export default function Phase1Section() {
             <DialogTitle className="text-[#1F3864]">{editing ? 'Edit Distribution' : 'New Distribution'}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-2">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>Handoff ID *</Label>
                 <Input value={form.handoffId} onChange={(e) => setForm({ ...form, handoffId: e.target.value })} placeholder="HO-001" />
@@ -259,7 +259,7 @@ export default function Phase1Section() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>From Role</Label>
                 <Select value={form.fromRole} onValueChange={(v) => setForm({ ...form, fromRole: v })}>
@@ -272,7 +272,7 @@ export default function Phase1Section() {
                 <Input value={form.fromName} onChange={(e) => setForm({ ...form, fromName: e.target.value })} />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>To Role</Label>
                 <Select value={form.toRole} onValueChange={(v) => setForm({ ...form, toRole: v })}>
@@ -285,7 +285,7 @@ export default function Phase1Section() {
                 <Input value={form.toName} onChange={(e) => setForm({ ...form, toName: e.target.value })} />
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div className="grid gap-2">
                 <Label>Qty (kg) *</Label>
                 <Input type="number" step="0.01" value={form.qtyKg} onChange={(e) => setForm({ ...form, qtyKg: e.target.value })} />

@@ -534,7 +534,7 @@ export default function SalesSection() {
             </div>
 
             {/* Length & Qty row */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="sale-length">Length (inch)</Label>
                 <Input

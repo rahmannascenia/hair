@@ -141,7 +141,7 @@ export default function OrganizationSection() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {[
           { label: 'Head Leaders', value: headLeaders.length, icon: Users },
           { label: 'Line Leaders', value: lineLeaders.length, icon: UserCog },
@@ -162,7 +162,7 @@ export default function OrganizationSection() {
         ))}
       </div>
 
-      <div className="relative max-w-sm">
+      <div className="relative w-full sm:w-64">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
@@ -185,7 +185,7 @@ export default function OrganizationSection() {
               {loading ? (
                 <div className="space-y-2">{[...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-[#1F3864] text-white hover:bg-[#1F3864]">
@@ -244,7 +244,7 @@ export default function OrganizationSection() {
               {loading ? (
                 <div className="space-y-2">{[...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-[#1F3864] text-white hover:bg-[#1F3864]">
@@ -343,7 +343,7 @@ export default function OrganizationSection() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label>Phone</Label>
                   <Input value={llForm.phone} onChange={(e) => setLlForm({ ...llForm, phone: e.target.value })} />

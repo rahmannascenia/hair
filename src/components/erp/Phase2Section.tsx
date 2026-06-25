@@ -131,12 +131,12 @@ export default function Phase2Section() {
           <h2 className="text-2xl font-bold text-[#1F3864]">Phase 2 Production</h2>
           <p className="text-sm text-muted-foreground">Factory processing, size sorting & margin analysis</p>
         </div>
-        <Button onClick={openCreate} className="bg-[#1F3864] hover:bg-[#1F3864]/90">
+        <Button onClick={openCreate} className="bg-[#1F3864] hover:bg-[#1F3864]/90 w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" /> Add Phase 2 Job
         </Button>
       </div>
 
-      <div className="relative max-w-sm">
+      <div className="relative w-full sm:w-64">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input placeholder="Search by job ID, lot..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
@@ -149,7 +149,7 @@ export default function Phase2Section() {
           {loading ? (
             <div className="space-y-2">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-[#1F3864] text-white hover:bg-[#1F3864]">
@@ -230,7 +230,7 @@ export default function Phase2Section() {
 
       {/* Summary Cards */}
       {filtered.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {[
             { label: 'Total Input', value: `${totals.inputKg} kg`, color: '' },
             { label: 'Total Sized', value: `${totals.totalSizedKg} kg`, color: '' },
@@ -253,7 +253,7 @@ export default function Phase2Section() {
             <DialogTitle className="text-[#1F3864]">{editing ? 'Edit Phase 2 Job' : 'New Phase 2 Job'}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-2">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div className="grid gap-2">
                 <Label>Job ID *</Label>
                 <Input value={form.jobId} onChange={(e) => setForm({ ...form, jobId: e.target.value })} placeholder="P2-001" />
@@ -278,7 +278,7 @@ export default function Phase2Section() {
             </div>
             <div className="border rounded-lg p-3">
               <p className="text-sm font-medium mb-3 text-[#1F3864]">Size Distribution (kg)</p>
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {SIZES.map((s) => (
                   <div key={s} className="grid gap-1">
                     <Label className="text-xs">{s}&quot;</Label>

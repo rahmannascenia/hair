@@ -143,12 +143,12 @@ export default function WashingLogSection() {
           <h2 className="text-2xl font-bold text-[#1F3864]">Washing & Pre-Processing</h2>
           <p className="text-sm text-muted-foreground">Track wash operations, chemical costs, and wastage rates</p>
         </div>
-        <Button onClick={openCreate} className="bg-[#1F3864] hover:bg-[#1F3864]/90">
+        <Button onClick={openCreate} className="bg-[#1F3864] hover:bg-[#1F3864]/90 w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" /> Add Wash Log
         </Button>
       </div>
 
-      <div className="relative max-w-sm">
+      <div className="relative w-full sm:w-64">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input placeholder="Search by ID, operator, lot..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
@@ -166,7 +166,7 @@ export default function WashingLogSection() {
               {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-[#1F3864] text-white hover:bg-[#1F3864]">
@@ -255,7 +255,7 @@ export default function WashingLogSection() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>Wash ID *</Label>
                 <Input value={form.washId} onChange={(e) => setForm({ ...form, washId: e.target.value })} placeholder="W-001" />
@@ -269,7 +269,7 @@ export default function WashingLogSection() {
               <Label>Operator *</Label>
               <Input value={form.operator} onChange={(e) => setForm({ ...form, operator: e.target.value })} placeholder="Operator name" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label>Input (kg) *</Label>
                 <Input type="number" step="0.01" value={form.inputKg} onChange={(e) => setForm({ ...form, inputKg: e.target.value })} placeholder="0.00" />

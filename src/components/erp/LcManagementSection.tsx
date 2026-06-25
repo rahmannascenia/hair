@@ -115,7 +115,7 @@ export default function LcManagementSection() {
             <Input placeholder="LC No" value={form.lcNo} onChange={(e) => setForm({ ...form, lcNo: e.target.value })} />
             <Input placeholder="Procurement ID (optional)" value={form.procurementId} onChange={(e) => setForm({ ...form, procurementId: e.target.value })} />
             <Input placeholder="Bank Name" value={form.bankName} onChange={(e) => setForm({ ...form, bankName: e.target.value })} />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input type="number" placeholder="USD Amount" value={form.usdAmount} onChange={(e) => setForm({ ...form, usdAmount: e.target.value })} />
               <Input type="number" placeholder="BDT Amount" value={form.bdtAmount} onChange={(e) => setForm({ ...form, bdtAmount: e.target.value })} />
             </div>

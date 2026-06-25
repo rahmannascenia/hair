@@ -72,13 +72,13 @@ export default function LotTrackerSection() {
         <h2 className="text-2xl font-bold">Lot Tracker</h2>
       </div>
 
-      <div className="relative max-w-md">
+      <div className="relative w-full sm:w-64">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input placeholder="Search by lot number or colour..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
 
       {loading ? <p className="text-muted-foreground py-8 text-center">Loading lots...</p> : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -134,7 +134,7 @@ export default function LotTrackerSection() {
                 );
               })}
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 text-sm">
               <div><span className="text-muted-foreground">Weight:</span> <strong>{selected.rawWeightKg} kg</strong></div>
               <div><span className="text-muted-foreground">Supplier:</span> <strong>{selected.procurement?.supplier?.name || '-'}</strong></div>
               <div><span className="text-muted-foreground">Colour:</span> <strong>{selected.colour}</strong></div>
@@ -148,7 +148,7 @@ export default function LotTrackerSection() {
             {washLogs.length > 0 && (
               <div>
                 <h4 className="font-semibold text-sm mb-2" style={{ color: '#1F3864' }}>Wash Logs</h4>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
                   <Table><TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Input</TableHead><TableHead>Output</TableHead><TableHead>Wastage</TableHead></TableRow></TableHeader>
                   <TableBody>
                     {washLogs.map((w) => (
@@ -162,7 +162,7 @@ export default function LotTrackerSection() {
             {dists.length > 0 && (
               <div>
                 <h4 className="font-semibold text-sm mb-2" style={{ color: '#1F3864' }}>Distributions</h4>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
                   <Table><TableHeader><TableRow><TableHead>Date</TableHead><TableHead>To</TableHead><TableHead>Qty</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
                   <TableBody>
                     {dists.map((d) => (

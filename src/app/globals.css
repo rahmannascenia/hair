@@ -121,6 +121,44 @@
   }
 }
 
+/* Custom Scrollbar Styles */
+@layer base {
+  /* Webkit (Chrome, Safari, Edge) */
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: oklch(0.7 0 0 / 40%);
+    border-radius: 9999px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(0.7 0 0 / 60%);
+  }
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.7 0 0 / 40%) transparent;
+  }
+
+  .dark *::-webkit-scrollbar-thumb {
+    background-color: oklch(0.5 0 0 / 50%);
+  }
+  .dark *::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(0.5 0 0 / 70%);
+  }
+  .dark * {
+    scrollbar-color: oklch(0.5 0 0 / 50%) transparent;
+  }
+}
+
 /* ERP Theme Utilities */
 .erp-navy {
   background-color: #1F3864;

@@ -60,7 +60,7 @@ export default function DailyReportsSection() {
           <FileText className="h-6 w-6" style={{ color: '#C9A227' }} />
           <h2 className="text-2xl font-bold">Daily Reports</h2>
         </div>
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="border rounded-md px-3 py-2 text-sm bg-background" />
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full sm:w-auto border rounded-md px-3 py-2 text-sm bg-background" />
       </div>
 
       {loading ? <p className="text-muted-foreground py-8 text-center">Loading...</p> : records.length === 0 ? (
@@ -76,13 +76,13 @@ export default function DailyReportsSection() {
 
           <Card>
             <CardContent className="p-4">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Factory</TableHead><TableHead>Workers</TableHead><TableHead>Input</TableHead>
-                      <TableHead className="text-emerald-600">A%</TableHead><TableHead className="text-amber-600">B%</TableHead>
-                      <TableHead className="text-red-600">C%</TableHead><TableHead>Wastage%</TableHead><TableHead>Payroll</TableHead>
+                      <TableHead>Factory</TableHead><TableHead className="hidden sm:table-cell">Workers</TableHead><TableHead>Input</TableHead>
+                      <TableHead className="text-emerald-600">A%</TableHead><TableHead className="text-amber-600 hidden md:table-cell">B%</TableHead>
+                      <TableHead className="text-red-600 hidden lg:table-cell">C%</TableHead><TableHead className="hidden lg:table-cell">Wastage%</TableHead><TableHead>Payroll</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -91,20 +91,20 @@ export default function DailyReportsSection() {
                       return (
                         <TableRow key={r.id}>
                           <TableCell className="font-medium">{r.factory.name}</TableCell>
-                          <TableCell>{r.entries?.length || 0}</TableCell>
+                          <TableCell className="hidden sm:table-cell">{r.entries?.length || 0}</TableCell>
                           <TableCell>{r.totalInputKg} kg</TableCell>
                           <TableCell className="text-emerald-600 font-medium">{out > 0 ? Math.round((r.totalAGradeKg / out) * 100) : 0}%</TableCell>
-                          <TableCell className="text-amber-600">{out > 0 ? Math.round((r.totalBGradeKg / out) * 100) : 0}%</TableCell>
-                          <TableCell className="text-red-600">{out > 0 ? Math.round((r.totalCGradeKg / out) * 100) : 0}%</TableCell>
-                          <TableCell className={r.totalWastageKg / r.totalInputKg > 0.15 ? 'text-red-600 font-bold' : ''}>{r.totalInputKg > 0 ? Math.round((r.totalWastageKg / r.totalInputKg) * 100) : 0}%</TableCell>
+                          <TableCell className="text-amber-600 hidden md:table-cell">{out > 0 ? Math.round((r.totalBGradeKg / out) * 100) : 0}%</TableCell>
+                          <TableCell className="text-red-600 hidden lg:table-cell">{out > 0 ? Math.round((r.totalCGradeKg / out) * 100) : 0}%</TableCell>
+                          <TableCell className={`hidden lg:table-cell ${r.totalWastageKg / r.totalInputKg > 0.15 ? 'text-red-600 font-bold' : ''}`}>{r.totalInputKg > 0 ? Math.round((r.totalWastageKg / r.totalInputKg) * 100) : 0}%</TableCell>
                           <TableCell>৳{Math.round(r.totalPayrollBdt).toLocaleString()}</TableCell>
                         </TableRow>
                       );
                     })}
                     <TableRow className="font-bold" style={{ background: '#1F3864', color: 'white' }}>
-                      <TableCell>TOTAL</TableCell><TableCell>{totals.workers}</TableCell><TableCell>{totals.input.toFixed(1)} kg</TableCell>
-                      <TableCell>{aPct}%</TableCell><TableCell>{bPct}%</TableCell><TableCell>{cPct}%</TableCell>
-                      <TableCell>{wPct}%</TableCell><TableCell>৳{Math.round(totals.payroll).toLocaleString()}</TableCell>
+                      <TableCell>TOTAL</TableCell><TableCell className="hidden sm:table-cell">{totals.workers}</TableCell><TableCell>{totals.input.toFixed(1)} kg</TableCell>
+                      <TableCell>{aPct}%</TableCell><TableCell className="hidden md:table-cell">{bPct}%</TableCell><TableCell className="hidden lg:table-cell">{cPct}%</TableCell>
+                      <TableCell className="hidden lg:table-cell">{wPct}%</TableCell><TableCell>৳{Math.round(totals.payroll).toLocaleString()}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>

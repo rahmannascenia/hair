@@ -71,13 +71,13 @@ export default function BuyerSection() {
       <Card>
         <CardContent className="p-4">
           {loading ? <p className="text-muted-foreground py-8 text-center">Loading...</p> : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-8"></TableHead>
-                    <TableHead>Name</TableHead><TableHead>Country</TableHead><TableHead>Contact</TableHead>
-                    <TableHead>Email</TableHead><TableHead>Phone</TableHead><TableHead>Status</TableHead><TableHead>Sales</TableHead><TableHead>Actions</TableHead>
+                    <TableHead>Name</TableHead><TableHead>Country</TableHead><TableHead className="hidden md:table-cell">Contact</TableHead>
+                    <TableHead className="hidden lg:table-cell">Email</TableHead><TableHead className="hidden lg:table-cell">Phone</TableHead><TableHead className="hidden sm:table-cell">Status</TableHead><TableHead className="hidden sm:table-cell">Sales</TableHead><TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -91,11 +91,11 @@ export default function BuyerSection() {
                         </TableCell>
                         <TableCell className="font-medium">{b.name}</TableCell>
                         <TableCell>{b.country}</TableCell>
-                        <TableCell>{b.contact || '-'}</TableCell>
-                        <TableCell>{(b as Record<string, unknown>).email || '-'}</TableCell>
-                        <TableCell>{(b as Record<string, unknown>).phone || '-'}</TableCell>
-                        <TableCell><Badge variant={b.isActive ? 'default' : 'secondary'}>{b.isActive ? 'Active' : 'Inactive'}</Badge></TableCell>
-                        <TableCell>{b.sales?.length || 0}</TableCell>
+                        <TableCell className="hidden md:table-cell">{b.contact || '-'}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{(b as Record<string, unknown>).email || '-'}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{(b as Record<string, unknown>).phone || '-'}</TableCell>
+                        <TableCell className="hidden sm:table-cell"><Badge variant={b.isActive ? 'default' : 'secondary'}>{b.isActive ? 'Active' : 'Inactive'}</Badge></TableCell>
+                        <TableCell className="hidden sm:table-cell">{b.sales?.length || 0}</TableCell>
                         <TableCell>
                           <div className="flex gap-1">
                             <Button variant="ghost" size="icon" onClick={() => openEdit(b)}><Pencil className="h-4 w-4" /></Button>
