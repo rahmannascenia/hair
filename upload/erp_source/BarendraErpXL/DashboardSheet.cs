@@ -18,7 +18,7 @@ internal static class DashboardSheet
         ws.Row(2).Height = 20;
         ws.Row(3).Height = 8;
 
-        var t = ws.Cell(1, 2); t.Value = "BARENDRA INTERNATIONAL — EXECUTIVE DASHBOARD";
+        var t = ws.Cell(1, 2); t.Value = "HAIRLAN INTERNATIONAL — EXECUTIVE DASHBOARD";
         t.Style.Font.FontName = Program.FontName; t.Style.Font.FontSize = 18;
         t.Style.Font.Bold = true; t.Style.Font.FontColor = Program.White;
         t.Style.Fill.BackgroundColor = Program.Navy;

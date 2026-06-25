@@ -347,7 +347,7 @@ internal static class Program
         ws.Row(5).Height = 22;
         ws.Row(6).Height = 18;
 
-        var title = ws.Cell(3, 2); title.Value = "BARENDRA INTERNATIONAL";
+        var title = ws.Cell(3, 2); title.Value = "HAIRLAN INTERNATIONAL";
         title.Style.Font.FontName = FontName; title.Style.Font.FontSize = 24;
         title.Style.Font.Bold = true; title.Style.Font.FontColor = Navy;
         title.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;

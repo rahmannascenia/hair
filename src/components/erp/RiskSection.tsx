@@ -285,7 +285,7 @@ export default function RiskSection() {
               ))}
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <ScrollArea className="max-h-[500px]">
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
@@ -351,7 +351,7 @@ export default function RiskSection() {
                   ))}
                 </TableBody>
               </Table>
-            </div>
+            </ScrollArea>
           )}
         </CardContent>
       </Card>

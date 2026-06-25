@@ -18,9 +18,8 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { Plus, Pencil, Trash2, Search, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
-import ProcurementLifecycle from './ProcurementLifecycle';
 
 interface Supplier {
   id: string;
@@ -90,7 +89,6 @@ const emptyForm = (): FormData => ({
 
 export default function ProcurementSection() {
   const [data, setData] = useState<ProcItem[]>([]);
-  const [selectedProcId, setSelectedProcId] = useState<string | null>(null);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -317,10 +315,6 @@ export default function ProcurementSection() {
     weight: a.weight + (i.rawWeightKg || 0), bdt: a.bdt + (i.totalLandedCostBdt || 0),
   }), { weight: 0, bdt: 0 });
 
-  if (selectedProcId) {
-    return <ProcurementLifecycle procId={selectedProcId} onBack={() => setSelectedProcId(null)} />;
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -362,69 +356,68 @@ export default function ProcurementSection() {
               {loading ? (
                 <Skeleton className="h-64 w-full" />
               ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="hover:bg-transparent">
-                        {['LC No', 'Date', 'Supplier', 'Country', 'Qty (kg)', 'USD/kg', 'Goods USD', 'Freight 3%', 'Duty 12%', 'Bank 1%', 'Landed USD', 'Landed BDT', 'BDT/kg', 'Status', 'Actions'].map(h => (
-                          <TableHead key={h} className="text-xs font-bold whitespace-nowrap" style={{ color: NAVY }}>{h}</TableHead>
-                        ))}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredImports.length === 0 && (
-                        <TableRow><TableCell colSpan={15} className="text-center text-muted-foreground py-8">No import LCs found</TableCell></TableRow>
-                      )}
-                      {filteredImports.map(i => (
-                        <TableRow key={i.id}>
-                          <TableCell className="text-xs font-medium whitespace-nowrap">{i.lcNo}</TableCell>
-                          <TableCell className="text-xs whitespace-nowrap">{new Date(i.date).toLocaleDateString()}</TableCell>
-                          <TableCell className="text-xs whitespace-nowrap">{i.supplier?.name || '-'}</TableCell>
-                          <TableCell className="text-xs whitespace-nowrap">{i.originCountry}</TableCell>
-                          <TableCell className="text-xs text-right">{i.rawWeightKg.toFixed(1)}</TableCell>
-                          <TableCell className="text-xs text-right">${i.usdPerKg.toFixed(2)}</TableCell>
-                          <TableCell className="text-xs text-right">${(i.goodsUsd || 0).toLocaleString()}</TableCell>
-                          <TableCell className="text-xs text-right">${(i.freightUsd || 0).toLocaleString()}</TableCell>
-                          <TableCell className="text-xs text-right">${(i.dutyUsd || 0).toLocaleString()}</TableCell>
-                          <TableCell className="text-xs text-right">${(i.bankChargesUsd || 0).toLocaleString()}</TableCell>
-                          <TableCell className="text-xs text-right font-medium">${(i.landedUsd || 0).toLocaleString()}</TableCell>
-                          <TableCell className="text-xs text-right font-medium" style={{ color: GOLD }}>৳{(i.totalLandedCostBdt || 0).toLocaleString()}</TableCell>
-                          <TableCell className="text-xs text-right font-bold" style={{ color: GOLD }}>৳{(i.landedCostPerKgBdt || 0).toLocaleString()}</TableCell>
-                          <TableCell><Badge className="bg-green-100 text-green-800 hover:bg-green-100">{i.status}</Badge></TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelectedProcId(i.id)} title="View Lifecycle">
-                                  <Eye className="h-3.5 w-3.5 text-blue-600" />
+                <ScrollArea className="max-h-[500px] w-full">
+                  <div className="min-w-[1200px] overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                          {['LC No', 'Date', 'Supplier', 'Country', 'Qty (kg)', 'USD/kg', 'Goods USD', 'Freight 3%', 'Duty 12%', 'Bank 1%', 'Landed USD', 'Landed BDT', 'BDT/kg', 'Status', 'Actions'].map(h => (
+                            <TableHead key={h} className="text-xs font-bold whitespace-nowrap" style={{ color: NAVY }}>{h}</TableHead>
+                          ))}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredImports.length === 0 && (
+                          <TableRow><TableCell colSpan={15} className="text-center text-muted-foreground py-8">No import LCs found</TableCell></TableRow>
+                        )}
+                        {filteredImports.map(i => (
+                          <TableRow key={i.id}>
+                            <TableCell className="text-xs font-medium whitespace-nowrap">{i.lcNo}</TableCell>
+                            <TableCell className="text-xs whitespace-nowrap">{new Date(i.date).toLocaleDateString()}</TableCell>
+                            <TableCell className="text-xs whitespace-nowrap">{i.supplier?.name || '-'}</TableCell>
+                            <TableCell className="text-xs whitespace-nowrap">{i.originCountry}</TableCell>
+                            <TableCell className="text-xs text-right">{i.rawWeightKg.toFixed(1)}</TableCell>
+                            <TableCell className="text-xs text-right">${i.usdPerKg.toFixed(2)}</TableCell>
+                            <TableCell className="text-xs text-right">${(i.goodsUsd || 0).toLocaleString()}</TableCell>
+                            <TableCell className="text-xs text-right">${(i.freightUsd || 0).toLocaleString()}</TableCell>
+                            <TableCell className="text-xs text-right">${(i.dutyUsd || 0).toLocaleString()}</TableCell>
+                            <TableCell className="text-xs text-right">${(i.bankChargesUsd || 0).toLocaleString()}</TableCell>
+                            <TableCell className="text-xs text-right font-medium">${(i.landedUsd || 0).toLocaleString()}</TableCell>
+                            <TableCell className="text-xs text-right font-medium" style={{ color: GOLD }}>৳{(i.totalLandedCostBdt || 0).toLocaleString()}</TableCell>
+                            <TableCell className="text-xs text-right font-bold" style={{ color: GOLD }}>৳{(i.landedCostPerKgBdt || 0).toLocaleString()}</TableCell>
+                            <TableCell><Badge className="bg-green-100 text-green-800 hover:bg-green-100">{i.status}</Badge></TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(i)} title="Edit">
+                                  <Pencil className="h-3.5 w-3.5" />
                                 </Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(i)} title="Edit">
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(i.id)} title="Delete">
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {imports.length > 0 && (
-                        <TableRow className="bg-muted/50 font-semibold">
-                          <TableCell colSpan={4} className="text-xs" style={{ color: NAVY }}>TOTAL</TableCell>
-                          <TableCell className="text-xs text-right">{impTotals.weight.toFixed(1)}</TableCell>
-                          <TableCell colSpan={2}></TableCell>
-                          <TableCell className="text-xs text-right">${impTotals.goods.toLocaleString()}</TableCell>
-                          <TableCell className="text-xs text-right">${impTotals.freight.toLocaleString()}</TableCell>
-                          <TableCell className="text-xs text-right">${impTotals.duty.toLocaleString()}</TableCell>
-                          <TableCell className="text-xs text-right">${impTotals.bank.toLocaleString()}</TableCell>
-                          <TableCell className="text-xs text-right">${impTotals.landed.toLocaleString()}</TableCell>
-                          <TableCell className="text-xs text-right" style={{ color: GOLD }}>৳{impTotals.bdt.toLocaleString()}</TableCell>
-                          <TableCell></TableCell>
-                          <TableCell></TableCell>
-                          <TableCell></TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(i.id)} title="Delete">
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {imports.length > 0 && (
+                          <TableRow className="bg-muted/50 font-semibold">
+                            <TableCell colSpan={4} className="text-xs" style={{ color: NAVY }}>TOTAL</TableCell>
+                            <TableCell className="text-xs text-right">{impTotals.weight.toFixed(1)}</TableCell>
+                            <TableCell colSpan={2}></TableCell>
+                            <TableCell className="text-xs text-right">${impTotals.goods.toLocaleString()}</TableCell>
+                            <TableCell className="text-xs text-right">${impTotals.freight.toLocaleString()}</TableCell>
+                            <TableCell className="text-xs text-right">${impTotals.duty.toLocaleString()}</TableCell>
+                            <TableCell className="text-xs text-right">${impTotals.bank.toLocaleString()}</TableCell>
+                            <TableCell className="text-xs text-right">${impTotals.landed.toLocaleString()}</TableCell>
+                            <TableCell className="text-xs text-right" style={{ color: GOLD }}>৳{impTotals.bdt.toLocaleString()}</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                            <TableCell></TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </ScrollArea>
               )}
             </CardContent>
           </Card>
@@ -440,58 +433,57 @@ export default function ProcurementSection() {
               {loading ? (
                 <Skeleton className="h-64 w-full" />
               ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="hover:bg-transparent">
-                        {['Voucher #', 'Date', 'Supplier', 'Region', 'Qty (kg)', 'BDT/kg', 'Total BDT', 'Payment', 'Quality', 'Status', 'Actions'].map(h => (
-                          <TableHead key={h} className="text-xs font-bold" style={{ color: NAVY }}>{h}</TableHead>
-                        ))}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredLocals.length === 0 && (
-                        <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-8">No local purchases found</TableCell></TableRow>
-                      )}
-                      {filteredLocals.map(i => (
-                        <TableRow key={i.id}>
-                          <TableCell className="text-xs font-medium">{i.voucherNo}</TableCell>
-                          <TableCell className="text-xs">{new Date(i.date).toLocaleDateString()}</TableCell>
-                          <TableCell className="text-xs">{i.supplier?.name || '-'}</TableCell>
-                          <TableCell className="text-xs">{i.originCountry}</TableCell>
-                          <TableCell className="text-xs text-right">{i.rawWeightKg.toFixed(1)}</TableCell>
-                          <TableCell className="text-xs text-right" style={{ color: GOLD }}>৳{i.costPerKgBdt.toLocaleString()}</TableCell>
-                          <TableCell className="text-xs text-right font-medium" style={{ color: GOLD }}>৳{(i.totalLandedCostBdt || 0).toLocaleString()}</TableCell>
-                          <TableCell className="text-xs">{i.paymentMode || '-'}</TableCell>
-                          <TableCell className="text-xs">{i.qualityGrade || '-'}</TableCell>
-                          <TableCell><Badge className="bg-green-100 text-green-800 hover:bg-green-100">{i.status}</Badge></TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelectedProcId(i.id)} title="View Lifecycle">
-                                  <Eye className="h-3.5 w-3.5 text-blue-600" />
+                <ScrollArea className="max-h-[500px] w-full">
+                  <div className="min-w-[1000px] overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                          {['Voucher #', 'Date', 'Supplier', 'Region', 'Qty (kg)', 'BDT/kg', 'Total BDT', 'Payment', 'Quality', 'Status', 'Actions'].map(h => (
+                            <TableHead key={h} className="text-xs font-bold" style={{ color: NAVY }}>{h}</TableHead>
+                          ))}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredLocals.length === 0 && (
+                          <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-8">No local purchases found</TableCell></TableRow>
+                        )}
+                        {filteredLocals.map(i => (
+                          <TableRow key={i.id}>
+                            <TableCell className="text-xs font-medium">{i.voucherNo}</TableCell>
+                            <TableCell className="text-xs">{new Date(i.date).toLocaleDateString()}</TableCell>
+                            <TableCell className="text-xs">{i.supplier?.name || '-'}</TableCell>
+                            <TableCell className="text-xs">{i.originCountry}</TableCell>
+                            <TableCell className="text-xs text-right">{i.rawWeightKg.toFixed(1)}</TableCell>
+                            <TableCell className="text-xs text-right" style={{ color: GOLD }}>৳{i.costPerKgBdt.toLocaleString()}</TableCell>
+                            <TableCell className="text-xs text-right font-medium" style={{ color: GOLD }}>৳{(i.totalLandedCostBdt || 0).toLocaleString()}</TableCell>
+                            <TableCell className="text-xs">{i.paymentMode || '-'}</TableCell>
+                            <TableCell className="text-xs">{i.qualityGrade || '-'}</TableCell>
+                            <TableCell><Badge className="bg-green-100 text-green-800 hover:bg-green-100">{i.status}</Badge></TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(i)} title="Edit">
+                                  <Pencil className="h-3.5 w-3.5" />
                                 </Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(i)} title="Edit">
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(i.id)} title="Delete">
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {locals.length > 0 && (
-                        <TableRow className="bg-muted/50 font-semibold">
-                          <TableCell colSpan={4} className="text-xs" style={{ color: NAVY }}>TOTAL</TableCell>
-                          <TableCell className="text-xs text-right">{locTotals.weight.toFixed(1)}</TableCell>
-                          <TableCell></TableCell>
-                          <TableCell className="text-xs text-right" style={{ color: GOLD }}>৳{locTotals.bdt.toLocaleString()}</TableCell>
-                          <TableCell colSpan={4}></TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(i.id)} title="Delete">
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {locals.length > 0 && (
+                          <TableRow className="bg-muted/50 font-semibold">
+                            <TableCell colSpan={4} className="text-xs" style={{ color: NAVY }}>TOTAL</TableCell>
+                            <TableCell className="text-xs text-right">{locTotals.weight.toFixed(1)}</TableCell>
+                            <TableCell></TableCell>
+                            <TableCell className="text-xs text-right" style={{ color: GOLD }}>৳{locTotals.bdt.toLocaleString()}</TableCell>
+                            <TableCell colSpan={4}></TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </ScrollArea>
               )}
             </CardContent>
           </Card>

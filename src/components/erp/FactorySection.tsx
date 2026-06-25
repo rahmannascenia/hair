@@ -11,7 +11,6 @@ import {
   Pencil,
   Trash2,
   Loader2,
-  Eye,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -54,7 +53,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import FactoryDrillDown from './FactoryDrillDown';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -187,7 +185,6 @@ interface WorkerEntryInput {
 export default function FactorySection() {
   // ── Tab ──
   const [activeTab, setActiveTab] = useState('factories');
-  const [selectedFactoryId, setSelectedFactoryId] = useState<string | null>(null);
 
   // ── Shared lookup data ──
   const [lineLeaders, setLineLeaders] = useState<LineLeader[]>([]);
@@ -555,10 +552,6 @@ export default function FactorySection() {
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
-  if (selectedFactoryId) {
-    return <FactoryDrillDown factoryId={selectedFactoryId} onBack={() => setSelectedFactoryId(null)} />;
-  }
-
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -592,7 +585,7 @@ export default function FactorySection() {
                   <Skeleton className="h-10 w-full" />
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                <ScrollArea className="max-h-[500px]">
                   <Table>
                     <TableHeader>
                       <TableRow className="hover:bg-transparent" style={{ backgroundColor: '#F4F6FB' }}>
@@ -627,9 +620,6 @@ export default function FactorySection() {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-1">
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedFactoryId(f.id)} title="View Drilldown">
-                                <Eye className="h-3.5 w-3.5" style={{ color: GOLD }} />
-                              </Button>
                               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openFactoryDialog(f)}>
                                 <Pencil className="h-3.5 w-3.5" style={{ color: NAVY }} />
                               </Button>
@@ -642,7 +632,7 @@ export default function FactorySection() {
                       ))}
                     </TableBody>
                   </Table>
-                </div>
+                </ScrollArea>
               )}
             </CardContent>
           </Card>
@@ -679,7 +669,7 @@ export default function FactorySection() {
                 {workersLoading ? (
                   <div className="p-4 space-y-2"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <ScrollArea className="max-h-[500px]">
                     <Table>
                       <TableHeader>
                         <TableRow className="hover:bg-transparent" style={{ backgroundColor: '#F4F6FB' }}>
@@ -718,7 +708,7 @@ export default function FactorySection() {
                         ))}
                       </TableBody>
                     </Table>
-                  </div>
+                  </ScrollArea>
                 )}
               </CardContent>
             </Card>
@@ -800,7 +790,7 @@ export default function FactorySection() {
                   {dailyLoading ? (
                     <div className="space-y-2"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>
                   ) : (
-                    <div className="overflow-x-auto">
+                    <ScrollArea className="max-h-[400px]">
                       <Table>
                         <TableHeader>
                           <TableRow className="hover:bg-transparent">
@@ -848,7 +838,7 @@ export default function FactorySection() {
                           ))}
                         </TableBody>
                       </Table>
-                    </div>
+                    </ScrollArea>
                   )}
                 </CardContent>
               </Card>

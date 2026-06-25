@@ -130,7 +130,7 @@ export default function QcSection() {
       <h2 className="text-2xl font-bold" style={{ color: NAVY }}>QC & Grading</h2>
 
       <Tabs defaultValue="supervisor" className="w-full">
-        <TabsList className="w-full justify-start overflow-x-auto whitespace-nowrap">
+        <TabsList>
           <TabsTrigger value="supervisor">A: Supervisor Summary</TabsTrigger>
           <TabsTrigger value="worker">B: Worker Detail</TabsTrigger>
           <TabsTrigger value="discrepancy">C: Discrepancy Check</TabsTrigger>
@@ -145,7 +145,7 @@ export default function QcSection() {
             </CardHeader>
             <CardContent>
               {loading ? renderLoading() : (
-                <div className="overflow-x-auto">
+                <ScrollArea className="max-h-[500px]">
                   <Table>
                     <TableHeader>
                       <TableRow className="hover:bg-transparent">
@@ -204,7 +204,7 @@ export default function QcSection() {
                       )}
                     </TableBody>
                   </Table>
-            </div>
+                </ScrollArea>
               )}
             </CardContent>
           </Card>
@@ -218,7 +218,7 @@ export default function QcSection() {
             </CardHeader>
             <CardContent>
               {loading ? renderLoading() : (
-                <div className="overflow-x-auto">
+                <ScrollArea className="max-h-[500px]">
                   <Table>
                     <TableHeader>
                       <TableRow className="hover:bg-transparent">
@@ -254,7 +254,7 @@ export default function QcSection() {
                       ))}
                     </TableBody>
                   </Table>
-            </div>
+                </ScrollArea>
               )}
             </CardContent>
           </Card>
@@ -268,7 +268,7 @@ export default function QcSection() {
             </CardHeader>
             <CardContent>
               {loading ? renderLoading() : (
-                <div className="overflow-x-auto">
+                <ScrollArea className="max-h-[500px]">
                   <Table>
                     <TableHeader>
                       <TableRow className="hover:bg-transparent">
@@ -312,7 +312,7 @@ export default function QcSection() {
                       ))}
                     </TableBody>
                   </Table>
-            </div>
+                </ScrollArea>
               )}
             </CardContent>
           </Card>

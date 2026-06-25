@@ -347,7 +347,7 @@
    347→        ws.Row(5).Height = 22;
    348→        ws.Row(6).Height = 18;
    349→
-   350→        var title = ws.Cell(3, 2); title.Value = "BARENDRA INTERNATIONAL";
+   350→        var title = ws.Cell(3, 2); title.Value = "HAIRLAN INTERNATIONAL";
    351→        title.Style.Font.FontName = FontName; title.Style.Font.FontSize = 24;
    352→        title.Style.Font.Bold = true; title.Style.Font.FontColor = Navy;
    353→        title.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
