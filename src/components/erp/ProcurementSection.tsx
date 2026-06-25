@@ -356,8 +356,8 @@ export default function ProcurementSection() {
               {loading ? (
                 <Skeleton className="h-64 w-full" />
               ) : (
-                <ScrollArea className="max-h-[500px]">
-                  <div className="min-w-[1200px]">
+                <ScrollArea className="max-h-[500px] w-full">
+                  <div className="min-w-[1200px] overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow className="hover:bg-transparent">
@@ -433,8 +433,8 @@ export default function ProcurementSection() {
               {loading ? (
                 <Skeleton className="h-64 w-full" />
               ) : (
-                <ScrollArea className="max-h-[500px]">
-                  <div className="min-w-[1000px]">
+                <ScrollArea className="max-h-[500px] w-full">
+                  <div className="min-w-[1000px] overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow className="hover:bg-transparent">
