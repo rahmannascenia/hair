@@ -1,57 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkPermission } from '@/lib/audit';
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  time: string;
-  read: boolean;
-  section?: string;
-}
-
-const notifications: Notification[] = [
-  {
-    id: '1',
-    title: 'Lot Wash Completed',
-    message: 'Lot LOT-2024-001 washing completed with 12.3% wastage.',
-    time: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-    read: false,
-    section: 'washing-log',
-  },
-  {
-    id: '2',
-    title: 'Low Inventory Alert',
-    message: 'Raw Hair stock is below 50kg threshold.',
-    time: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-    read: false,
-    section: 'inventory',
-  },
-  {
-    id: '3',
-    title: 'New Procurement Received',
-    message: 'Procurement PR-2024-045 received from supplier.',
-    time: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
-    read: true,
-    section: 'procurement',
-  },
-  {
-    id: '4',
-    title: 'QC Grade Dispute',
-    message: 'Grade dispute filed for Lot LOT-2024-003.',
-    time: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-    read: true,
-    section: 'grade-dispute',
-  },
-  {
-    id: '5',
-    title: 'Payroll Processed',
-    message: 'Monthly payroll for January has been processed.',
-    time: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-    read: true,
-    section: 'payroll',
-  },
-];
+import { db } from '@/lib/db';
+import { checkPermission, writeAuditLog, getActorFromRequest, getChangedFields } from '@/lib/audit';
 
 export async function GET(request: NextRequest) {
   const role = request.headers.get('x-erp-role') || '';
@@ -59,7 +8,17 @@ export async function GET(request: NextRequest) {
   if (!perm.allowed) {
     return NextResponse.json({ error: perm.error }, { status: 403 });
   }
-  return NextResponse.json(notifications);
+
+  try {
+    const notifications = await db.notification.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+    return NextResponse.json(notifications);
+  } catch (error) {
+    console.error('Notifications GET error:', error);
+    return NextResponse.json({ error: 'Failed to fetch notifications' }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -71,16 +30,34 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
+    const actor = getActorFromRequest(request);
     const { id } = body;
     if (!id) {
       return NextResponse.json({ error: 'Notification id is required' }, { status: 400 });
     }
-    const notification = notifications.find((n) => n.id === id);
-    if (notification) {
-      notification.read = true;
+
+    const oldNotification = await db.notification.findUnique({ where: { id } });
+    if (!oldNotification) {
+      return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
     }
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+
+    const notification = await db.notification.update({
+      where: { id },
+      data: { isRead: true },
+    });
+
+    await writeAuditLog({
+      entity: 'Notification',
+      entityId: id,
+      action: 'UPDATE',
+      oldValues: { isRead: false },
+      newValues: { isRead: true },
+      performedBy: actor,
+    });
+
+    return NextResponse.json({ success: true, data: notification });
+  } catch (error) {
+    console.error('Notification POST error:', error);
+    return NextResponse.json({ error: 'Failed to update notification' }, { status: 500 });
   }
 }

@@ -7,26 +7,25 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const role = request.headers.get('x-erp-role') || '';
-  const perm = checkPermission(role, 'sales', 'view');
+  const perm = checkPermission(role, 'consumables', 'view');
   if (!perm.allowed) {
     return NextResponse.json({ error: perm.error }, { status: 403 });
   }
 
   try {
     const { id } = await params;
-    const pricing = await db.buyerPricing.findUnique({
+    const item = await db.consumable.findUnique({
       where: { id },
-      include: { buyer: true },
     });
 
-    if (!pricing) {
-      return NextResponse.json({ error: 'Buyer pricing not found' }, { status: 404 });
+    if (!item) {
+      return NextResponse.json({ error: 'Consumable not found' }, { status: 404 });
     }
 
-    return NextResponse.json(pricing);
+    return NextResponse.json(item);
   } catch (error) {
-    console.error('Buyer pricing GET error:', error);
-    return NextResponse.json({ error: 'Failed to fetch buyer pricing' }, { status: 500 });
+    console.error('Consumable detail error:', error);
+    return NextResponse.json({ error: 'Failed to fetch consumable' }, { status: 500 });
   }
 }
 
@@ -35,7 +34,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const role = request.headers.get('x-erp-role') || '';
-  const perm = checkPermission(role, 'sales', 'edit');
+  const perm = checkPermission(role, 'consumables', 'edit');
   if (!perm.allowed) {
     return NextResponse.json({ error: perm.error }, { status: 403 });
   }
@@ -45,22 +44,26 @@ export async function PUT(
     const body = await request.json();
     const actor = getActorFromRequest(request);
 
-    const oldPricing = await db.buyerPricing.findUnique({ where: { id } });
-    const oldPlain = oldPricing ? JSON.parse(JSON.stringify(oldPricing)) : {};
+    const oldItem = await db.consumable.findUnique({ where: { id } });
+    const oldPlain = oldItem ? JSON.parse(JSON.stringify(oldItem)) : {};
 
-    const pricing = await db.buyerPricing.update({
+    const item = await db.consumable.update({
       where: { id },
       data: {
-        premiumPct: body.premiumPct,
-        lengthInch: body.lengthInch,
-        buyerId: body.buyerId,
+        itemName: body.itemName,
+        category: body.category,
+        unit: body.unit,
+        stockQty: body.stockQty,
+        reorderLevel: body.reorderLevel,
+        costPerUnit: body.costPerUnit,
+        supplierName: body.supplierName,
+        lastOrderDate: body.lastOrderDate ? new Date(body.lastOrderDate) : undefined,
       },
-      include: { buyer: true },
     });
 
     const { oldValues, newValues } = getChangedFields(oldPlain, body);
     await writeAuditLog({
-      entity: 'BuyerPricing',
+      entity: 'Consumable',
       entityId: id,
       action: 'UPDATE',
       oldValues,
@@ -68,10 +71,10 @@ export async function PUT(
       performedBy: actor,
     });
 
-    return NextResponse.json(pricing);
+    return NextResponse.json(item);
   } catch (error) {
-    console.error('Buyer pricing PUT error:', error);
-    return NextResponse.json({ error: 'Failed to update buyer pricing' }, { status: 500 });
+    console.error('Consumable update error:', error);
+    return NextResponse.json({ error: 'Failed to update consumable' }, { status: 500 });
   }
 }
 
@@ -80,7 +83,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const role = request.headers.get('x-erp-role') || '';
-  const perm = checkPermission(role, 'sales', 'delete');
+  const perm = checkPermission(role, 'consumables', 'delete');
   if (!perm.allowed) {
     return NextResponse.json({ error: perm.error }, { status: 403 });
   }
@@ -89,21 +92,21 @@ export async function DELETE(
     const { id } = await params;
     const actor = getActorFromRequest(request);
 
-    const oldPricing = await db.buyerPricing.findUnique({ where: { id } });
+    const oldItem = await db.consumable.findUnique({ where: { id } });
 
-    await db.buyerPricing.delete({ where: { id } });
+    await db.consumable.delete({ where: { id } });
 
     await writeAuditLog({
-      entity: 'BuyerPricing',
+      entity: 'Consumable',
       entityId: id,
       action: 'DELETE',
-      oldValues: oldPricing ? JSON.parse(JSON.stringify(oldPricing)) : undefined,
+      oldValues: oldItem ? JSON.parse(JSON.stringify(oldItem)) : undefined,
       performedBy: actor,
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ message: 'Consumable deleted' });
   } catch (error) {
-    console.error('Buyer pricing DELETE error:', error);
-    return NextResponse.json({ error: 'Failed to delete buyer pricing' }, { status: 500 });
+    console.error('Consumable delete error:', error);
+    return NextResponse.json({ error: 'Failed to delete consumable' }, { status: 500 });
   }
 }

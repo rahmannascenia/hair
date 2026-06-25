@@ -39,6 +39,7 @@ import { getSectionPermissions, type SectionKey } from '@/lib/permissions';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -104,9 +105,9 @@ export default function Sidebar() {
   const insightItems = filteredNavItems.filter(item => item.category === 'insights');
   const systemItems = filteredNavItems.filter(item => item.category === 'system');
 
-  const renderNavGroup = (items: typeof navItems, label?: string) => (
+  const renderNavGroup = (items: typeof navItems, label?: string, isCollapsed = false) => (
     <div className="space-y-1">
-      {label && !collapsed && (
+      {label && !isCollapsed && (
         <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-blue-300/70">{label}</p>
       )}
       {items.map((item) => {
@@ -122,146 +123,149 @@ export default function Sidebar() {
                 ? 'bg-white text-[#1F3864] font-semibold shadow-sm'
                 : 'text-blue-100 hover:bg-blue-700/50 hover:text-white'
             )}
-            title={collapsed ? item.label : undefined}
+            title={isCollapsed ? item.label : undefined}
           >
             <Icon className={cn('h-4 w-4 flex-shrink-0', isActive ? 'text-[#C9A227]' : '')} />
-            {!collapsed && <span className="truncate">{item.label}</span>}
+            {!isCollapsed && <span className="truncate">{item.label}</span>}
           </button>
         );
       })}
     </div>
   );
 
-  return (
-    <>
-      {/* Mobile hamburger */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed top-3 left-3 z-50 md:hidden bg-white shadow-md border"
-        onClick={() => setMobileOpen(!mobileOpen)}
-      >
-        <Menu className="h-5 w-5" />
-      </Button>
-
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-40 md:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          'fixed top-0 left-0 h-full z-40 transition-all duration-300 flex flex-col',
-          'md:translate-x-0',
-          collapsed ? 'md:w-16' : 'md:w-64',
-          mobileOpen ? 'translate-x-0 w-64' : '-translate-x-full'
-        )}
-        style={{ backgroundColor: '#1F3864' }}
-      >
-        {/* Header */}
-        <div className="p-4 flex items-center gap-3 min-h-[64px]">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#C9A227' }}>
-            <span className="text-white font-bold text-sm">BI</span>
-          </div>
-          {!collapsed && (
-            <div className="overflow-hidden flex-1 min-w-0">
-              <h1 className="text-white font-bold text-sm leading-tight truncate">Barendra International</h1>
-              <p className="text-blue-200 text-xs truncate">ERP System</p>
-            </div>
-          )}
-          {!collapsed && (
-            <div className="flex items-center gap-0.5 flex-shrink-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 text-blue-300 hover:text-white hover:bg-blue-700/50"
-                onClick={() => setSearchOpen(true)}
-                title="Search (Ctrl+K)"
-              >
-                <Search className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 text-blue-300 hover:text-white hover:bg-blue-700/50"
-                onClick={() => setNotificationsOpen(true)}
-                title="Notifications"
-              >
-                <Bell className="h-3.5 w-3.5" />
-              </Button>
-              <ThemeToggle />
-            </div>
-          )}
+  const SidebarContent = ({ isCollapsed = false }) => (
+    <div className="flex flex-col h-full overflow-hidden" style={{ backgroundColor: '#1F3864' }}>
+      {/* Header */}
+      <div className="p-4 flex items-center gap-3 min-h-[64px]">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#C9A227' }}>
+          <span className="text-white font-bold text-sm">BI</span>
         </div>
-
-        <Separator className="bg-blue-700/50" />
-
-        {/* Navigation */}
-        <ScrollArea className="flex-1 py-2">
-          <nav className="px-2 space-y-2">
-            {renderNavGroup(mainItems)}
-            {managementItems.length > 0 && (
-              <>
-                <Separator className="bg-blue-700/30 my-1" />
-                {renderNavGroup(managementItems, 'Management')}
-              </>
-            )}
-            {insightItems.length > 0 && (
-              <>
-                <Separator className="bg-blue-700/30 my-1" />
-                {renderNavGroup(insightItems, 'Insights')}
-              </>
-            )}
-            {systemItems.length > 0 && (
-              <>
-                <Separator className="bg-blue-700/30 my-1" />
-                {renderNavGroup(systemItems, 'System')}
-              </>
-            )}
-          </nav>
-        </ScrollArea>
-
-        <Separator className="bg-blue-700/50" />
-
-        {/* Footer */}
-        <div className="p-3 flex items-center justify-between">
-          {!collapsed && (
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: '#C9A227' }}>
-                {user?.displayName?.charAt(0) || '?'}
-              </div>
-              <div className="min-w-0">
-                <p className="text-blue-100 text-xs font-medium truncate">{user?.displayName || 'User'}</p>
-                <p className="text-blue-300 text-[10px] truncate">{user?.role || ''}</p>
-              </div>
-            </div>
-          )}
-          <div className="flex items-center gap-1">
-            {!collapsed && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-blue-300 hover:text-red-300 hover:bg-blue-700/50 h-8 w-8"
-                onClick={handleLogout}
-                title="Logout"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
-            )}
+        {!isCollapsed && (
+          <div className="overflow-hidden flex-1 min-w-0">
+            <h1 className="text-white font-bold text-sm leading-tight truncate">Barendra International</h1>
+            <p className="text-blue-200 text-xs truncate">ERP System</p>
+          </div>
+        )}
+        {!isCollapsed && (
+          <div className="flex items-center gap-0.5 flex-shrink-0">
             <Button
               variant="ghost"
               size="icon"
-              className="text-blue-300 hover:text-white hover:bg-blue-700/50 hidden md:flex h-8 w-8"
-              onClick={() => setCollapsed(!collapsed)}
+              className="h-7 w-7 text-blue-300 hover:text-white hover:bg-blue-700/50"
+              onClick={() => setSearchOpen(true)}
+              title="Search (Ctrl+K)"
             >
-              <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} />
+              <Search className="h-3.5 w-3.5" />
             </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-blue-300 hover:text-white hover:bg-blue-700/50"
+              onClick={() => setNotificationsOpen(true)}
+              title="Notifications"
+            >
+              <Bell className="h-3.5 w-3.5" />
+            </Button>
+            <ThemeToggle />
           </div>
+        )}
+      </div>
+
+      <Separator className="bg-blue-700/50" />
+
+      {/* Navigation */}
+      <ScrollArea className="flex-1 py-2">
+        <nav className="px-2 space-y-2">
+          {renderNavGroup(mainItems, undefined, isCollapsed)}
+          {managementItems.length > 0 && (
+            <>
+              <Separator className="bg-blue-700/30 my-1" />
+              {renderNavGroup(managementItems, 'Management', isCollapsed)}
+            </>
+          )}
+          {insightItems.length > 0 && (
+            <>
+              <Separator className="bg-blue-700/30 my-1" />
+              {renderNavGroup(insightItems, 'Insights', isCollapsed)}
+            </>
+          )}
+          {systemItems.length > 0 && (
+            <>
+              <Separator className="bg-blue-700/30 my-1" />
+              {renderNavGroup(systemItems, 'System', isCollapsed)}
+            </>
+          )}
+        </nav>
+      </ScrollArea>
+
+      <Separator className="bg-blue-700/50" />
+
+      {/* Footer */}
+      <div className="p-3 flex items-center justify-between">
+        {!isCollapsed && (
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: '#C9A227' }}>
+              {user?.displayName?.charAt(0) || '?'}
+            </div>
+            <div className="min-w-0">
+              <p className="text-blue-100 text-xs font-medium truncate">{user?.displayName || 'User'}</p>
+              <p className="text-blue-300 text-[10px] truncate">{user?.role || ''}</p>
+            </div>
+          </div>
+        )}
+        <div className="flex items-center gap-1">
+          {!isCollapsed && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-blue-300 hover:text-red-300 hover:bg-blue-700/50 h-8 w-8"
+              onClick={handleLogout}
+              title="Logout"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-blue-300 hover:text-white hover:bg-blue-700/50 hidden md:flex h-8 w-8"
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} />
+          </Button>
         </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Sidebar */}
+      <div className="md:hidden">
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="fixed top-3 left-3 z-50 bg-white shadow-md border"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-64">
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <aside
+        className={cn(
+          'fixed top-0 left-0 h-full z-40 transition-all duration-300 hidden md:flex flex-col',
+          collapsed ? 'w-16' : 'w-64'
+        )}
+      >
+        <SidebarContent isCollapsed={collapsed} />
       </aside>
     </>
   );
