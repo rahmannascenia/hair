@@ -1,5 +1,5 @@
 /**
- * Barendra International ERP — Role-Based Access Control
+ * Hairlan International ERP — Role-Based Access Control
  *
  * Based on Combined_transcription Category 6 analysis:
  * - Owner: Full access to everything + final approval authority

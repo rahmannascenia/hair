@@ -9,7 +9,7 @@
      9→     9→using System.Linq;
     10→    10→using ClosedXML.Excel;
     11→    11→
-    12→    12→namespace BarendraErpXL;
+    12→    12→namespace HairlanErpXL;
     13→    13→
     14→    14→internal static class QcSheet
     15→    15→{

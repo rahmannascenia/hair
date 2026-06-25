@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace BarendraErpXL;
+namespace HairlanErpXL;
 
 internal static class ChartBuilder
 {

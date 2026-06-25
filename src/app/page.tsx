@@ -74,7 +74,7 @@ export default function Home() {
         </main>
         <footer className="mt-auto border-t bg-muted/30 px-6 py-4 md:ml-64 transition-all duration-300">
           <div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-            <p>© {new Date().getFullYear()} Barendra International. Human Hair Wig Manufacturing, Bangladesh.</p>
+            <p>© {new Date().getFullYear()} Hairlan International. Human Hair Wig Manufacturing, Bangladesh.</p>
             <p>ERP System v1.0 — All rights reserved.</p>
           </div>
         </footer>

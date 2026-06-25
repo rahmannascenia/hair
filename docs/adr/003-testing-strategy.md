@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-Ensuring the reliability and accuracy of the Barendra International ERP is paramount, given its role in managing production, finances, and payroll. A structured testing approach is necessary to maintain high code quality and prevent regressions.
+Ensuring the reliability and accuracy of the Hairlan International ERP is paramount, given its role in managing production, finances, and payroll. A structured testing approach is necessary to maintain high code quality and prevent regressions.
 
 ## Decision
 We have adopted a multi-layered testing strategy:

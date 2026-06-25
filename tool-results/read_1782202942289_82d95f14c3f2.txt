@@ -1,6 +1,6 @@
      1→     1→// ============================================================================
-     2→     2→//  Barendra International — End-to-End ERP Workbook Generator
-     3→     3→//  .NET 8 + ClosedXML  |  Generates BarendraInternational_ERP.xlsx
+     2→     2→//  Hairlan International — End-to-End ERP Workbook Generator
+     3→     3→//  .NET 8 + ClosedXML  |  Generates HairlanInternational_ERP.xlsx
      4→     4→//
      5→     5→//  Every derived value is written as a LIVE Excel formula so the workbook
      6→     6→//  stays dynamic — change an input on Settings and the Dashboard, Payroll,
@@ -15,7 +15,7 @@
     15→    15→using System.Linq;
     16→    16→using ClosedXML.Excel;
     17→    17→
-    18→    18→namespace BarendraErpXL;
+    18→    18→namespace HairlanErpXL;
     19→    19→
     20→    20→internal static class Program
     21→    21→{
@@ -130,13 +130,13 @@
    130→   130→    //  MAIN
    131→   131→    // ──────────────────────────────────────────────────────────────────────
    132→   132→    static void Main(string[] args) {
-   133→   133→        Console.WriteLine("Building Barendra International ERP workbook (v2 — per-factory sheets)...");
+   133→   133→        Console.WriteLine("Building Hairlan International ERP workbook (v2 — per-factory sheets)...");
    134→   134→
    135→   135→        using var wb = new XLWorkbook();
    136→   136→        wb.Properties.Author = "Z.ai";
-   137→   137→        wb.Properties.Title = "Barendra International — ERP Workbook (v2)";
+   137→   137→        wb.Properties.Title = "Hairlan International — ERP Workbook (v2)";
    138→   138→        wb.Properties.Subject = "End-to-End Business Process Model with per-factory payroll";
-   139→   139→        wb.Properties.Company = "Barendra International";
+   139→   139→        wb.Properties.Company = "Hairlan International";
    140→   140→
    141→   141→        // Build factory configs first so we know how many sheets + their names
    142→   142→        var factoryConfigs = BuildFactoryConfigs();
@@ -172,7 +172,7 @@
    172→   172→        wb.Worksheet("Cover & Index").SetTabColor(Navy);
    173→   173→        wb.Worksheet("Dashboard").SetTabColor(Gold);
    174→   174→
-   175→   175→        string outPath = "/home/z/my-project/download/BarendraInternational_ERP.xlsx";
+   175→   175→        string outPath = "/home/z/my-project/download/HairlanInternational_ERP.xlsx";
    176→   176→        wb.SaveAs(outPath);
    177→   177→        Console.WriteLine($"OK Saved -> {outPath}");
    178→   178→        Console.WriteLine($"  Sheets: {wb.Worksheets.Count} (incl. {factoryConfigs.Length} factory sheets)");

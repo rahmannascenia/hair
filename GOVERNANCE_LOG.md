@@ -1,7 +1,7 @@
-# Governance Log - Barendra International ERP
+# Governance Log - Hairlan International ERP
 
 ## Overview
-This document tracks the governance, accountability, and decision-making processes for the Barendra International ERP system.
+This document tracks the governance, accountability, and decision-making processes for the Hairlan International ERP system.
 
 ## 1. Architecture Decision Records (ADRs)
 

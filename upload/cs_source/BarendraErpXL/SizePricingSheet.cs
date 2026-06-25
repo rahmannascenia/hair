@@ -2,7 +2,7 @@
 using System;
 using ClosedXML.Excel;
 
-namespace BarendraErpXL;
+namespace HairlanErpXL;
 
 internal static class SizePricingSheet
 {

@@ -3,7 +3,7 @@
    302→   302→Figure 2: End-to-end business process flow from raw-material sourcing to export.
    303→   303→Page 8
    304→   304→--- Page 9 ---
-   305→   305→Business Process Document Barendra International
+   305→   305→Business Process Document Hairlan International
    306→   306→3.1 Process Inventory Summary
    307→   307→# Process Location Primary Output Typical Cycle
    308→   308→Raw hair received into Dhaka
@@ -49,10 +49,10 @@
    348→   348→accounting at each level of the hierarchy.
    349→   349→Page 9
    350→   350→--- Page 10 ---
-   351→   351→Business Process Document Barendra International
+   351→   351→Business Process Document Hairlan International
    352→   352→4. Process 1 - Raw Material Procurement
    353→   353→4.1 Sourcing Strategy and Supplier Network
-   354→   354→Barendra International sources raw human hair from a diversified multi-country supplier network designed to
+   354→   354→Hairlan International sources raw human hair from a diversified multi-country supplier network designed to
    355→   355→reduce dependence on any single geography and to access different hair characteristics (colour, texture, length)
    356→   356→native to each region. International sources include India (three suppliers covering the entire country), Pakistan
    357→   357→(one supplier), Uzbekistan, Tajikistan, and Myanmar. The company also procures locally within Bangladesh
@@ -90,7 +90,7 @@
    389→   389→step.
    390→   390→Page 10
    391→   391→--- Page 11 ---
-   392→   392→Business Process Document Barendra International
+   392→   392→Business Process Document Hairlan International
    393→   393→Specialised materials follow parallel procurement paths. The US-sourced adhesive glue (USD 4,000-5,000 per
    394→   394→100 grams) is received and stored separately with stricter custody controls because counterfeits cause customer
    395→   395→allergies and the material cannot be substituted. Packaging materials, sizing tools, and consumables (shampoo,
@@ -102,7 +102,7 @@
    401→   401→Upon receipt and initial storage at the Dhaka warehouse, raw material enters the colour separation process. This
    402→   402→is a manual, visually judgement-based operation in which workers physically separate hair by natural colour
    403→   403→into distinct groupings. The industry uses a universal 1-to-10 level system for hair colour (where 1 is black and
-   404→   404→10 is lightest blonde), but Barendra International's internal colour codes include specific identifiers such as 600
+   404→   404→10 is lightest blonde), but Hairlan International's internal colour codes include specific identifiers such as 600
    405→   405→and 627, which may correspond to either colour codes or supplier lot references. Colour separation is the first
    406→   406→quality-determining step because subsequent processing (washing, chemical treatment) is calibrated to colour
    407→   407→characteristics, and mixing colours at this stage creates defects that cannot be economically recovered later.
@@ -129,7 +129,7 @@
    428→   428→primary source of traceability gaps.
    429→   429→Page 11
    430→   430→--- Page 12 ---
-   431→   431→Business Process Document Barendra International
+   431→   431→Business Process Document Hairlan International
    432→   432→5.4 Lot Lifecycle and Traceability
    433→   433→Once created, the lot number travels with the goods through the entire production pipeline - from Dhaka to
    434→   434→Dinajpur, through washing, through distribution to Head Leaders and Line Leaders and factories and individual
@@ -170,10 +170,10 @@
    469→   469→position is then the basis for the next-level distribution to Head Leaders.
    470→   470→Page 12
    471→   471→--- Page 13 ---
-   472→   472→Business Process Document Barendra International
+   472→   472→Business Process Document Hairlan International
    473→   473→7. Process 4 - Phase 1 Distribution and Field
    474→   474→Manufacturing
-   475→   475→Phase 1 distribution is the operational heart of Barendra International's manufacturing model and the process
+   475→   475→Phase 1 distribution is the operational heart of Hairlan International's manufacturing model and the process
    476→   476→that most differentiates it from conventional factory-based production. In this phase, washed and lot-coded
    477→   477→material is distributed through a five-tier hierarchy to approximately 4,000-5,000 home-based female workers
    478→   478→who perform hand-tool sorting, opening, and classification in their own homes. The workers gather at a
@@ -182,7 +182,7 @@
    481→   481→return flow is illustrated in Figure 3.
    482→   482→Page 13
    483→   483→--- Page 14 ---
-   484→   484→Business Process Document Barendra International
+   484→   484→Business Process Document Hairlan International
    485→   485→Figure 3: Phase 1 distribution and field manufacturing flow with daily return cycle.
    486→   486→7.1 Tier-by-Tier Distribution Mechanics
    487→   487→Distribution begins when the Production Manager allocates a 1,200 kg washed batch across five Head Leaders
@@ -194,7 +194,7 @@
    493→   493→factories, and each factory supervisor allocates 100-300 grams to each of approximately ten workers.
    494→   494→Page 14
    495→   495→--- Page 15 ---
-   496→   496→Business Process Document Barendra International
+   496→   496→Business Process Document Hairlan International
    497→   497→At every transfer point, two copies of a slip are created - one retained by the issuing party and one
    498→   498→accompanying the material. The slip records the lot number, quantity, recipient name and ID, and date. This
    499→   499→dual-copy slip system is the current chain-of-custody mechanism and will be replaced by ERP-issued digital
@@ -233,7 +233,7 @@
    532→   532→weighing scales - is a Phase 3 ERP priority.
    533→   533→Page 15
    534→   534→--- Page 16 ---
-   535→   535→Business Process Document Barendra International
+   535→   535→Business Process Document Hairlan International
    536→   536→7.4 Shortage, Reject, and Wastage Accounting
    537→   537→At every return step, issued quantity is reconciled against returned quantity, and any variance is classified as
    538→   538→either reject (quality failure - hair that cannot be used) or shortage (unaccounted loss). Industry-standard
@@ -243,7 +243,7 @@
    542→   542→returned with weight recorded, and a recovery rate (for example, 900 grams 'tikal' or recovered per 1,000 grams
    543→   543→input) is calculated for each lot and each factory.
    544→   544→8. Process 5 - Quality Control and Worker Grading
-   545→   545→Quality control at Barendra International operates as a continuous, daily activity rather than a discrete
+   545→   545→Quality control at Hairlan International operates as a continuous, daily activity rather than a discrete
    546→   546→end-of-line inspection. Four Quality Controllers based in Dhaka are responsible for grading the output of all
    547→   547→approximately 5,000 workers every working day, producing the A/B/C grades that directly determine each
    548→   548→worker's daily wage. This daily grading cadence is essential because worker compensation is grade-driven - an
@@ -266,7 +266,7 @@
    565→   565→dissatisfaction and turnover risk increase.
    566→   566→Page 16
    567→   567→--- Page 17 ---
-   568→   568→Business Process Document Barendra International
+   568→   568→Business Process Document Hairlan International
    569→   569→8.2 The A/B/C Grade System
    570→   570→Daily Rate
    571→   571→Grade Typical Output Benchmark Implication
@@ -297,7 +297,7 @@
    596→   596→from lower-grade applications. The ERP system must track reject and shortage as separate inventory transaction
    597→   597→types with distinct cost-account postings.
    598→   598→9. Process 6 - Salary and Payroll Management
-   599→   599→Barendra International's payroll system is a hybrid model that combines grade-based daily rates, attendance
+   599→   599→Hairlan International's payroll system is a hybrid model that combines grade-based daily rates, attendance
    600→   600→bonuses, and performance bonuses to align worker compensation with both output quality and reliability. The
    601→   601→system applies to all home-based workers on a daily-labour (not monthly-salary) basis, with monthly
    602→   602→disbursement via bKash mobile payment. The complete salary calculation flow is illustrated in Figure 6, and the
@@ -305,7 +305,7 @@
    604→   604→management time, making it a Phase 3 priority for ERP automation.
    605→   605→Page 17
    606→   606→--- Page 18 ---
-   607→   607→Business Process Document Barendra International
+   607→   607→Business Process Document Hairlan International
    608→   608→Figure 4: Salary calculation flow from daily inputs through bKash disbursement.
    609→   609→9.1 Compensation Components
    610→   610→Component Basis Amount / Trigger Recipients
@@ -326,7 +326,7 @@
    625→   625→Table 4: Complete compensation structure with basis, amount, and recipients.
    626→   626→Page 18
    627→   627→--- Page 19 ---
-   628→   628→Business Process Document Barendra International
+   628→   628→Business Process Document Hairlan International
    629→   629→9.2 Quality Over Quantity Principle
    630→   630→A defining design principle of the compensation system is that quality is rewarded over quantity. The owner
    631→   631→explicitly states that producing 5 kilograms of mediocre output is less valuable than producing 100 grams of
@@ -362,7 +362,7 @@
    661→   661→margin.
    662→   662→Page 19
    663→   663→--- Page 20 ---
-   664→   664→Business Process Document Barendra International
+   664→   664→Business Process Document Hairlan International
    665→   665→10. Process 7 - Half-Finish Return and Requisition
    666→   666→When Phase 1 home-based processing is complete for a given lot, the half-processed material must be returned
    667→   667→from the Dinajpur field operations to the Dhaka main factory for Phase 2 final production. This return is
@@ -402,7 +402,7 @@
    701→   701→colour-treated, finished goods ready for export, and the entire flow is illustrated in Figure 5.
    702→   702→Page 20
    703→   703→--- Page 21 ---
-   704→   704→Business Process Document Barendra International
+   704→   704→Business Process Document Hairlan International
    705→   705→Figure 5: Phase 2 final production flow at Dhaka factory with size-wise pricing.
    706→   706→11.1 Sizing - The Critical Value Driver
    707→   707→The first and most consequential operation in Phase 2 is length sizing. Half-finish material is sorted into discrete
@@ -414,7 +414,7 @@
    713→   713→that accurate sizing in Phase 2 is essential for correct invoicing and margin calculation.
    714→   714→Page 21
    715→   715→--- Page 22 ---
-   716→   716→Business Process Document Barendra International
+   716→   716→Business Process Document Hairlan International
    717→   717→The sizing operation is performed in full - the company does not selectively process only small or only large
    718→   718→sizes from a given lot. A single lot's output is distributed across the full range of size categories, with each size
    719→   719→receiving its own rate from a size-wise rate master. The blended average cost of a sized lot may be
@@ -449,10 +449,10 @@
    748→   748→inadequate given its unit cost and quality criticality.
    749→   749→Page 22
    750→   750→--- Page 23 ---
-   751→   751→Business Process Document Barendra International
+   751→   751→Business Process Document Hairlan International
    752→   752→12. Process 9 - Sales, Export and Order Management
    753→   753→12.1 Market and Buyer Segments
-   754→   754→Barendra International sells finished human-hair products to a diversified international buyer base spanning
+   754→   754→Hairlan International sells finished human-hair products to a diversified international buyer base spanning
    755→   755→four major market segments. The United States is the highest-value market, with American buyers paying up to
    756→   756→USD 105 for products that sell to African buyers at USD 5-50 - the differential reflecting quality tier, end-use
    757→   757→application, and buyer negotiation power. Europe represents a second premium market with quality and
@@ -480,7 +480,7 @@
    779→   779→system must support buyer-specific price lists layered on top of the size-wise rate master, with margin analysis
    780→   780→at the buyer-and-product level.
    781→   781→13. Inventory and Lot Traceability Framework
-   782→   782→Inventory management at Barendra International is built on two foundational concepts: the eight-bucket stock
+   782→   782→Inventory management at Hairlan International is built on two foundational concepts: the eight-bucket stock
    783→   783→model that tracks material through its physical transformations, and the lot-based traceability framework that
    784→   784→maintains identity continuity from raw material receipt to finished-goods storage. These two concepts together
    785→   785→form the data architecture that the ERP system must implement, and they represent the single most important
@@ -488,15 +488,15 @@
    787→   787→the stock bucket model.
    788→   788→Page 23
    789→   789→--- Page 24 ---
-   790→   790→Business Process Document Barendra International
+   790→   790→Business Process Document Hairlan International
    791→   791→Figure 6: Lot lifecycle from creation through finished goods, with supported lot operations.
    792→   792→Page 24
    793→   793→--- Page 25 ---
-   794→   794→Business Process Document Barendra International
+   794→   794→Business Process Document Hairlan International
    795→   795→Figure 7: Eight-bucket inventory model tracking material through all transformation stages.
    796→   796→Page 25
    797→   797→--- Page 26 ---
-   798→   798→Business Process Document Barendra International
+   798→   798→Business Process Document Hairlan International
    799→   799→13.1 The Eight Inventory Buckets
    800→   800→# Bucket Custodian Value Basis
    801→

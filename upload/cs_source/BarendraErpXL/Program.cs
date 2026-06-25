@@ -1,6 +1,6 @@
 // ============================================================================
-//  Barendra International — End-to-End ERP Workbook Generator
-//  .NET 8 + ClosedXML  |  Generates BarendraInternational_ERP.xlsx
+//  Hairlan International — End-to-End ERP Workbook Generator
+//  .NET 8 + ClosedXML  |  Generates HairlanInternational_ERP.xlsx
 //
 //  Every derived value is written as a LIVE Excel formula so the workbook
 //  stays dynamic — change an input on Settings and the Dashboard, Payroll,
@@ -15,7 +15,7 @@ using System.Globalization;
 using System.Linq;
 using ClosedXML.Excel;
 
-namespace BarendraErpXL;
+namespace HairlanErpXL;
 
 internal static class Program
 {
@@ -130,13 +130,13 @@ internal static class Program
     //  MAIN
     // ──────────────────────────────────────────────────────────────────────
     static void Main(string[] args) {
-        Console.WriteLine("Building Barendra International ERP workbook (v2 — per-factory sheets)...");
+        Console.WriteLine("Building Hairlan International ERP workbook (v2 — per-factory sheets)...");
 
         using var wb = new XLWorkbook();
         wb.Properties.Author = "Z.ai";
-        wb.Properties.Title = "Barendra International — ERP Workbook (v2)";
+        wb.Properties.Title = "Hairlan International — ERP Workbook (v2)";
         wb.Properties.Subject = "End-to-End Business Process Model with per-factory payroll";
-        wb.Properties.Company = "Barendra International";
+        wb.Properties.Company = "Hairlan International";
 
         // Build factory configs first so we know how many sheets + their names
         var factoryConfigs = BuildFactoryConfigs();
@@ -172,7 +172,7 @@ internal static class Program
         wb.Worksheet("Cover & Index").SetTabColor(Navy);
         wb.Worksheet("Dashboard").SetTabColor(Gold);
 
-        string outPath = "/home/z/my-project/download/BarendraInternational_ERP.xlsx";
+        string outPath = "/home/z/my-project/download/HairlanInternational_ERP.xlsx";
         wb.SaveAs(outPath);
         Console.WriteLine($"OK Saved -> {outPath}");
         Console.WriteLine($"  Sheets: {wb.Worksheets.Count} (incl. {factoryConfigs.Length} factory sheets)");
